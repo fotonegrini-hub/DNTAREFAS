@@ -562,13 +562,14 @@
 <div id="posicaoModal" class="modal">
   <div class="modal-content">
     <h3>Alterar Posição do Pedido</h3>
+    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Pedido: <strong id="pedidoNome"></strong></p>
     <input type="hidden" id="posicaoEditId" value="">
     <label>Nova posição (número)</label>
     <div class="posicao-input-group">
-      <input type="number" id="novaPosicao" min="1" step="1">
+      <input type="number" id="novaPosicao" min="1" step="1" placeholder="Nº">
       <button class="btn-add" id="confirmarPosicaoBtn" style="padding: 0.5rem 1rem;">Aplicar</button>
     </div>
-    <small>Digite a posição desejada na lista atual</small>
+    <small>Digite o número da nova posição desejada (1 a <span id="maxPosicao"></span>)</small>
     <div class="modal-buttons" style="margin-top: 1rem;">
       <button class="icon-btn" id="closePosicaoModalBtn" style="background: var(--border); padding: 0.5rem 1.2rem;">Cancelar</button>
     </div>
@@ -645,22 +646,19 @@
     const task = tasks.find(t => t.id === taskId);
     if(!task || task.concluido) return;
     
-    const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    let weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
     const currentIndex = weekTasks.findIndex(t => t.id === taskId);
     
     if(direction === 'up' && currentIndex > 0) {
-      // Troca com o anterior
       const tempOrdem = weekTasks[currentIndex].ordem;
       weekTasks[currentIndex].ordem = weekTasks[currentIndex - 1].ordem;
       weekTasks[currentIndex - 1].ordem = tempOrdem;
     } else if(direction === 'down' && currentIndex < weekTasks.length - 1) {
-      // Troca com o próximo
       const tempOrdem = weekTasks[currentIndex].ordem;
       weekTasks[currentIndex].ordem = weekTasks[currentIndex + 1].ordem;
       weekTasks[currentIndex + 1].ordem = tempOrdem;
     }
     
-    // Reordena para garantir consistência
     weekTasks.sort((a,b) => (a.ordem||0) - (b.ordem||0));
     weekTasks.forEach((t, idx) => { t.ordem = idx; });
     
@@ -909,7 +907,7 @@
       
       html += `
         <div class="task-card ${urgentClass} ${rotaClass} ${concluidoClass}" data-id="${task.id}" draggable="${!viewAllMode && !showingConcluido}">
-          <div class="task-number" onclick="window.abrirModalPosicao(${task.id})" title="Clique para alterar posição">${numero}</div>
+          <div class="task-number" data-task-id="${task.id}" data-task-nome="${escapeHtml(task.nome)}" style="cursor: pointer;">${numero}</div>
           <div class="task-info">
             <span class="info-chip"><i class="fas fa-user"></i> ${escapeHtml(task.nome)}</span>
             <span class="info-chip"><i class="fas fa-phone"></i> ${escapeHtml(task.telefone || '—')}</span>
@@ -943,10 +941,37 @@
     });
     
     container.innerHTML = html;
+    
+    // Adicionar evento de duplo clique nos números
+    document.querySelectorAll('.task-number').forEach(el => {
+      el.addEventListener('dblclick', function(e) {
+        e.stopPropagation();
+        const taskId = parseInt(this.dataset.taskId);
+        const taskNome = this.dataset.taskNome;
+        abrirModalPosicao(taskId, taskNome);
+      });
+    });
+    
     if(!viewAllMode && !showingConcluido) attachCardDragEvents();
   }
 
   function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+  function abrirModalPosicao(taskId, taskNome) {
+    const task = tasks.find(t => t.id === taskId);
+    if(task && !task.concluido && !viewAllMode && !showingConcluido) {
+      const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido);
+      document.getElementById("pedidoNome").innerHTML = taskNome;
+      document.getElementById("maxPosicao").innerHTML = weekTasks.length;
+      document.getElementById("posicaoEditId").value = taskId;
+      document.getElementById("novaPosicao").value = "";
+      document.getElementById("posicaoModal").style.display = "flex";
+    } else if(task && task.concluido) {
+      alert("Pedidos concluídos não podem ter posição alterada");
+    } else if(viewAllMode || showingConcluido) {
+      alert("Alterar posição disponível apenas na visualização por semana");
+    }
+  }
 
   window.moveTask = moveTask;
   window.cycleStatus = cycleStatus;
@@ -959,18 +984,6 @@
   window.editTaskModal = (id) => {
     const task = tasks.find(t => t.id === id);
     if(task) openModalForEdit(task);
-  };
-  window.abrirModalPosicao = (id) => {
-    const task = tasks.find(t => t.id === id);
-    if(task && !task.concluido && !viewAllMode && !showingConcluido) {
-      document.getElementById("posicaoEditId").value = id;
-      document.getElementById("novaPosicao").value = "";
-      document.getElementById("posicaoModal").style.display = "flex";
-    } else if(task && task.concluido) {
-      alert("Pedidos concluídos não podem ter posição alterada");
-    } else if(viewAllMode || showingConcluido) {
-      alert("Alterar posição disponível apenas na visualização por semana");
-    }
   };
 
   const modal = document.getElementById("taskModal");
@@ -1080,6 +1093,8 @@
     if(taskId && novaPosicao) {
       ajustarPosicao(taskId, novaPosicao);
       posicaoModal.style.display = "none";
+    } else {
+      alert("Digite uma posição válida");
     }
   };
   saveBtn.onclick = saveTaskFromModal;
