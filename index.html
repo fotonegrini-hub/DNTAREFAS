@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>FlowTasks - Gestão de Pedidos</title>
+  <!-- Font Awesome 6 (ícones modernos) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s;
+    }
+
+    :root {
+      --bg-page: #f4f7fc;
+      --card-bg: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --border: #e2e8f0;
+      --header-bg: #ffffffcc;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --status-aguardando: #f59e0b;
+      --status-producao: #8b5cf6;
+      --status-retirada: #10b981;
+      --urgent-bg: #fee2e2;
+      --urgent-border: #ef4444;
+      --pagamento-aguardando: #f59e0b;
+      --pagamento-pago: #10b981;
+      --rota-entrega-bg: #dbeafe;
+      --rota-entrega-border: #3b82f6;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    body.dark {
+      --bg-page: #0f172a;
+      --card-bg: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --border: #334155;
+      --header-bg: #1e293bcc;
+      --accent: #60a5fa;
+      --accent-hover: #3b82f6;
+      --urgent-bg: #450a0a;
+      --urgent-border: #ef4444;
+      --pagamento-aguardando: #f59e0b;
+      --pagamento-pago: #10b981;
+      --rota-entrega-bg: #1e3a5f;
+      --rota-entrega-border: #60a5fa;
+    }
+
+    body {
+      background: var(--bg-page);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+    }
+
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(12px);
+      background: var(--header-bg);
+      border-radius: 2rem;
+      padding: 0.75rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+
+    .logo-area i {
+      color: var(--accent);
+      font-size: 1.6rem;
+    }
+
+    .dn-tarefas {
+      background: var(--accent);
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .theme-toggle {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .semana-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.8rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 0.6rem 1.4rem;
+      font-weight: 600;
+      border-radius: 2rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+    }
+
+    .tab-btn.drag-over {
+      background: var(--accent);
+      opacity: 0.7;
+      transform: scale(1.02);
+    }
+
+    .view-all-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.4rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .search-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+      color: var(--text-primary);
+    }
+
+    .btn-add {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      padding: 0 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-add:hover { background: var(--accent-hover); }
+
+    .tasks-horizontal {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .week-separator {
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 2rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .task-card {
+      background: var(--card-bg);
+      border-radius: 1.5rem;
+      padding: 1rem 1.2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      transition: all 0.2s;
+      cursor: grab;
+      position: relative;
+    }
+
+    .task-card:active {
+      cursor: grabbing;
+    }
+
+    .task-card.urgente {
+      border-left: 6px solid #ef4444;
+      background: var(--urgent-bg);
+    }
+
+    .task-card.rota-entrega {
+      border-right: 6px solid var(--accent);
+      background: var(--rota-entrega-bg);
+    }
+
+    .task-number {
+      font-weight: 800;
+      font-size: 1.4rem;
+      background: var(--accent);
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 30px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .task-info {
+      flex: 3;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      align-items: baseline;
+    }
+
+    .info-chip {
+      background: var(--bg-page);
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .urgent-chip {
+      background: #ef4444;
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2rem;
+      font-size: 0.7rem;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .rota-chip {
+      background: var(--accent);
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2rem;
+      font-size: 0.7rem;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .payment-status {
+      padding: 0.2rem 0.6rem;
+      border-radius: 2rem;
+      font-size: 0.7rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .payment-aguardando {
+      background: var(--pagamento-aguardando);
+      color: white;
+    }
+
+    .payment-pago {
+      background: var(--pagamento-pago);
+      color: white;
+    }
+
+    .task-status {
+      min-width: 120px;
+      padding: 0.4rem 0.8rem;
+      border-radius: 2rem;
+      text-align: center;
+      font-weight: 600;
+      background: #e2e8f0;
+      color: #1e293b;
+      cursor: pointer;
+    }
+
+    .status-aguardando { background: #fef3c7; color: #b45309; }
+    .status-producao { background: #ede9fe; color: #6d28d9; }
+    .status-retirada { background: #d1fae5; color: #047857; }
+
+    .task-actions {
+      display: flex;
+      gap: 0.7rem;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 40px;
+      transition: 0.1s;
+      color: var(--text-secondary);
+    }
+
+    .icon-btn:hover { background: var(--border); }
+
+    .whatsapp-btn {
+      color: #25D366;
+    }
+
+    .urgent-btn {
+      color: #ef4444;
+    }
+
+    .rota-btn {
+      color: var(--accent);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(3px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 2rem;
+      padding: 2rem;
+      width: 90%;
+      max-width: 550px;
+      border: 1px solid var(--border);
+      animation: fadeUp 0.2s;
+    }
+
+    .modal-content input, .modal-content select, .modal-content textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.25rem;
+      margin-bottom: 1rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: var(--bg-page);
+      color: var(--text-primary);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .checkbox-row input {
+      width: auto;
+      margin: 0;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.8rem;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+
+    @media (max-width: 720px) {
+      .task-card { flex-direction: column; align-items: stretch; }
+      .task-info { justify-content: flex-start; }
+      .task-actions { justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div class="top-bar">
+    <div class="logo-area">
+      <i class="fas fa-tasks"></i>
+      <div class="dn-tarefas"><i class="fas fa-calendar-day"></i> DN Tarefas Diárias</div>
+    </div>
+    <div class="theme-toggle" id="themeToggle">
+      <i class="fas fa-moon"></i> <span id="themeText">Escuro</span>
+    </div>
+  </div>
+
+  <div class="semana-tabs" id="tabContainer">
+    <button class="tab-btn active" data-week="1" data-week-num="1">📅 1ª Semana</button>
+    <button class="tab-btn" data-week="2" data-week-num="2">📆 2ª Semana</button>
+    <button class="tab-btn" data-week="3" data-week-num="3">🗓️ 3ª Semana</button>
+    <button class="view-all-btn" id="viewAllBtn"><i class="fas fa-list-ul"></i> Todos os Pedidos</button>
+  </div>
+
+  <div class="actions-row">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Consultar por nome do cliente...">
+    </div>
+    <button class="btn-add" id="openAddModalBtn"><i class="fas fa-plus"></i> Novo Pedido</button>
+  </div>
+
+  <div id="tasksContainer" class="tasks-horizontal"></div>
+</div>
+
+<div id="taskModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Adicionar Pedido</h3>
+    <input type="hidden" id="editId" value="">
+    <label>Nome *</label>
+    <input type="text" id="nome" placeholder="Cliente" autocomplete="off">
+    <label>Telefone (com DDD)</label>
+    <input type="tel" id="telefone" placeholder="(11) 99999-9999">
+    <label>Descrição serviço</label>
+    <textarea id="descricao" rows="2" placeholder="Ex: Conserto de notebook..."></textarea>
+    <label>Data entrega</label>
+    <input type="date" id="dataEntrega">
+    <label>Valor (R$)</label>
+    <input type="text" id="valor" placeholder="0,00">
+    <label>Status do Pedido</label>
+    <select id="statusSelect">
+      <option value="aguardando">🟠 Aguardando</option>
+      <option value="producao">🟣 Produção</option>
+      <option value="retirada">🟢 Retirada</option>
+    </select>
+    <label>Status de Pagamento</label>
+    <select id="pagamentoSelect">
+      <option value="aguardando">💰 Aguardando Pagamento</option>
+      <option value="pago">✅ Pago</option>
+    </select>
+    <div class="checkbox-row">
+      <input type="checkbox" id="urgenteCheckbox">
+      <label for="urgenteCheckbox">🔴 Marcar como URGENTE</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="rotaEntregaCheckbox">
+      <label for="rotaEntregaCheckbox">🚚 Rota de Entrega (hoje)</label>
+    </div>
+    <div class="modal-buttons">
+      <button class="icon-btn" id="closeModalBtn" style="background: var(--border); padding: 0.5rem 1.2rem;">Cancelar</button>
+      <button class="btn-add" id="saveTaskBtn" style="border-radius: 2rem;">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let tasks = [];
+  let currentWeek = 1;
+  let searchQuery = "";
+  let nextId = 100;
+  let viewAllMode = false;
+
+  function loadData() {
+    const stored = localStorage.getItem("flowtasks_app");
+    if(stored) {
+      tasks = JSON.parse(stored);
+      if(tasks.length) {
+        const maxId = Math.max(...tasks.map(t => t.id), 0);
+        nextId = maxId + 1;
+      }
+      tasks.forEach(t => { 
+        if(t.urgente === undefined) t.urgente = false;
+        if(t.dataLancamento === undefined) t.dataLancamento = new Date().toISOString().split('T')[0];
+        if(t.pagamento === undefined) t.pagamento = "aguardando";
+        if(t.rotaEntrega === undefined) t.rotaEntrega = false;
+      });
+    } else {
+      const hoje = new Date().toISOString().split('T')[0];
+      const ontem = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      tasks = [
+        { id: 1, semana: 1, nome: "Ana Souza", telefone: "11999991111", descricao: "Manutenção PC", dataEntrega: "2026-06-15", valor: "250,00", status: "aguardando", ordem: 0, urgente: true, dataLancamento: ontem, pagamento: "aguardando", rotaEntrega: false },
+        { id: 2, semana: 1, nome: "Carlos Lima", telefone: "21988887777", descricao: "Formatação", dataEntrega: "2026-06-18", valor: "120,00", status: "producao", ordem: 1, urgente: false, dataLancamento: hoje, pagamento: "pago", rotaEntrega: true },
+        { id: 3, semana: 2, nome: "Mariana Rocha", telefone: "31977776666", descricao: "Troca de Tela", dataEntrega: "2026-06-22", valor: "450,00", status: "retirada", ordem: 0, urgente: true, dataLancamento: hoje, pagamento: "aguardando", rotaEntrega: false }
+      ];
+      nextId = 4;
+    }
+    reorderAllByWeek();
+  }
+
+  function reorderAllByWeek() {
+    for(let w=1; w<=3; w++) {
+      let weekTasks = tasks.filter(t => t.semana === w).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+      weekTasks.forEach((t, idx) => { t.ordem = idx; });
+    }
+    saveToLocal();
+  }
+
+  function saveToLocal() {
+    localStorage.setItem("flowtasks_app", JSON.stringify(tasks));
+  }
+
+  function moveTaskToWeek(taskId, targetWeek) {
+    const task = tasks.find(t => t.id === taskId);
+    if(!task || task.semana === targetWeek) return;
+    
+    const oldWeek = task.semana;
+    task.semana = targetWeek;
+    
+    const oldWeekTasks = tasks.filter(t => t.semana === oldWeek).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    const newWeekTasks = tasks.filter(t => t.semana === targetWeek).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    
+    oldWeekTasks.forEach((t, idx) => { t.ordem = idx; });
+    newWeekTasks.forEach((t, idx) => { t.ordem = idx; });
+    
+    saveToLocal();
+    renderTasks();
+  }
+
+  function moveTask(taskId, direction) {
+    const task = tasks.find(t => t.id === taskId);
+    if(!task) return;
+    const weekTasks = tasks.filter(t => t.semana === task.semana).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    const idx = weekTasks.findIndex(t => t.id === taskId);
+    if(direction === 'up' && idx > 0) {
+      [weekTasks[idx].ordem, weekTasks[idx-1].ordem] = [weekTasks[idx-1].ordem, weekTasks[idx].ordem];
+    } else if(direction === 'down' && idx < weekTasks.length-1) {
+      [weekTasks[idx].ordem, weekTasks[idx+1].ordem] = [weekTasks[idx+1].ordem, weekTasks[idx].ordem];
+    }
+    weekTasks.forEach((t, i) => { t.ordem = i; });
+    saveToLocal();
+    renderTasks();
+  }
+  
+  function toggleUrgent(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if(task) {
+      task.urgente = !task.urgente;
+      saveToLocal();
+      renderTasks();
+    }
+  }
+
+  function toggleRotaEntrega(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if(task) {
+      task.rotaEntrega = !task.rotaEntrega;
+      saveToLocal();
+      renderTasks();
+    }
+  }
+
+  function togglePagamento(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if(task) {
+      task.pagamento = task.pagamento === "aguardando" ? "pago" : "aguardando";
+      saveToLocal();
+      renderTasks();
+    }
+  }
+
+  function addTask(task) {
+    task.id = nextId++;
+    task.dataLancamento = new Date().toISOString().split('T')[0];
+    if(!task.pagamento) task.pagamento = "aguardando";
+    if(task.rotaEntrega === undefined) task.rotaEntrega = false;
+    tasks.push(task);
+    reorderAllByWeek();
+    renderTasks();
+  }
+  
+  function updateTask(updated) {
+    const index = tasks.findIndex(t => t.id === updated.id);
+    if(index !== -1) {
+      updated.dataLancamento = tasks[index].dataLancamento;
+      tasks[index] = updated;
+      reorderAllByWeek();
+      renderTasks();
+    }
+  }
+  
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    reorderAllByWeek();
+    renderTasks();
+  }
+
+  function sendWhatsApp(task) {
+    if(!task.telefone || task.telefone.trim() === "") {
+      alert("Número de telefone não informado para enviar mensagem.");
+      return;
+    }
+    let numero = task.telefone.replace(/\D/g, '');
+    if(numero.length < 10) { alert("Número inválido"); return; }
+    
+    const pagamentoText = task.pagamento === "pago" ? "✅ *PAGO*" : "⏳ *Aguardando Pagamento*";
+    
+    let msg;
+    
+    if(task.rotaEntrega) {
+      // Mensagem simplificada para rota de entrega: sem status, sem data prevista, sem msg motivacional
+      msg = `Olá ${task.nome}, seu pedido *${task.descricao}* está em rota de entrega! 🚚%0A💰 Valor: R$ ${task.valor}%0A💵 Status de pagamento: ${pagamentoText}%0A✅ Seu pedido será entregue hoje! Agradecemos a preferência.`;
+    } else {
+      // Mensagem normal com status e data prevista
+      const statusText = task.status === 'aguardando' ? 'Aguardando' : (task.status === 'producao' ? 'Em Produção' : 'Pronto para Retirada');
+      msg = `Olá ${task.nome}, seu pedido *${task.descricao}* está com status: ${statusText}.%0A📅 Entrega prevista: ${task.dataEntrega || 'não definida'}%0A💰 Valor: R$ ${task.valor}%0A💵 Status de pagamento: ${pagamentoText}%0A✅ Pedido finalizado! Agradecemos a preferência.`;
+    }
+    
+    window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank');
+  }
+
+  function cycleStatus(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if(!task) return;
+    const statusOrder = ['aguardando', 'producao', 'retirada'];
+    let idx = statusOrder.indexOf(task.status);
+    let newIdx = (idx+1) % statusOrder.length;
+    task.status = statusOrder[newIdx];
+    saveToLocal();
+    renderTasks();
+  }
+
+  let draggedTaskId = null;
+  
+  function setupDragAndDrop() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+      tab.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if(!viewAllMode) tab.classList.add('drag-over');
+      });
+      tab.addEventListener('dragleave', () => {
+        tab.classList.remove('drag-over');
+      });
+      tab.addEventListener('drop', (e) => {
+        e.preventDefault();
+        tab.classList.remove('drag-over');
+        const targetWeek = parseInt(tab.dataset.week);
+        if(draggedTaskId && targetWeek && !viewAllMode) {
+          moveTaskToWeek(draggedTaskId, targetWeek);
+          draggedTaskId = null;
+        }
+      });
+    });
+  }
+  
+  function attachCardDragEvents() {
+    const cards = document.querySelectorAll('.task-card');
+    cards.forEach(card => {
+      card.setAttribute('draggable', 'true');
+      card.addEventListener('dragstart', (e) => {
+        if(viewAllMode) {
+          e.preventDefault();
+          return false;
+        }
+        draggedTaskId = parseInt(card.dataset.id);
+        e.dataTransfer.setData('text/plain', draggedTaskId);
+        card.style.opacity = '0.5';
+      });
+      card.addEventListener('dragend', (e) => {
+        card.style.opacity = '';
+        draggedTaskId = null;
+      });
+    });
+  }
+
+  function formatDate(dateStr) {
+    if(!dateStr) return '—';
+    const partes = dateStr.split('-');
+    if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    return dateStr;
+  }
+
+  function renderTasks() {
+    let filtered = [];
+    
+    if(viewAllMode) {
+      for(let w = 1; w <= 3; w++) {
+        const weekTasks = tasks.filter(t => t.semana === w).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+        filtered.push(...weekTasks);
+      }
+    } else {
+      filtered = tasks.filter(t => t.semana === currentWeek);
+    }
+    
+    if(searchQuery.trim() !== "") {
+      const q = searchQuery.trim().toLowerCase();
+      filtered = filtered.filter(t => t.nome.toLowerCase().includes(q));
+    }
+
+    const container = document.getElementById("tasksContainer");
+    if(filtered.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:2rem;">Nenhum pedido encontrado ☁️</div>`;
+      return;
+    }
+
+    let html = '';
+    let lastWeek = null;
+    
+    filtered.forEach((task) => {
+      if(viewAllMode && lastWeek !== task.semana) {
+        lastWeek = task.semana;
+        const weekNames = {1:'1ª Semana', 2:'2ª Semana', 3:'3ª Semana'};
+        html += `<div class="week-separator"><i class="fas fa-calendar-week"></i> ${weekNames[task.semana]}</div>`;
+      }
+      
+      const statusClass = `status-${task.status}`;
+      const statusText = task.status === 'aguardando' ? '🟡 Aguardando' : (task.status === 'producao' ? '🟣 Produção' : '🟢 Retirada');
+      
+      let numero;
+      if(viewAllMode) {
+        const tasksInSameWeek = filtered.filter(t => t.semana === task.semana);
+        const idxInWeek = tasksInSameWeek.findIndex(t => t.id === task.id);
+        numero = idxInWeek + 1;
+      } else {
+        const weekFiltered = tasks.filter(t => t.semana === currentWeek);
+        const idxInWeek = weekFiltered.findIndex(t => t.id === task.id);
+        numero = idxInWeek + 1;
+      }
+      
+      const urgentClass = task.urgente ? 'urgente' : '';
+      const rotaClass = task.rotaEntrega ? 'rota-entrega' : '';
+      const urgentBadge = task.urgente ? '<span class="urgent-chip"><i class="fas fa-exclamation-circle"></i> URGENTE</span>' : '';
+      const rotaBadge = task.rotaEntrega ? '<span class="rota-chip"><i class="fas fa-truck"></i> Rota de Entrega</span>' : '';
+      const pagamentoClass = task.pagamento === "pago" ? "payment-pago" : "payment-aguardando";
+      const pagamentoText = task.pagamento === "pago" ? "✅ Pago" : "⏳ Aguardando Pagamento";
+      
+      html += `
+        <div class="task-card ${urgentClass} ${rotaClass}" data-id="${task.id}" draggable="${!viewAllMode}">
+          <div class="task-number">${numero}</div>
+          <div class="task-info">
+            <span class="info-chip"><i class="fas fa-user"></i> ${escapeHtml(task.nome)}</span>
+            <span class="info-chip"><i class="fas fa-phone"></i> ${escapeHtml(task.telefone || '—')}</span>
+            <span class="info-chip"><i class="fas fa-clipboard-list"></i> ${escapeHtml(task.descricao.substring(0, 35))}</span>
+            <span class="info-chip"><i class="fas fa-calendar-alt"></i> Entrega: ${formatDate(task.dataEntrega)}</span>
+            <span class="info-chip"><i class="fas fa-dollar-sign"></i> R$ ${escapeHtml(task.valor)}</span>
+            <span class="info-chip"><i class="fas fa-calendar-plus"></i> Lançado: ${formatDate(task.dataLancamento)}</span>
+            <span class="payment-status ${pagamentoClass}" onclick="window.togglePagamento(${task.id})" style="cursor:pointer;">${pagamentoText}</span>
+            ${urgentBadge}
+            ${rotaBadge}
+          </div>
+          <div class="task-status ${statusClass}" onclick="window.cycleStatus(${task.id})" style="cursor:pointer;">
+            ${statusText}
+          </div>
+          <div class="task-actions">
+            <button class="icon-btn" onclick="window.moveTask(${task.id}, 'up')" title="Mover para cima" ${viewAllMode ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-arrow-up"></i></button>
+            <button class="icon-btn" onclick="window.moveTask(${task.id}, 'down')" title="Mover para baixo" ${viewAllMode ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-arrow-down"></i></button>
+            <button class="icon-btn urgent-btn" onclick="window.toggleUrgent(${task.id})" title="Marcar/Desmarcar Urgente"><i class="fas fa-exclamation-triangle"></i></button>
+            <button class="icon-btn rota-btn" onclick="window.toggleRotaEntrega(${task.id})" title="Marcar/Desmarcar Rota de Entrega"><i class="fas fa-truck"></i></button>
+            <button class="icon-btn" onclick="window.editTaskModal(${task.id})"><i class="fas fa-edit"></i></button>
+            <button class="icon-btn" onclick="window.deleteTaskConfirm(${task.id})"><i class="fas fa-trash-alt"></i></button>
+            <button class="icon-btn whatsapp-btn" onclick="window.sendWhatsAppById(${task.id})"><i class="fab fa-whatsapp"></i></button>
+          </div>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+    if(!viewAllMode) attachCardDragEvents();
+  }
+
+  function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+  window.moveTask = moveTask;
+  window.cycleStatus = cycleStatus;
+  window.toggleUrgent = toggleUrgent;
+  window.toggleRotaEntrega = toggleRotaEntrega;
+  window.togglePagamento = togglePagamento;
+  window.sendWhatsAppById = (id) => { const t = tasks.find(t => t.id === id); if(t) sendWhatsApp(t); };
+  window.deleteTaskConfirm = (id) => { if(confirm("Remover pedido permanentemente?")) deleteTask(id); };
+  window.editTaskModal = (id) => {
+    const task = tasks.find(t => t.id === id);
+    if(task) openModalForEdit(task);
+  };
+
+  const modal = document.getElementById("taskModal");
+  const openAddBtn = document.getElementById("openAddModalBtn");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+  const saveBtn = document.getElementById("saveTaskBtn");
+  const modalTitle = document.getElementById("modalTitle");
+  const editIdField = document.getElementById("editId");
+  const nomeField = document.getElementById("nome");
+  const telefoneField = document.getElementById("telefone");
+  const descricaoField = document.getElementById("descricao");
+  const dataEntregaField = document.getElementById("dataEntrega");
+  const valorField = document.getElementById("valor");
+  const statusSelect = document.getElementById("statusSelect");
+  const pagamentoSelect = document.getElementById("pagamentoSelect");
+  const urgenteCheckbox = document.getElementById("urgenteCheckbox");
+  const rotaEntregaCheckbox = document.getElementById("rotaEntregaCheckbox");
+
+  function openModalForEdit(task) {
+    modalTitle.innerText = "Editar Pedido";
+    editIdField.value = task.id;
+    nomeField.value = task.nome;
+    telefoneField.value = task.telefone || "";
+    descricaoField.value = task.descricao;
+    dataEntregaField.value = task.dataEntrega || "";
+    valorField.value = task.valor;
+    statusSelect.value = task.status;
+    pagamentoSelect.value = task.pagamento || "aguardando";
+    urgenteCheckbox.checked = task.urgente || false;
+    rotaEntregaCheckbox.checked = task.rotaEntrega || false;
+    modal.style.display = "flex";
+  }
+
+  function openModalForNew() {
+    modalTitle.innerText = "Adicionar Pedido";
+    editIdField.value = "";
+    nomeField.value = "";
+    telefoneField.value = "";
+    descricaoField.value = "";
+    dataEntregaField.value = "";
+    valorField.value = "";
+    statusSelect.value = "aguardando";
+    pagamentoSelect.value = "aguardando";
+    urgenteCheckbox.checked = false;
+    rotaEntregaCheckbox.checked = false;
+    modal.style.display = "flex";
+  }
+
+  function saveTaskFromModal() {
+    const nome = nomeField.value.trim();
+    if(!nome) { alert("Nome do cliente obrigatório"); return; }
+    const telefone = telefoneField.value.trim();
+    const descricao = descricaoField.value.trim();
+    const dataEntrega = dataEntregaField.value;
+    const valor = valorField.value.trim() || "0";
+    const status = statusSelect.value;
+    const pagamento = pagamentoSelect.value;
+    const urgente = urgenteCheckbox.checked;
+    const rotaEntrega = rotaEntregaCheckbox.checked;
+    const editId = editIdField.value;
+    if(editId) {
+      const task = tasks.find(t => t.id == editId);
+      if(task) {
+        task.nome = nome;
+        task.telefone = telefone;
+        task.descricao = descricao;
+        task.dataEntrega = dataEntrega;
+        task.valor = valor;
+        task.status = status;
+        task.pagamento = pagamento;
+        task.urgente = urgente;
+        task.rotaEntrega = rotaEntrega;
+        saveToLocal();
+        renderTasks();
+      }
+    } else {
+      const semanaParaAdicionar = viewAllMode ? 1 : currentWeek;
+      const newTask = {
+        id: 0,
+        semana: semanaParaAdicionar,
+        nome: nome,
+        telefone: telefone,
+        descricao: descricao,
+        dataEntrega: dataEntrega,
+        valor: valor,
+        status: status,
+        pagamento: pagamento,
+        urgente: urgente,
+        rotaEntrega: rotaEntrega,
+        ordem: tasks.filter(t => t.semana === semanaParaAdicionar).length
+      };
+      addTask(newTask);
+    }
+    modal.style.display = "none";
+  }
+
+  openAddBtn.onclick = openModalForNew;
+  closeModalBtn.onclick = () => modal.style.display = "none";
+  saveBtn.onclick = saveTaskFromModal;
+  window.onclick = (e) => { if(e.target === modal) modal.style.display = "none"; };
+
+  const viewAllBtn = document.getElementById("viewAllBtn");
+  
+  function setViewAllMode(enable) {
+    viewAllMode = enable;
+    const tabs = document.querySelectorAll('.tab-btn');
+    if(enable) {
+      tabs.forEach(btn => btn.classList.remove('active'));
+      viewAllBtn.style.background = "var(--accent-hover)";
+    } else {
+      viewAllBtn.style.background = "var(--accent)";
+      const activeTab = document.querySelector(`.tab-btn[data-week="${currentWeek}"]`);
+      if(activeTab) activeTab.classList.add('active');
+    }
+    renderTasks();
+  }
+  
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      if(viewAllMode) setViewAllMode(false);
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentWeek = parseInt(btn.dataset.week);
+      viewAllMode = false;
+      viewAllBtn.style.background = "var(--accent)";
+      renderTasks();
+    });
+  });
+  
+  viewAllBtn.addEventListener("click", () => {
+    setViewAllMode(true);
+  });
+
+  const searchInput = document.getElementById("searchInput");
+  searchInput.addEventListener("input", (e) => {
+    searchQuery = e.target.value;
+    renderTasks();
+  });
+
+  const themeToggle = document.getElementById("themeToggle");
+  const themeTextSpan = document.getElementById("themeText");
+  function applyTheme(theme) {
+    if(theme === 'dark') {
+      document.body.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      themeTextSpan.innerText = 'Claro';
+      themeToggle.innerHTML = '<i class="fas fa-sun"></i> <span>Claro</span>';
+    } else {
+      document.body.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+      themeTextSpan.innerText = 'Escuro';
+      themeToggle.innerHTML = '<i class="fas fa-moon"></i> <span>Escuro</span>';
+    }
+  }
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  applyTheme(savedTheme);
+  themeToggle.addEventListener("click", () => {
+    const isDark = document.body.classList.contains('dark');
+    applyTheme(isDark ? 'light' : 'dark');
+  });
+
+  loadData();
+  renderTasks();
+  setupDragAndDrop();
+</script>
+</body>
+</html>
