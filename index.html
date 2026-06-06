@@ -612,6 +612,17 @@
       transition: all 0.2s;
     }
 
+    .rota-item.drag-over {
+      border: 2px solid var(--accent);
+      background: var(--accent);
+      opacity: 0.5;
+      transform: scale(1.01);
+    }
+
+    .rota-item.dragging {
+      opacity: 0.3;
+    }
+
     .rota-item:hover {
       transform: translateX(5px);
       box-shadow: var(--shadow-md);
@@ -630,10 +641,16 @@
       color: white;
       flex-shrink: 0;
       cursor: grab;
+      transition: all 0.2s;
     }
 
     .rota-numero:active {
       cursor: grabbing;
+    }
+
+    .rota-numero:hover {
+      transform: scale(1.05);
+      background: var(--accent-hover);
     }
 
     .rota-info {
@@ -1201,6 +1218,24 @@
     
     saveToLocal();
     if(showingRota) renderRota();
+  }
+
+  // NOVA FUNÇÃO: Arrastar para qualquer posição
+  function moverRotaPorArrasto(origemIndex, destinoIndex) {
+    let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+    pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
+    
+    if (origemIndex === destinoIndex) return;
+    
+    const [itemMovido] = pedidosRota.splice(origemIndex, 1);
+    pedidosRota.splice(destinoIndex, 0, itemMovido);
+    
+    pedidosRota.forEach((t, idx) => {
+      t.rotaOrdem = idx;
+    });
+    
+    saveToLocal();
+    renderRota();
   }
 
   function gerarPDFRota() {
@@ -1818,15 +1853,15 @@
         </div>
         
         <div style="margin-bottom: 1rem; padding: 0.5rem; background: var(--accent); border-radius: 0.5rem; color: white; text-align: center;">
-          <i class="fas fa-info-circle"></i> Arraste o número ou use as setas para alterar a ordem de entrega
+          <i class="fas fa-info-circle"></i> Arraste o número para qualquer posição desejada para reordenar a entrega
         </div>
         
         <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-list-ol"></i> Ordem de Entrega</h3>
         <div class="rota-lista" id="rotaLista">
           ${pedidosRota.length === 0 ? '<div style="text-align:center; padding:2rem;">🚚 Nenhum pedido marcado para rota de entrega hoje</div>' : 
             pedidosRota.map((t, idx) => `
-              <div class="rota-item" data-id="${t.id}" data-index="${idx}">
-                <div class="rota-numero" draggable="true" data-id="${t.id}" data-index="${idx}">
+              <div class="rota-item" data-id="${t.id}" data-index="${idx}" draggable="true">
+                <div class="rota-numero" data-index="${idx}">
                   ${idx + 1}
                 </div>
                 <div class="rota-info">
@@ -1863,45 +1898,53 @@
       
       document.getElementById("gerarPDFRotaBtn")?.addEventListener("click", gerarPDFRota);
       
-      const rotaNumeros = document.querySelectorAll('.rota-numero');
+      // Sistema de arrastar e soltar melhorado
       const rotaItems = document.querySelectorAll('.rota-item');
       
-      rotaNumeros.forEach(num => {
-        num.addEventListener('dragstart', (e) => {
-          draggedRotaIndex = parseInt(num.dataset.index);
-          e.dataTransfer.setData('text/plain', draggedRotaIndex);
-          num.style.opacity = '0.5';
-        });
-        num.addEventListener('dragend', (e) => {
-          num.style.opacity = '';
-          draggedRotaIndex = null;
-        });
-        num.addEventListener('dragover', (e) => {
+      rotaItems.forEach(item => {
+        const numeroDiv = item.querySelector('.rota-numero');
+        
+        // Apenas o número é arrastável
+        if(numeroDiv) {
+          numeroDiv.setAttribute('draggable', 'true');
+          
+          numeroDiv.addEventListener('dragstart', (e) => {
+            const origemIndex = parseInt(numeroDiv.dataset.index);
+            e.dataTransfer.setData('text/plain', origemIndex);
+            e.dataTransfer.effectAllowed = 'move';
+            numeroDiv.style.opacity = '0.5';
+            draggedRotaIndex = origemIndex;
+          });
+          
+          numeroDiv.addEventListener('dragend', (e) => {
+            numeroDiv.style.opacity = '';
+            draggedRotaIndex = null;
+            // Remover classe de drag-over de todos os itens
+            rotaItems.forEach(i => i.classList.remove('drag-over'));
+          });
+        }
+        
+        // Item inteiro aceita drop
+        item.addEventListener('dragover', (e) => {
           e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          if(draggedRotaIndex !== null && parseInt(item.dataset.index) !== draggedRotaIndex) {
+            item.classList.add('drag-over');
+          }
         });
-        num.addEventListener('drop', (e) => {
+        
+        item.addEventListener('dragleave', (e) => {
+          item.classList.remove('drag-over');
+        });
+        
+        item.addEventListener('drop', (e) => {
           e.preventDefault();
-          const targetIndex = parseInt(num.dataset.index);
-          if (draggedRotaIndex !== null && draggedRotaIndex !== targetIndex) {
-            const pedidosRotaAtual = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
-            pedidosRotaAtual.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
-            const draggedTask = pedidosRotaAtual[draggedRotaIndex];
-            const targetTask = pedidosRotaAtual[targetIndex];
-            
-            if (draggedTask && targetTask) {
-              const tempOrdem = draggedTask.rotaOrdem;
-              draggedTask.rotaOrdem = targetTask.rotaOrdem;
-              targetTask.rotaOrdem = tempOrdem;
-              
-              const todosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
-              todosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
-              todosRota.forEach((t, idx) => {
-                t.rotaOrdem = idx;
-              });
-              
-              saveToLocal();
-              renderRota();
-            }
+          item.classList.remove('drag-over');
+          
+          const destinoIndex = parseInt(item.dataset.index);
+          
+          if(draggedRotaIndex !== null && destinoIndex !== draggedRotaIndex) {
+            moverRotaPorArrasto(draggedRotaIndex, destinoIndex);
           }
         });
       });
