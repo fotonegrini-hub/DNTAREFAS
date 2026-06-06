@@ -146,6 +146,16 @@
       margin-bottom: 1.8rem;
       border-bottom: 2px solid var(--border);
       padding-bottom: 0.5rem;
+      align-items: center;
+    }
+
+    .tab-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: transparent;
+      border-radius: 2rem;
+      transition: all 0.2s;
     }
 
     .tab-btn {
@@ -158,6 +168,9 @@
       color: var(--text-secondary);
       transition: all 0.2s;
       position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .tab-btn.active {
@@ -212,6 +225,50 @@
       transform: scale(1.02);
     }
 
+    .btn-mover-semana {
+      background: var(--bg-page);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .btn-mover-semana:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .btn-mover-semana:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-add-semana {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+    }
+
+    .btn-add-semana:hover {
+      background: var(--accent-hover);
+    }
+
     .view-all-btn {
       background: var(--accent);
       color: white;
@@ -223,7 +280,6 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-left: auto;
     }
 
     .actions-row {
@@ -925,6 +981,7 @@
       .cards-receita { grid-template-columns: 1fr; }
       .rota-item { flex-direction: column; text-align: center; }
       .rota-info { justify-content: center; }
+      .tab-wrapper { margin-bottom: 0.5rem; }
     }
   </style>
 </head>
@@ -940,16 +997,7 @@
     </div>
   </div>
 
-  <div class="semana-tabs" id="tabContainer">
-    <button class="tab-btn active" data-week="1" data-week-num="1">📅 1ª Semana</button>
-    <button class="tab-btn" data-week="2" data-week-num="2">📆 2ª Semana</button>
-    <button class="tab-btn" data-week="3" data-week-num="3">🗓️ 3ª Semana</button>
-    <button class="tab-btn concluido-btn" data-view="concluido" id="concluidoTab">✅ Concluído</button>
-    <button class="tab-btn rota-btn" data-view="rota" id="rotaTab">🚚 ROTA DE ENTREGA</button>
-    <button class="tab-btn receita-btn" data-view="receita" id="receitaTab">💰 RECEITA</button>
-    <button class="tab-btn clientes-btn" data-view="clientes" id="clientesTab">👥 CLIENTES</button>
-    <button class="view-all-btn" id="viewAllBtn"><i class="fas fa-list-ul"></i> Todos os Pedidos</button>
-  </div>
+  <div class="semana-tabs" id="tabContainer"></div>
 
   <div class="actions-row" id="actionsRow">
     <div class="search-box">
@@ -1110,6 +1158,223 @@
   let receitaChart = null;
   let pizzaChart = null;
   let draggedRotaIndex = null;
+  let draggedTaskId = null;
+
+  // Lista de IDs das semanas na ordem visual (os números reais das semanas)
+  let semanasOrdenadas = [1, 2, 3];
+
+  function getSemanaNome(semanaNum) {
+    return `${semanaNum}ª Semana`;
+  }
+
+  // Função para renomear as semanas baseado na posição visual
+  function renomearSemanasPorPosicao() {
+    // Criar mapeamento da posição (índice + 1) para o valor real da semana
+    const novoMapeamento = {};
+    semanasOrdenadas.forEach((semanaReal, idx) => {
+      novoMapeamento[semanaReal] = idx + 1;
+    });
+    
+    let alterado = false;
+    tasks.forEach(task => {
+      if(!task.concluido && novoMapeamento[task.semana] && novoMapeamento[task.semana] !== task.semana) {
+        task.semana = novoMapeamento[task.semana];
+        alterado = true;
+      }
+    });
+    
+    if(alterado) {
+      // Reordenar a lista semanasOrdenadas com os novos nomes
+      const novasSemanasOrdenadas = [];
+      for(let i = 0; i < semanasOrdenadas.length; i++) {
+        novasSemanasOrdenadas.push(i + 1);
+      }
+      semanasOrdenadas = novasSemanasOrdenadas;
+      saveSemanasOrdem();
+      saveToLocal();
+    }
+  }
+
+  // Mover semana de posição no cabeçalho com renomeação automática
+  function moverSemana(index, direcao) {
+    if(direcao === 'left' && index > 0) {
+      [semanasOrdenadas[index], semanasOrdenadas[index - 1]] = [semanasOrdenadas[index - 1], semanasOrdenadas[index]];
+    } else if(direcao === 'right' && index < semanasOrdenadas.length - 1) {
+      [semanasOrdenadas[index], semanasOrdenadas[index + 1]] = [semanasOrdenadas[index + 1], semanasOrdenadas[index]];
+    } else {
+      return;
+    }
+    
+    // Renomear as semanas baseado na nova posição
+    renomearSemanasPorPosicao();
+    
+    // Salvar e atualizar
+    saveSemanasOrdem();
+    saveToLocal();
+    atualizarAbasSemanas();
+    renderTasks();
+  }
+
+  // Adicionar nova semana
+  function adicionarSemana() {
+    const novaSemana = semanasOrdenadas.length + 1;
+    semanasOrdenadas.push(novaSemana);
+    saveSemanasOrdem();
+    atualizarAbasSemanas();
+    renderTasks();
+  }
+
+  function moveTaskToWeek(taskId, targetWeek) {
+    const task = tasks.find(t => t.id === taskId);
+    if(!task || task.semana === targetWeek || task.concluido) return false;
+    
+    task.semana = targetWeek;
+    
+    // Reordenar e renomear se necessário
+    renomearSemanasPorPosicao();
+    reordenarPorDataEntrega();
+    saveToLocal();
+    atualizarAbasSemanas();
+    renderTasks();
+    return true;
+  }
+
+  function atualizarAbasSemanas() {
+    const tabContainer = document.getElementById("tabContainer");
+    
+    let html = '';
+    semanasOrdenadas.forEach((semana, idx) => {
+      const isActive = (!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && currentWeek === semana);
+      html += `
+        <div class="tab-wrapper">
+          <button class="tab-btn ${isActive ? 'active' : ''}" data-week="${semana}" data-week-num="${semana}">
+            📅 ${getSemanaNome(semana)}
+          </button>
+          <button class="btn-mover-semana" onclick="window.moverSemana(${idx}, 'left')" ${idx === 0 ? 'disabled' : ''} title="Mover para esquerda">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="btn-mover-semana" onclick="window.moverSemana(${idx}, 'right')" ${idx === semanasOrdenadas.length - 1 ? 'disabled' : ''} title="Mover para direita">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      `;
+    });
+    
+    html += `
+      <button class="btn-add-semana" id="addSemanaBtn" title="Adicionar nova semana">
+        <i class="fas fa-plus"></i> Semana
+      </button>
+      <button class="tab-btn concluido-btn" id="concluidoTab" ${showingConcluido ? 'active' : ''}>✅ Concluído</button>
+      <button class="tab-btn rota-btn" id="rotaTab" ${showingRota ? 'active' : ''}>🚚 ROTA DE ENTREGA</button>
+      <button class="tab-btn receita-btn" id="receitaTab" ${showingReceita ? 'active' : ''}>💰 RECEITA</button>
+      <button class="tab-btn clientes-btn" id="clientesTab" ${showingClientes ? 'active' : ''}>👥 CLIENTES</button>
+      <button class="view-all-btn" id="viewAllBtn"><i class="fas fa-list-ul"></i> Todos os Pedidos</button>
+    `;
+    
+    tabContainer.innerHTML = html;
+    
+    document.querySelectorAll(".tab-btn[data-week]").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        if(viewAllMode) setViewAllMode(false);
+        if(showingConcluido) setConcluidoMode(false);
+        if(showingReceita) setReceitaMode(false);
+        if(showingClientes) setClientesMode(false);
+        if(showingRota) setRotaMode(false);
+        document.querySelectorAll(".tab-btn[data-week]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentWeek = parseInt(btn.dataset.week);
+        viewAllMode = false;
+        showingConcluido = false;
+        showingReceita = false;
+        showingClientes = false;
+        showingRota = false;
+        if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
+        tasksContainer.style.display = "flex";
+        if(receitaContainer) receitaContainer.style.display = "none";
+        if(clientesContainer) clientesContainer.style.display = "none";
+        if(rotaContainer) rotaContainer.style.display = "none";
+        if(actionsRow) actionsRow.style.display = "flex";
+        renderTasks();
+      });
+      
+      btn.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) btn.classList.add('drag-over');
+      });
+      btn.addEventListener('dragleave', () => {
+        btn.classList.remove('drag-over');
+      });
+      btn.addEventListener('drop', (e) => {
+        e.preventDefault();
+        btn.classList.remove('drag-over');
+        const targetWeek = parseInt(btn.dataset.week);
+        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) {
+          moveTaskToWeek(draggedTaskId, targetWeek);
+          draggedTaskId = null;
+        }
+      });
+    });
+    
+    document.getElementById("addSemanaBtn")?.addEventListener("click", adicionarSemana);
+    
+    const concluidoTabBtn = document.getElementById("concluidoTab");
+    const receitaTabBtn = document.getElementById("receitaTab");
+    const clientesTabBtn = document.getElementById("clientesTab");
+    const rotaTabBtn = document.getElementById("rotaTab");
+    const viewAllBtnEl = document.getElementById("viewAllBtn");
+    
+    if(concluidoTabBtn) {
+      concluidoTabBtn.addEventListener("click", () => {
+        if(viewAllMode) setViewAllMode(false);
+        if(showingReceita) setReceitaMode(false);
+        if(showingClientes) setClientesMode(false);
+        if(showingRota) setRotaMode(false);
+        setConcluidoMode(true);
+      });
+    }
+    
+    if(receitaTabBtn) {
+      receitaTabBtn.addEventListener("click", () => {
+        if(viewAllMode) setViewAllMode(false);
+        if(showingConcluido) setConcluidoMode(false);
+        if(showingClientes) setClientesMode(false);
+        if(showingRota) setRotaMode(false);
+        setReceitaMode(true);
+      });
+    }
+    
+    if(clientesTabBtn) {
+      clientesTabBtn.addEventListener("click", () => {
+        if(viewAllMode) setViewAllMode(false);
+        if(showingConcluido) setConcluidoMode(false);
+        if(showingReceita) setReceitaMode(false);
+        if(showingRota) setRotaMode(false);
+        setClientesMode(true);
+      });
+    }
+    
+    if(rotaTabBtn) {
+      rotaTabBtn.addEventListener("click", () => {
+        if(viewAllMode) setViewAllMode(false);
+        if(showingConcluido) setConcluidoMode(false);
+        if(showingReceita) setReceitaMode(false);
+        if(showingClientes) setClientesMode(false);
+        setRotaMode(true);
+      });
+    }
+    
+    if(viewAllBtnEl) {
+      viewAllBtnEl.addEventListener("click", () => {
+        if(showingConcluido) setConcluidoMode(false);
+        if(showingReceita) setReceitaMode(false);
+        if(showingClientes) setClientesMode(false);
+        if(showingRota) setRotaMode(false);
+        setViewAllMode(true);
+      });
+    }
+  }
+
+  window.moverSemana = moverSemana;
 
   function loadData() {
     const stored = localStorage.getItem("flowtasks_app");
@@ -1137,6 +1402,18 @@
         { id: 3, semana: 2, nome: "Mariana Rocha", telefone: "31977776666", descricao: "Troca de Tela", dataEntrega: "2026-06-22", valor: "450,00", status: "retirada", ordem: 0, urgente: true, dataLancamento: hoje, pagamento: "aguardando", rotaEntrega: false, concluido: false, rotaOrdem: 0 }
       ];
       nextId = 4;
+    }
+    
+    const storedSemanas = localStorage.getItem("flowtasks_semanas_ordem");
+    if(storedSemanas) {
+      semanasOrdenadas = JSON.parse(storedSemanas);
+      renomearSemanasPorPosicao();
+    } else {
+      const semanasExistentes = [...new Set(tasks.filter(t => !t.concluido).map(t => t.semana))].sort((a,b) => a - b);
+      if(semanasExistentes.length > 0) {
+        semanasOrdenadas = semanasExistentes;
+      }
+      renomearSemanasPorPosicao();
     }
     
     const storedHistorico = localStorage.getItem("flowtasks_historico_receita");
@@ -1187,6 +1464,10 @@
     atualizarOrdemRota();
   }
 
+  function saveSemanasOrdem() {
+    localStorage.setItem("flowtasks_semanas_ordem", JSON.stringify(semanasOrdenadas));
+  }
+
   function atualizarOrdemRota() {
     let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
     pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
@@ -1220,7 +1501,6 @@
     if(showingRota) renderRota();
   }
 
-  // NOVA FUNÇÃO: Arrastar para qualquer posição
   function moverRotaPorArrasto(origemIndex, destinoIndex) {
     let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
     pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
@@ -1286,8 +1566,8 @@
   }
 
   function reordenarPorDataEntrega() {
-    for(let w = 1; w <= 3; w++) {
-      let weekTasks = tasks.filter(t => t.semana === w && !t.concluido);
+    for(let semana of semanasOrdenadas) {
+      let weekTasks = tasks.filter(t => t.semana === semana && !t.concluido);
       let urgentes = weekTasks.filter(t => t.urgente);
       let normais = weekTasks.filter(t => !t.urgente);
       
@@ -1417,15 +1697,7 @@
 
   function saveToLocal() {
     localStorage.setItem("flowtasks_app", JSON.stringify(tasks));
-  }
-
-  function moveTaskToWeek(taskId, targetWeek) {
-    const task = tasks.find(t => t.id === taskId);
-    if(!task || task.semana === targetWeek || task.concluido) return;
-    task.semana = targetWeek;
-    reordenarPorDataEntrega();
-    saveToLocal();
-    renderTasks();
+    saveSemanasOrdem();
   }
 
   function moveTask(taskId, direction) {
@@ -1526,6 +1798,7 @@
       task.concluido = true;
       task.dataConclusao = new Date().toISOString().split('T')[0];
       saveToLocal();
+      atualizarAbasSemanas();
       renderTasks();
       if(showingRota) renderRota();
     }
@@ -1550,7 +1823,9 @@
       atualizarOrdemRota();
     }
     
+    renomearSemanasPorPosicao();
     reordenarPorDataEntrega();
+    atualizarAbasSemanas();
     renderTasks();
   }
   
@@ -1586,7 +1861,9 @@
         atualizarOrdemRota();
       }
       
+      renomearSemanasPorPosicao();
       reordenarPorDataEntrega();
+      atualizarAbasSemanas();
       renderTasks();
       if(showingReceita) renderReceita();
       if(showingClientes) renderClientes();
@@ -1603,8 +1880,10 @@
       }
     }
     tasks = tasks.filter(t => t.id !== id);
+    renomearSemanasPorPosicao();
     reordenarPorDataEntrega();
     atualizarOrdemRota();
+    atualizarAbasSemanas();
     renderTasks();
     if(showingReceita) renderReceita();
     if(showingClientes) renderClientes();
@@ -1646,30 +1925,6 @@
     renderTasks();
   }
 
-  let draggedTaskId = null;
-  
-  function setupDragAndDrop() {
-    const tabs = document.querySelectorAll('.tab-btn:not(#concluidoTab):not(#receitaTab):not(#clientesTab):not(#rotaTab)');
-    tabs.forEach(tab => {
-      tab.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) tab.classList.add('drag-over');
-      });
-      tab.addEventListener('dragleave', () => {
-        tab.classList.remove('drag-over');
-      });
-      tab.addEventListener('drop', (e) => {
-        e.preventDefault();
-        tab.classList.remove('drag-over');
-        const targetWeek = parseInt(tab.dataset.week);
-        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) {
-          moveTaskToWeek(draggedTaskId, targetWeek);
-          draggedTaskId = null;
-        }
-      });
-    });
-  }
-  
   function attachCardDragEvents() {
     const cards = document.querySelectorAll('.task-card');
     cards.forEach(card => {
@@ -1817,8 +2072,10 @@
           atualizarOuAdicionarCliente(p.nome, p.telefone, p.dataLancamento, p.valor);
           if(p.pagamento === "pago") registrarReceita(p);
         });
+        renomearSemanasPorPosicao();
         atualizarOrdemRota();
         reordenarPorDataEntrega();
+        atualizarAbasSemanas();
         renderTasks();
         alert(`${novosPedidos.length} pedidos importados com sucesso!`);
       } else {
@@ -1898,13 +2155,11 @@
       
       document.getElementById("gerarPDFRotaBtn")?.addEventListener("click", gerarPDFRota);
       
-      // Sistema de arrastar e soltar melhorado
       const rotaItems = document.querySelectorAll('.rota-item');
       
       rotaItems.forEach(item => {
         const numeroDiv = item.querySelector('.rota-numero');
         
-        // Apenas o número é arrastável
         if(numeroDiv) {
           numeroDiv.setAttribute('draggable', 'true');
           
@@ -1919,12 +2174,10 @@
           numeroDiv.addEventListener('dragend', (e) => {
             numeroDiv.style.opacity = '';
             draggedRotaIndex = null;
-            // Remover classe de drag-over de todos os itens
             rotaItems.forEach(i => i.classList.remove('drag-over'));
           });
         }
         
-        // Item inteiro aceita drop
         item.addEventListener('dragover', (e) => {
           e.preventDefault();
           e.dataTransfer.dropEffect = 'move';
@@ -2541,8 +2794,8 @@
       filtered = tasks.filter(t => t.concluido === true);
       filtered.sort((a,b) => (b.dataConclusao || '').localeCompare(a.dataConclusao || ''));
     } else if(viewAllMode) {
-      for(let w = 1; w <= 3; w++) {
-        const weekTasks = tasks.filter(t => t.semana === w && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+      for(let semana of semanasOrdenadas) {
+        const weekTasks = tasks.filter(t => t.semana === semana && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
         filtered.push(...weekTasks);
       }
     } else {
@@ -2566,8 +2819,7 @@
     filtered.forEach((task, index) => {
       if(viewAllMode && !showingConcluido && lastWeek !== task.semana) {
         lastWeek = task.semana;
-        const weekNames = {1:'1ª Semana', 2:'2ª Semana', 3:'3ª Semana'};
-        html += `<div class="week-separator"><i class="fas fa-calendar-week"></i> ${weekNames[task.semana]}</div>`;
+        html += `<div class="week-separator"><i class="fas fa-calendar-week"></i> ${getSemanaNome(task.semana)}</div>`;
       }
       
       const statusClass = `status-${task.status}`;
@@ -2777,7 +3029,7 @@
         renderTasks();
       }
     } else {
-      const semanaParaAdicionar = (viewAllMode || showingConcluido) ? 1 : currentWeek;
+      const semanaParaAdicionar = (viewAllMode || showingConcluido) ? (semanasOrdenadas[0] || 1) : currentWeek;
       const newTask = {
         id: 0,
         semana: semanaParaAdicionar,
@@ -2866,21 +3118,21 @@
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
-      concluidoTab.classList.remove('active');
-      receitaTab.classList.remove('active');
-      clientesTab.classList.remove('active');
-      rotaTab.classList.remove('active');
-      viewAllBtn.style.background = "var(--accent-hover)";
+      if(concluidoTab) concluidoTab.classList.remove('active');
+      if(receitaTab) receitaTab.classList.remove('active');
+      if(clientesTab) clientesTab.classList.remove('active');
+      if(rotaTab) rotaTab.classList.remove('active');
+      if(viewAllBtn) viewAllBtn.style.background = "var(--accent-hover)";
     } else {
-      viewAllBtn.style.background = "var(--accent)";
+      if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
       const activeTab = document.querySelector(`.tab-btn[data-week="${currentWeek}"]`);
       if(activeTab) activeTab.classList.add('active');
     }
-    tasksContainer.style.display = "flex";
-    receitaContainer.style.display = "none";
-    clientesContainer.style.display = "none";
-    rotaContainer.style.display = "none";
-    actionsRow.style.display = "flex";
+    if(tasksContainer) tasksContainer.style.display = "flex";
+    if(receitaContainer) receitaContainer.style.display = "none";
+    if(clientesContainer) clientesContainer.style.display = "none";
+    if(rotaContainer) rotaContainer.style.display = "none";
+    if(actionsRow) actionsRow.style.display = "flex";
     renderTasks();
   }
   
@@ -2893,19 +3145,19 @@
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
-      concluidoTab.classList.add('active');
-      receitaTab.classList.remove('active');
-      clientesTab.classList.remove('active');
-      rotaTab.classList.remove('active');
-      viewAllBtn.style.background = "var(--accent)";
+      if(concluidoTab) concluidoTab.classList.add('active');
+      if(receitaTab) receitaTab.classList.remove('active');
+      if(clientesTab) clientesTab.classList.remove('active');
+      if(rotaTab) rotaTab.classList.remove('active');
+      if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
     } else {
-      concluidoTab.classList.remove('active');
+      if(concluidoTab) concluidoTab.classList.remove('active');
     }
-    tasksContainer.style.display = "flex";
-    receitaContainer.style.display = "none";
-    clientesContainer.style.display = "none";
-    rotaContainer.style.display = "none";
-    actionsRow.style.display = "flex";
+    if(tasksContainer) tasksContainer.style.display = "flex";
+    if(receitaContainer) receitaContainer.style.display = "none";
+    if(clientesContainer) clientesContainer.style.display = "none";
+    if(rotaContainer) rotaContainer.style.display = "none";
+    if(actionsRow) actionsRow.style.display = "flex";
     renderTasks();
   }
   
@@ -2918,24 +3170,24 @@
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
-      receitaTab.classList.add('active');
-      concluidoTab.classList.remove('active');
-      clientesTab.classList.remove('active');
-      rotaTab.classList.remove('active');
-      viewAllBtn.style.background = "var(--accent)";
-      tasksContainer.style.display = "none";
-      receitaContainer.style.display = "block";
-      clientesContainer.style.display = "none";
-      rotaContainer.style.display = "none";
-      actionsRow.style.display = "flex";
+      if(receitaTab) receitaTab.classList.add('active');
+      if(concluidoTab) concluidoTab.classList.remove('active');
+      if(clientesTab) clientesTab.classList.remove('active');
+      if(rotaTab) rotaTab.classList.remove('active');
+      if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
+      if(tasksContainer) tasksContainer.style.display = "none";
+      if(receitaContainer) receitaContainer.style.display = "block";
+      if(clientesContainer) clientesContainer.style.display = "none";
+      if(rotaContainer) rotaContainer.style.display = "none";
+      if(actionsRow) actionsRow.style.display = "flex";
       renderReceita();
     } else {
-      receitaTab.classList.remove('active');
-      tasksContainer.style.display = "flex";
-      receitaContainer.style.display = "none";
-      clientesContainer.style.display = "none";
-      rotaContainer.style.display = "none";
-      actionsRow.style.display = "flex";
+      if(receitaTab) receitaTab.classList.remove('active');
+      if(tasksContainer) tasksContainer.style.display = "flex";
+      if(receitaContainer) receitaContainer.style.display = "none";
+      if(clientesContainer) clientesContainer.style.display = "none";
+      if(rotaContainer) rotaContainer.style.display = "none";
+      if(actionsRow) actionsRow.style.display = "flex";
     }
   }
 
@@ -2948,24 +3200,24 @@
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
-      clientesTab.classList.add('active');
-      concluidoTab.classList.remove('active');
-      receitaTab.classList.remove('active');
-      rotaTab.classList.remove('active');
-      viewAllBtn.style.background = "var(--accent)";
-      tasksContainer.style.display = "none";
-      receitaContainer.style.display = "none";
-      clientesContainer.style.display = "block";
-      rotaContainer.style.display = "none";
-      actionsRow.style.display = "flex";
+      if(clientesTab) clientesTab.classList.add('active');
+      if(concluidoTab) concluidoTab.classList.remove('active');
+      if(receitaTab) receitaTab.classList.remove('active');
+      if(rotaTab) rotaTab.classList.remove('active');
+      if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
+      if(tasksContainer) tasksContainer.style.display = "none";
+      if(receitaContainer) receitaContainer.style.display = "none";
+      if(clientesContainer) clientesContainer.style.display = "block";
+      if(rotaContainer) rotaContainer.style.display = "none";
+      if(actionsRow) actionsRow.style.display = "flex";
       renderClientes();
     } else {
-      clientesTab.classList.remove('active');
-      tasksContainer.style.display = "flex";
-      receitaContainer.style.display = "none";
-      clientesContainer.style.display = "none";
-      rotaContainer.style.display = "none";
-      actionsRow.style.display = "flex";
+      if(clientesTab) clientesTab.classList.remove('active');
+      if(tasksContainer) tasksContainer.style.display = "flex";
+      if(receitaContainer) receitaContainer.style.display = "none";
+      if(clientesContainer) clientesContainer.style.display = "none";
+      if(rotaContainer) rotaContainer.style.display = "none";
+      if(actionsRow) actionsRow.style.display = "flex";
     }
   }
 
@@ -2978,91 +3230,26 @@
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
-      rotaTab.classList.add('active');
-      concluidoTab.classList.remove('active');
-      receitaTab.classList.remove('active');
-      clientesTab.classList.remove('active');
-      viewAllBtn.style.background = "var(--accent)";
-      tasksContainer.style.display = "none";
-      receitaContainer.style.display = "none";
-      clientesContainer.style.display = "none";
-      rotaContainer.style.display = "block";
-      actionsRow.style.display = "flex";
+      if(rotaTab) rotaTab.classList.add('active');
+      if(concluidoTab) concluidoTab.classList.remove('active');
+      if(receitaTab) receitaTab.classList.remove('active');
+      if(clientesTab) clientesTab.classList.remove('active');
+      if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
+      if(tasksContainer) tasksContainer.style.display = "none";
+      if(receitaContainer) receitaContainer.style.display = "none";
+      if(clientesContainer) clientesContainer.style.display = "none";
+      if(rotaContainer) rotaContainer.style.display = "block";
+      if(actionsRow) actionsRow.style.display = "flex";
       renderRota();
     } else {
-      rotaTab.classList.remove('active');
-      tasksContainer.style.display = "flex";
-      receitaContainer.style.display = "none";
-      clientesContainer.style.display = "none";
-      rotaContainer.style.display = "none";
-      actionsRow.style.display = "flex";
+      if(rotaTab) rotaTab.classList.remove('active');
+      if(tasksContainer) tasksContainer.style.display = "flex";
+      if(receitaContainer) receitaContainer.style.display = "none";
+      if(clientesContainer) clientesContainer.style.display = "none";
+      if(rotaContainer) rotaContainer.style.display = "none";
+      if(actionsRow) actionsRow.style.display = "flex";
     }
   }
-  
-  document.querySelectorAll(".tab-btn[data-week]").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      if(viewAllMode) setViewAllMode(false);
-      if(showingConcluido) setConcluidoMode(false);
-      if(showingReceita) setReceitaMode(false);
-      if(showingClientes) setClientesMode(false);
-      if(showingRota) setRotaMode(false);
-      document.querySelectorAll(".tab-btn[data-week]").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentWeek = parseInt(btn.dataset.week);
-      viewAllMode = false;
-      showingConcluido = false;
-      showingReceita = false;
-      showingClientes = false;
-      showingRota = false;
-      viewAllBtn.style.background = "var(--accent)";
-      tasksContainer.style.display = "flex";
-      receitaContainer.style.display = "none";
-      clientesContainer.style.display = "none";
-      rotaContainer.style.display = "none";
-      actionsRow.style.display = "flex";
-      renderTasks();
-    });
-  });
-  
-  concluidoTab.addEventListener("click", () => {
-    if(viewAllMode) setViewAllMode(false);
-    if(showingReceita) setReceitaMode(false);
-    if(showingClientes) setClientesMode(false);
-    if(showingRota) setRotaMode(false);
-    setConcluidoMode(true);
-  });
-  
-  receitaTab.addEventListener("click", () => {
-    if(viewAllMode) setViewAllMode(false);
-    if(showingConcluido) setConcluidoMode(false);
-    if(showingClientes) setClientesMode(false);
-    if(showingRota) setRotaMode(false);
-    setReceitaMode(true);
-  });
-  
-  clientesTab.addEventListener("click", () => {
-    if(viewAllMode) setViewAllMode(false);
-    if(showingConcluido) setConcluidoMode(false);
-    if(showingReceita) setReceitaMode(false);
-    if(showingRota) setRotaMode(false);
-    setClientesMode(true);
-  });
-
-  rotaTab.addEventListener("click", () => {
-    if(viewAllMode) setViewAllMode(false);
-    if(showingConcluido) setConcluidoMode(false);
-    if(showingReceita) setReceitaMode(false);
-    if(showingClientes) setClientesMode(false);
-    setRotaMode(true);
-  });
-  
-  viewAllBtn.addEventListener("click", () => {
-    if(showingConcluido) setConcluidoMode(false);
-    if(showingReceita) setReceitaMode(false);
-    if(showingClientes) setClientesMode(false);
-    if(showingRota) setRotaMode(false);
-    setViewAllMode(true);
-  });
 
   document.getElementById("exportCSVBtn").addEventListener("click", exportToCSV);
   document.getElementById("importFile").addEventListener("change", (e) => {
@@ -3073,8 +3260,8 @@
   });
   document.getElementById("gerarPDFBtn").addEventListener("click", abrirModalPDF);
 
-  const searchInput = document.getElementById("searchInput");
-  searchInput.addEventListener("input", (e) => {
+  const searchInputDom = document.getElementById("searchInput");
+  searchInputDom.addEventListener("input", (e) => {
     searchQuery = e.target.value;
     if(!showingReceita && !showingClientes && !showingRota) renderTasks();
   });
@@ -3105,8 +3292,8 @@
   });
 
   loadData();
+  atualizarAbasSemanas();
   renderTasks();
-  setupDragAndDrop();
 </script>
 </body>
 </html>
