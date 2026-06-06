@@ -10,6 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
   <!-- Chart.js para gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- jsPDF para gerar PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -43,6 +45,7 @@
       --concluido-bg: #f0fdf4;
       --concluido-border: #22c55e;
       --receita-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --cliente-bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     }
 
     body.dark {
@@ -63,6 +66,7 @@
       --concluido-bg: #064e3b;
       --concluido-border: #22c55e;
       --receita-bg: linear-gradient(135deg, #4c51bf 0%, #5b3a8c 100%);
+      --cliente-bg: linear-gradient(135deg, #0d6d64 0%, #2b9e5c 100%);
     }
 
     body {
@@ -180,6 +184,16 @@
       box-shadow: 0 2px 8px rgba(102,126,234,0.5);
     }
 
+    .tab-btn.clientes-btn {
+      background: var(--cliente-bg);
+      color: white;
+    }
+
+    .tab-btn.clientes-btn.active {
+      opacity: 0.9;
+      box-shadow: 0 2px 8px rgba(17,153,142,0.5);
+    }
+
     .tab-btn.drag-over {
       background: var(--accent);
       opacity: 0.7;
@@ -243,6 +257,54 @@
     }
 
     .btn-add:hover { background: var(--accent-hover); }
+
+    .btn-export {
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      padding: 0 1rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .btn-import {
+      background: #8b5cf6;
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      padding: 0 1rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .btn-import input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .btn-pdf {
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      padding: 0 1rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
 
     .tasks-horizontal {
       display: flex;
@@ -491,14 +553,14 @@
     }
 
     /* Estilos da aba Receita */
-    .receita-container {
+    .receita-container, .clientes-container {
       background: var(--card-bg);
       border-radius: 1.5rem;
       padding: 1.5rem;
       border: 1px solid var(--border);
     }
 
-    .receita-header {
+    .receita-header, .clientes-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -509,22 +571,12 @@
       border-bottom: 2px solid var(--border);
     }
 
-    .receita-total {
+    .receita-total, .clientes-total {
       background: var(--receita-bg);
       padding: 1rem 2rem;
       border-radius: 1rem;
       color: white;
       text-align: center;
-    }
-
-    .receita-total h3 {
-      font-size: 0.9rem;
-      opacity: 0.9;
-    }
-
-    .receita-total .valor {
-      font-size: 2rem;
-      font-weight: 700;
     }
 
     .filtros-receita {
@@ -545,18 +597,6 @@
       border: 1px solid var(--border);
     }
 
-    .filtro-group label {
-      font-weight: 500;
-    }
-
-    .filtro-group input, .filtro-group select {
-      background: transparent;
-      border: none;
-      padding: 0.3rem;
-      color: var(--text-primary);
-      outline: none;
-    }
-
     .btn-filtrar {
       background: var(--accent);
       color: white;
@@ -572,7 +612,7 @@
       margin-bottom: 1.5rem;
     }
 
-    .tipo-receita-btn {
+    .tipo-receita-btn, .acao-cliente-btn {
       padding: 0.5rem 1.5rem;
       border-radius: 2rem;
       border: 1px solid var(--border);
@@ -580,18 +620,18 @@
       cursor: pointer;
     }
 
-    .tipo-receita-btn.active {
+    .tipo-receita-btn.active, .acao-cliente-btn.active {
       background: var(--accent);
       color: white;
       border-color: var(--accent);
     }
 
-    .receita-lista {
+    .receita-lista, .clientes-lista {
       max-height: 400px;
       overflow-y: auto;
     }
 
-    .receita-item {
+    .receita-item, .cliente-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -599,7 +639,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .receita-item:hover {
+    .receita-item:hover, .cliente-item:hover {
       background: var(--bg-page);
     }
 
@@ -614,6 +654,88 @@
       max-height: 300px;
     }
 
+    .cliente-recorrente {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+    }
+
+    .frequencia-badge {
+      background: #f59e0b;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 1rem;
+      font-size: 0.7rem;
+      margin-left: 0.5rem;
+    }
+
+    /* Sugestão de cliente */
+    .sugestao-cliente {
+      position: absolute;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1001;
+      width: calc(100% - 2rem);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sugestao-item {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sugestao-item:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Estilos do modal PDF */
+    .pdf-options {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .pdf-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pdf-option:hover {
+      background: var(--bg-page);
+    }
+
+    .pdf-option input {
+      width: auto;
+      margin: 0;
+    }
+
+    .pdf-option label {
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .periodo-inputs {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      padding-left: 1.5rem;
+    }
+
+    .periodo-inputs input {
+      width: auto;
+      margin: 0;
+    }
+
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px);}
       to { opacity: 1; transform: translateY(0);}
@@ -624,6 +746,7 @@
       .task-info { justify-content: flex-start; }
       .task-actions { justify-content: flex-end; }
       .receita-header { flex-direction: column; }
+      .periodo-inputs { flex-direction: column; }
     }
   </style>
 </head>
@@ -645,6 +768,7 @@
     <button class="tab-btn" data-week="3" data-week-num="3">🗓️ 3ª Semana</button>
     <button class="tab-btn concluido-btn" data-view="concluido" id="concluidoTab">✅ Concluído</button>
     <button class="tab-btn receita-btn" data-view="receita" id="receitaTab">💰 RECEITA</button>
+    <button class="tab-btn clientes-btn" data-view="clientes" id="clientesTab">👥 CLIENTES</button>
     <button class="view-all-btn" id="viewAllBtn"><i class="fas fa-list-ul"></i> Todos os Pedidos</button>
   </div>
 
@@ -654,18 +778,28 @@
       <input type="text" id="searchInput" placeholder="Consultar por nome do cliente...">
     </div>
     <button class="btn-add" id="openAddModalBtn"><i class="fas fa-plus"></i> Novo Pedido</button>
+    <button class="btn-export" id="exportCSVBtn"><i class="fas fa-file-export"></i> Exportar CSV</button>
+    <button class="btn-import" id="importCSVBtn">
+      <i class="fas fa-file-import"></i> Importar CSV
+      <input type="file" id="importFile" accept=".csv">
+    </button>
+    <button class="btn-pdf" id="gerarPDFBtn"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
   </div>
 
   <div id="tasksContainer" class="tasks-horizontal"></div>
   <div id="receitaContainer" style="display: none;"></div>
+  <div id="clientesContainer" style="display: none;"></div>
 </div>
 
 <div id="taskModal" class="modal">
-  <div class="modal-content">
+  <div class="modal-content" style="position: relative;">
     <h3 id="modalTitle">Adicionar Pedido</h3>
     <input type="hidden" id="editId" value="">
     <label>Nome *</label>
-    <input type="text" id="nome" placeholder="Cliente" autocomplete="off">
+    <div style="position: relative;">
+      <input type="text" id="nome" placeholder="Cliente" autocomplete="off" style="width: 100%;">
+      <div id="sugestoesClientes" class="sugestao-cliente" style="display: none;"></div>
+    </div>
     <label>Telefone (com DDD)</label>
     <input type="tel" id="telefone" placeholder="(11) 99999-9999">
     <label>Descrição serviço</label>
@@ -717,15 +851,81 @@
   </div>
 </div>
 
+<div id="pdfModal" class="modal">
+  <div class="modal-content">
+    <h3><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</h3>
+    <div class="pdf-options">
+      <div class="pdf-option">
+        <input type="radio" name="pdfTipo" id="pdfMensal" value="mensal" checked>
+        <label for="pdfMensal">📅 Relatório Mensal</label>
+      </div>
+      <div class="pdf-option">
+        <input type="radio" name="pdfTipo" id="pdfAnual" value="anual">
+        <label for="pdfAnual">📊 Relatório Anual (Resumo por mês)</label>
+      </div>
+      <div class="pdf-option">
+        <input type="radio" name="pdfTipo" id="pdfPeriodo" value="periodo">
+        <label for="pdfPeriodo">📆 Período Personalizado</label>
+      </div>
+      <div id="periodoInputs" class="periodo-inputs" style="display: none;">
+        <div class="filtro-group">
+          <label>Data Início:</label>
+          <input type="date" id="pdfDataInicio">
+        </div>
+        <div class="filtro-group">
+          <label>Data Fim:</label>
+          <input type="date" id="pdfDataFim">
+        </div>
+      </div>
+      <div id="anoSelect" style="display: none; margin-left: 1.5rem; margin-top: 0.5rem;">
+        <div class="filtro-group">
+          <label>Selecione o Ano:</label>
+          <select id="pdfAnoSelect">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+      </div>
+      <div id="mesSelect" style="display: none; margin-left: 1.5rem; margin-top: 0.5rem;">
+        <div class="filtro-group">
+          <label>Selecione o Mês:</label>
+          <select id="pdfMesSelect">
+            <option value="1">Janeiro</option>
+            <option value="2">Fevereiro</option>
+            <option value="3">Março</option>
+            <option value="4">Abril</option>
+            <option value="5">Maio</option>
+            <option value="6">Junho</option>
+            <option value="7">Julho</option>
+            <option value="8">Agosto</option>
+            <option value="9">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-buttons">
+      <button class="icon-btn" id="closePdfModalBtn" style="background: var(--border); padding: 0.5rem 1.2rem;">Cancelar</button>
+      <button class="btn-add" id="confirmarPdfBtn" style="border-radius: 2rem;">Gerar PDF</button>
+    </div>
+  </div>
+</div>
+
 <script>
   let tasks = [];
   let historicoReceita = [];
+  let clientesCadastrados = [];
   let currentWeek = 1;
   let searchQuery = "";
   let nextId = 100;
   let viewAllMode = false;
   let showingConcluido = false;
   let showingReceita = false;
+  let showingClientes = false;
   let receitaChart = null;
   let tipoReceitaAtual = "pago";
 
@@ -756,12 +956,10 @@
       nextId = 4;
     }
     
-    // Carregar histórico de receita
     const storedHistorico = localStorage.getItem("flowtasks_historico_receita");
     if(storedHistorico) {
       historicoReceita = JSON.parse(storedHistorico);
     } else {
-      // Criar histórico inicial baseado nos pedidos já pagos
       historicoReceita = [];
       tasks.forEach(task => {
         if(task.pagamento === "pago") {
@@ -777,7 +975,142 @@
       saveHistoricoReceita();
     }
     
+    const storedClientes = localStorage.getItem("flowtasks_clientes");
+    if(storedClientes) {
+      clientesCadastrados = JSON.parse(storedClientes);
+    } else {
+      const clientesMap = new Map();
+      tasks.forEach(t => {
+        if(!clientesMap.has(t.nome)) {
+          clientesMap.set(t.nome, {
+            nome: t.nome,
+            telefone: t.telefone,
+            ultimoPedido: t.dataLancamento,
+            totalPedidos: 1,
+            totalGasto: converterParaNumero(t.valor)
+          });
+        } else {
+          let c = clientesMap.get(t.nome);
+          c.totalPedidos++;
+          c.totalGasto += converterParaNumero(t.valor);
+        }
+      });
+      clientesCadastrados = Array.from(clientesMap.values());
+      saveClientes();
+    }
+    
     reorderAllByWeek();
+    reordenarPorDataEntrega();
+  }
+
+  function reordenarPorDataEntrega() {
+    for(let w = 1; w <= 3; w++) {
+      let weekTasks = tasks.filter(t => t.semana === w && !t.concluido);
+      let urgentes = weekTasks.filter(t => t.urgente);
+      let normais = weekTasks.filter(t => !t.urgente);
+      
+      normais.sort((a, b) => {
+        const dataA = a.dataEntrega ? new Date(a.dataEntrega) : new Date('2099-12-31');
+        const dataB = b.dataEntrega ? new Date(b.dataEntrega) : new Date('2099-12-31');
+        return dataA - dataB;
+      });
+      
+      urgentes.sort((a, b) => {
+        const dataA = a.dataEntrega ? new Date(a.dataEntrega) : new Date('2099-12-31');
+        const dataB = b.dataEntrega ? new Date(b.dataEntrega) : new Date('2099-12-31');
+        return dataA - dataB;
+      });
+      
+      const todos = [...urgentes, ...normais];
+      todos.forEach((t, idx) => { t.ordem = idx; });
+    }
+    saveToLocal();
+  }
+
+  function saveClientes() {
+    localStorage.setItem("flowtasks_clientes", JSON.stringify(clientesCadastrados));
+  }
+
+  function buscarClientePorNome(nome) {
+    return clientesCadastrados.find(c => c.nome.toLowerCase() === nome.toLowerCase());
+  }
+
+  function autopreencherCliente(nome) {
+    const cliente = buscarClientePorNome(nome);
+    if(cliente && cliente.telefone) {
+      document.getElementById("telefone").value = cliente.telefone;
+    }
+  }
+
+  function showSugestoes(input) {
+    const sugestoesDiv = document.getElementById("sugestoesClientes");
+    const valor = input.value.toLowerCase();
+    
+    if(!valor || valor.length < 1) {
+      sugestoesDiv.style.display = "none";
+      return;
+    }
+    
+    const sugestoes = clientesCadastrados.filter(c => 
+      c.nome.toLowerCase().includes(valor)
+    ).slice(0, 5);
+    
+    if(sugestoes.length === 0) {
+      sugestoesDiv.style.display = "none";
+      return;
+    }
+    
+    sugestoesDiv.innerHTML = sugestoes.map(c => 
+      `<div class="sugestao-item" data-nome="${escapeHtml(c.nome)}" data-telefone="${escapeHtml(c.telefone || '')}">
+        <strong>${escapeHtml(c.nome)}</strong>
+        ${c.telefone ? `<br><small>${escapeHtml(c.telefone)}</small>` : ''}
+        <small style="color: #f59e0b;"> (${c.totalPedidos} pedidos)</small>
+      </div>`
+    ).join("");
+    
+    sugestoesDiv.style.display = "block";
+    
+    sugestoesDiv.querySelectorAll(".sugestao-item").forEach(el => {
+      el.addEventListener("click", () => {
+        const nome = el.dataset.nome;
+        const telefone = el.dataset.telefone;
+        input.value = nome;
+        document.getElementById("telefone").value = telefone;
+        sugestoesDiv.style.display = "none";
+      });
+    });
+  }
+
+  function atualizarOuAdicionarCliente(nome, telefone, dataPedido, valor) {
+    const existing = clientesCadastrados.find(c => c.nome === nome);
+    if(existing) {
+      existing.telefone = telefone || existing.telefone;
+      existing.ultimoPedido = dataPedido;
+      existing.totalPedidos++;
+      existing.totalGasto += converterParaNumero(valor);
+    } else {
+      clientesCadastrados.push({
+        nome: nome,
+        telefone: telefone,
+        ultimoPedido: dataPedido,
+        totalPedidos: 1,
+        totalGasto: converterParaNumero(valor)
+      });
+    }
+    saveClientes();
+  }
+
+  function removerPedidoDoCliente(nome, valor) {
+    const cliente = clientesCadastrados.find(c => c.nome === nome);
+    if(cliente) {
+      cliente.totalPedidos--;
+      cliente.totalGasto -= converterParaNumero(valor);
+      if(cliente.totalPedidos <= 0) {
+        const index = clientesCadastrados.findIndex(c => c.nome === nome);
+        if(index !== -1) clientesCadastrados.splice(index, 1);
+      }
+      saveClientes();
+    }
   }
 
   function saveHistoricoReceita() {
@@ -785,7 +1118,6 @@
   }
 
   function registrarReceita(task) {
-    // Verificar se já existe no histórico
     const existe = historicoReceita.some(h => h.id === task.id);
     if(!existe && task.pagamento === "pago") {
       historicoReceita.push({
@@ -805,11 +1137,7 @@
   }
 
   function reorderAllByWeek() {
-    for(let w=1; w<=3; w++) {
-      let weekTasks = tasks.filter(t => t.semana === w && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
-      weekTasks.forEach((t, idx) => { t.ordem = idx; });
-    }
-    saveToLocal();
+    reordenarPorDataEntrega();
   }
 
   function saveToLocal() {
@@ -823,11 +1151,7 @@
     const oldWeek = task.semana;
     task.semana = targetWeek;
     
-    const oldWeekTasks = tasks.filter(t => t.semana === oldWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
-    const newWeekTasks = tasks.filter(t => t.semana === targetWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
-    
-    oldWeekTasks.forEach((t, idx) => { t.ordem = idx; });
-    newWeekTasks.forEach((t, idx) => { t.ordem = idx; });
+    reordenarPorDataEntrega();
     
     saveToLocal();
     renderTasks();
@@ -887,6 +1211,7 @@
     const task = tasks.find(t => t.id === taskId);
     if(task && !task.concluido) {
       task.urgente = !task.urgente;
+      reordenarPorDataEntrega();
       saveToLocal();
       renderTasks();
     }
@@ -937,11 +1262,13 @@
     if(task.concluido === undefined) task.concluido = false;
     tasks.push(task);
     
+    atualizarOuAdicionarCliente(task.nome, task.telefone, task.dataLancamento, task.valor);
+    
     if(task.pagamento === "pago") {
       registrarReceita(task);
     }
     
-    reorderAllByWeek();
+    reordenarPorDataEntrega();
     renderTasks();
   }
   
@@ -950,6 +1277,18 @@
     if(index !== -1) {
       const oldTask = tasks[index];
       const eraPago = oldTask.pagamento === "pago";
+      
+      if(oldTask.nome !== updated.nome) {
+        removerPedidoDoCliente(oldTask.nome, oldTask.valor);
+        atualizarOuAdicionarCliente(updated.nome, updated.telefone, updated.dataLancamento, updated.valor);
+      } else {
+        const cliente = clientesCadastrados.find(c => c.nome === updated.nome);
+        if(cliente) {
+          cliente.telefone = updated.telefone || cliente.telefone;
+          saveClientes();
+        }
+      }
+      
       updated.dataLancamento = oldTask.dataLancamento;
       updated.concluido = oldTask.concluido;
       updated.dataConclusao = oldTask.dataConclusao;
@@ -961,21 +1300,26 @@
         removerReceita(updated.id);
       }
       
-      reorderAllByWeek();
+      reordenarPorDataEntrega();
       renderTasks();
       if(showingReceita) renderReceita();
+      if(showingClientes) renderClientes();
     }
   }
   
   function deleteTask(id) {
     const task = tasks.find(t => t.id === id);
-    if(task && task.pagamento === "pago") {
-      removerReceita(id);
+    if(task) {
+      removerPedidoDoCliente(task.nome, task.valor);
+      if(task.pagamento === "pago") {
+        removerReceita(id);
+      }
     }
     tasks = tasks.filter(t => t.id !== id);
-    reorderAllByWeek();
+    reordenarPorDataEntrega();
     renderTasks();
     if(showingReceita) renderReceita();
+    if(showingClientes) renderClientes();
   }
 
   function sendWhatsApp(task) {
@@ -1016,11 +1360,11 @@
   let draggedTaskId = null;
   
   function setupDragAndDrop() {
-    const tabs = document.querySelectorAll('.tab-btn:not(#concluidoTab):not(#receitaTab)');
+    const tabs = document.querySelectorAll('.tab-btn:not(#concluidoTab):not(#receitaTab):not(#clientesTab)');
     tabs.forEach(tab => {
       tab.addEventListener('dragover', (e) => {
         e.preventDefault();
-        if(!viewAllMode && !showingConcluido && !showingReceita) tab.classList.add('drag-over');
+        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes) tab.classList.add('drag-over');
       });
       tab.addEventListener('dragleave', () => {
         tab.classList.remove('drag-over');
@@ -1029,7 +1373,7 @@
         e.preventDefault();
         tab.classList.remove('drag-over');
         const targetWeek = parseInt(tab.dataset.week);
-        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita) {
+        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes) {
           moveTaskToWeek(draggedTaskId, targetWeek);
           draggedTaskId = null;
         }
@@ -1042,7 +1386,7 @@
     cards.forEach(card => {
       card.setAttribute('draggable', 'true');
       card.addEventListener('dragstart', (e) => {
-        if(viewAllMode || showingConcluido || showingReceita) {
+        if(viewAllMode || showingConcluido || showingReceita || showingClientes) {
           e.preventDefault();
           return false;
         }
@@ -1085,6 +1429,388 @@
     return isNaN(num) ? 0 : num;
   }
 
+  function exportToCSV() {
+    const data = tasks.map(t => ({
+      ID: t.id,
+      Nome: t.nome,
+      Telefone: t.telefone,
+      Descricao: t.descricao,
+      "Data Entrega": t.dataEntrega,
+      Valor: t.valor,
+      Status: t.status,
+      Pagamento: t.pagamento,
+      Urgente: t.urgente ? "Sim" : "Não",
+      "Rota Entrega": t.rotaEntrega ? "Sim" : "Não",
+      Concluido: t.concluido ? "Sim" : "Não",
+      Semana: t.semana,
+      "Data Lançamento": t.dataLancamento
+    }));
+    
+    const headers = Object.keys(data[0] || {});
+    const csvRows = [];
+    csvRows.push(headers.join(','));
+    
+    for (const row of data) {
+      const values = headers.map(header => {
+        const val = row[header] || '';
+        return `"${String(val).replace(/"/g, '""')}"`;
+      });
+      csvRows.push(values.join(','));
+    }
+    
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', `pedidos_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  function importFromCSV(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const rows = text.split('\n');
+      const headers = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
+      
+      const novosPedidos = [];
+      for(let i = 1; i < rows.length; i++) {
+        if(!rows[i].trim()) continue;
+        const values = [];
+        let inQuote = false;
+        let currentValue = '';
+        for(let char of rows[i]) {
+          if(char === '"') {
+            inQuote = !inQuote;
+          } else if(char === ',' && !inQuote) {
+            values.push(currentValue.trim());
+            currentValue = '';
+          } else {
+            currentValue += char;
+          }
+        }
+        values.push(currentValue.trim());
+        
+        const pedido = {};
+        headers.forEach((header, idx) => {
+          let val = values[idx] || '';
+          val = val.replace(/^"|"$/g, '');
+          pedido[header] = val;
+        });
+        
+        if(pedido.Nome) {
+          novosPedidos.push({
+            id: nextId++,
+            nome: pedido.Nome,
+            telefone: pedido.Telefone || "",
+            descricao: pedido.Descricao || "",
+            dataEntrega: pedido["Data Entrega"] || "",
+            valor: pedido.Valor || "0",
+            status: pedido.Status || "aguardando",
+            pagamento: pedido.Pagamento || "aguardando",
+            urgente: pedido.Urgente === "Sim",
+            rotaEntrega: pedido["Rota Entrega"] === "Sim",
+            concluido: pedido.Concluido === "Sim",
+            semana: parseInt(pedido.Semana) || 1,
+            dataLancamento: pedido["Data Lançamento"] || new Date().toISOString().split('T')[0],
+            ordem: 0
+          });
+        }
+      }
+      
+      if(novosPedidos.length > 0) {
+        novosPedidos.forEach(p => {
+          tasks.push(p);
+          atualizarOuAdicionarCliente(p.nome, p.telefone, p.dataLancamento, p.valor);
+          if(p.pagamento === "pago") registrarReceita(p);
+        });
+        reordenarPorDataEntrega();
+        renderTasks();
+        alert(`${novosPedidos.length} pedidos importados com sucesso!`);
+      } else {
+        alert("Nenhum pedido válido encontrado no arquivo CSV");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Nova função para gerar PDF com opções
+  async function gerarPDFComOpcoes(tipo, ano, mes, dataInicio, dataFim) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    
+    if(tipo === 'mensal') {
+      const nomeMes = new Date(ano, mes-1, 1).toLocaleString('pt-BR', { month: 'long' });
+      doc.setFontSize(20);
+      doc.text(`Relatório Mensal - ${nomeMes}/${ano}`, 105, y, { align: 'center' });
+      y += 15;
+      
+      const inicio = new Date(ano, mes-1, 1);
+      const fim = new Date(ano, mes, 0);
+      
+      const pedidosFiltrados = tasks.filter(t => {
+        const data = new Date(t.dataLancamento);
+        return data >= inicio && data <= fim;
+      });
+      
+      const totalPedidos = pedidosFiltrados.length;
+      const totalPagos = pedidosFiltrados.filter(t => t.pagamento === "pago").length;
+      const totalValor = pedidosFiltrados.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
+      const totalPago = pedidosFiltrados.filter(t => t.pagamento === "pago").reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
+      
+      doc.setFontSize(12);
+      doc.text(`Período: ${formatDate(inicio.toISOString().split('T')[0])} a ${formatDate(fim.toISOString().split('T')[0])}`, 20, y);
+      y += 10;
+      doc.text(`Total de Pedidos: ${totalPedidos}`, 20, y);
+      y += 7;
+      doc.text(`Pedidos Pagos: ${totalPagos}`, 20, y);
+      y += 7;
+      doc.text(`Valor Total: R$ ${totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 7;
+      doc.text(`Valor Recebido: R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 15;
+      
+      doc.setFontSize(14);
+      doc.text("Lista de Pedidos:", 20, y);
+      y += 10;
+      doc.setFontSize(10);
+      
+      pedidosFiltrados.forEach((p, idx) => {
+        if(y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(`${idx + 1}. ${p.nome} - R$ ${formatarValor(p.valor)} - ${p.pagamento === "pago" ? "PAGO" : "PENDENTE"}`, 20, y);
+        y += 6;
+      });
+      
+      doc.save(`relatorio_${nomeMes}_${ano}.pdf`);
+      
+    } else if(tipo === 'anual') {
+      doc.setFontSize(20);
+      doc.text(`Relatório Anual - ${ano}`, 105, y, { align: 'center' });
+      y += 15;
+      
+      const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      let totalGeral = 0;
+      let totalPagosGeral = 0;
+      
+      doc.setFontSize(12);
+      doc.text("Resumo Mensal:", 20, y);
+      y += 10;
+      doc.setFontSize(10);
+      
+      for(let i = 0; i < meses.length; i++) {
+        const inicio = new Date(ano, i, 1);
+        const fim = new Date(ano, i + 1, 0);
+        
+        const pedidosMes = tasks.filter(t => {
+          const data = new Date(t.dataLancamento);
+          return data >= inicio && data <= fim;
+        });
+        
+        const totalVendas = pedidosMes.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
+        const totalPagos = pedidosMes.filter(t => t.pagamento === "pago").reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
+        totalGeral += totalVendas;
+        totalPagosGeral += totalPagos;
+        
+        if(y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        
+        doc.text(`${meses[i]}: R$ ${totalVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (Recebido: R$ ${totalPagos.toLocaleString('pt-BR', {minimumFractionDigits: 2})})`, 20, y);
+        y += 6;
+      }
+      
+      y += 10;
+      doc.setFontSize(12);
+      doc.text(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 20, y);
+      y += 7;
+      doc.setFontSize(14);
+      doc.text(`📊 TOTAL DO ANO ${ano}: R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 7;
+      doc.text(`💰 TOTAL RECEBIDO: R$ ${totalPagosGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      
+      doc.save(`relatorio_anual_${ano}.pdf`);
+      
+    } else if(tipo === 'periodo') {
+      doc.setFontSize(20);
+      doc.text(`Relatório Personalizado`, 105, y, { align: 'center' });
+      y += 15;
+      
+      const dataInicioObj = new Date(dataInicio);
+      const dataFimObj = new Date(dataFim);
+      
+      const pedidosFiltrados = tasks.filter(t => {
+        const data = new Date(t.dataLancamento);
+        return data >= dataInicioObj && data <= dataFimObj;
+      });
+      
+      const totalPedidos = pedidosFiltrados.length;
+      const totalPagos = pedidosFiltrados.filter(t => t.pagamento === "pago").length;
+      const totalValor = pedidosFiltrados.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
+      const totalPago = pedidosFiltrados.filter(t => t.pagamento === "pago").reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
+      
+      doc.setFontSize(12);
+      doc.text(`Período: ${formatDate(dataInicio)} a ${formatDate(dataFim)}`, 20, y);
+      y += 10;
+      doc.text(`Total de Pedidos: ${totalPedidos}`, 20, y);
+      y += 7;
+      doc.text(`Pedidos Pagos: ${totalPagos}`, 20, y);
+      y += 7;
+      doc.text(`Valor Total: R$ ${totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 7;
+      doc.text(`Valor Recebido: R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 15;
+      
+      doc.setFontSize(14);
+      doc.text("Lista de Pedidos:", 20, y);
+      y += 10;
+      doc.setFontSize(10);
+      
+      pedidosFiltrados.forEach((p, idx) => {
+        if(y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(`${idx + 1}. ${p.nome} - R$ ${formatarValor(p.valor)} - ${p.pagamento === "pago" ? "PAGO" : "PENDENTE"}`, 20, y);
+        y += 6;
+      });
+      
+      doc.save(`relatorio_${dataInicio}_a_${dataFim}.pdf`);
+    }
+  }
+
+  function abrirModalPDF() {
+    const pdfModal = document.getElementById("pdfModal");
+    pdfModal.style.display = "flex";
+    
+    // Configurar eventos dos radio buttons
+    const radioMensal = document.getElementById("pdfMensal");
+    const radioAnual = document.getElementById("pdfAnual");
+    const radioPeriodo = document.getElementById("pdfPeriodo");
+    const periodoInputs = document.getElementById("periodoInputs");
+    const anoSelect = document.getElementById("anoSelect");
+    const mesSelect = document.getElementById("mesSelect");
+    
+    function atualizarVisibilidade() {
+      if(radioMensal.checked) {
+        periodoInputs.style.display = "none";
+        anoSelect.style.display = "flex";
+        mesSelect.style.display = "flex";
+      } else if(radioAnual.checked) {
+        periodoInputs.style.display = "none";
+        anoSelect.style.display = "flex";
+        mesSelect.style.display = "none";
+      } else {
+        periodoInputs.style.display = "flex";
+        anoSelect.style.display = "none";
+        mesSelect.style.display = "none";
+      }
+    }
+    
+    radioMensal.addEventListener("change", atualizarVisibilidade);
+    radioAnual.addEventListener("change", atualizarVisibilidade);
+    radioPeriodo.addEventListener("change", atualizarVisibilidade);
+    
+    // Setar valores padrão
+    const hoje = new Date();
+    document.getElementById("pdfAnoSelect").value = hoje.getFullYear();
+    document.getElementById("pdfMesSelect").value = hoje.getMonth() + 1;
+    document.getElementById("pdfDataInicio").value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+    document.getElementById("pdfDataFim").value = hoje.toISOString().split('T')[0];
+    
+    atualizarVisibilidade();
+  }
+
+  function renderClientes() {
+    const searchCliente = document.getElementById("searchCliente")?.value || "";
+    let clientesFiltrados = [...clientesCadastrados];
+    
+    if(searchCliente) {
+      clientesFiltrados = clientesFiltrados.filter(c => 
+        c.nome.toLowerCase().includes(searchCliente.toLowerCase())
+      );
+    }
+    
+    clientesFiltrados.sort((a,b) => b.totalPedidos - a.totalPedidos);
+    
+    const html = `
+      <div class="clientes-container">
+        <div class="clientes-header">
+          <div class="clientes-total">
+            <h3>👥 TOTAL DE CLIENTES</h3>
+            <div class="valor">${clientesCadastrados.length}</div>
+          </div>
+          <div class="clientes-total" style="background: #f59e0b;">
+            <h3>⭐ CLIENTES RECORRENTES</h3>
+            <div class="valor">${clientesCadastrados.filter(c => c.totalPedidos > 1).length}</div>
+          </div>
+        </div>
+        
+        <div class="filtros-receita">
+          <div class="filtro-group">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchCliente" placeholder="Buscar cliente..." style="border: none; background: transparent;">
+          </div>
+          <button class="btn-filtrar" onclick="window.filtrarClientes()">Filtrar</button>
+        </div>
+        
+        <h3 style="margin: 1rem 0 0.5rem 0;">📋 Lista de Clientes</h3>
+        <div class="clientes-lista">
+          ${clientesFiltrados.length === 0 ? '<div style="text-align:center; padding:2rem;">Nenhum cliente cadastrado</div>' : 
+            clientesFiltrados.map(c => `
+              <div class="cliente-item ${c.totalPedidos > 1 ? 'cliente-recorrente' : ''}">
+                <div>
+                  <strong>${escapeHtml(c.nome)}</strong>
+                  ${c.totalPedidos > 1 ? `<span class="frequencia-badge"><i class="fas fa-star"></i> ${c.totalPedidos} pedidos</span>` : ''}
+                  <br>
+                  <small><i class="fas fa-phone"></i> ${c.telefone || '—'}</small>
+                  <br>
+                  <small><i class="fas fa-calendar"></i> Último pedido: ${formatDate(c.ultimoPedido)}</small>
+                </div>
+                <div style="text-align: right;">
+                  <div style="color: #10b981; font-weight: bold;">R$ ${c.totalGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                  <small>Total gasto</small>
+                  <div><button class="icon-btn" onclick="window.filtrarPedidosCliente('${escapeHtml(c.nome)}')" title="Ver pedidos deste cliente"><i class="fas fa-search"></i></button></div>
+                </div>
+              </div>
+            `).join('')
+          }
+        </div>
+      </div>
+    `;
+    
+    const clientesContainer = document.getElementById("clientesContainer");
+    if(clientesContainer) {
+      clientesContainer.innerHTML = html;
+      
+      const searchInput = document.getElementById("searchCliente");
+      if(searchInput) {
+        searchInput.addEventListener("input", () => renderClientes());
+      }
+    }
+  }
+
+  function filtrarClientes() {
+    renderClientes();
+  }
+
+  function filtrarPedidosCliente(nome) {
+    searchQuery = nome;
+    setClientesMode(false);
+    setViewAllMode(true);
+    renderTasks();
+  }
+
+  window.filtrarClientes = filtrarClientes;
+  window.filtrarPedidosCliente = filtrarPedidosCliente;
+
   function renderReceita() {
     const dataInicio = document.getElementById("dataInicio")?.value;
     const dataFim = document.getElementById("dataFim")?.value;
@@ -1095,7 +1821,6 @@
     if(tipoReceitaAtual === "pago") {
       receitasFiltradas = historicoReceita;
     } else {
-      // Projeção: todos os pedidos (mesmo não pagos)
       receitasFiltradas = tasks.filter(t => !t.concluido).map(t => ({
         id: t.id,
         nome: t.nome,
@@ -1106,7 +1831,6 @@
       }));
     }
     
-    // Filtrar por período
     if(dataInicio && dataFim) {
       const inicio = new Date(dataInicio);
       const fim = new Date(dataFim);
@@ -1145,7 +1869,6 @@
     
     const total = receitasFiltradas.reduce((sum, r) => sum + converterParaNumero(r.valor), 0);
     
-    // Agrupar por mês para o gráfico
     const meses = {};
     receitasFiltradas.forEach(r => {
       const data = new Date(r.dataPagamento);
@@ -1215,7 +1938,6 @@
     if(receitaContainer) {
       receitaContainer.innerHTML = html;
       
-      // Configurar eventos do filtro
       const tipoFiltroSelect = document.getElementById("tipoFiltro");
       const periodoPersonalizado = document.getElementById("periodoPersonalizado");
       if(tipoFiltroSelect) {
@@ -1224,7 +1946,6 @@
         });
       }
       
-      // Criar gráfico
       const ctx = document.getElementById('receitaChart')?.getContext('2d');
       if(ctx && receitaChart) {
         receitaChart.destroy();
@@ -1273,6 +1994,9 @@
     
     if(showingReceita) {
       renderReceita();
+      return;
+    } else if(showingClientes) {
+      renderClientes();
       return;
     } else if(showingConcluido) {
       filtered = tasks.filter(t => t.concluido === true);
@@ -1331,6 +2055,7 @@
       const pagamentoClass = task.pagamento === "pago" ? "payment-pago" : "payment-aguardando";
       const pagamentoText = task.pagamento === "pago" ? "✅ Pago" : "⏳ Aguardando Pagamento";
       const concluidoBadge = task.concluido ? '<span class="urgent-chip" style="background:#22c55e;"><i class="fas fa-check-circle"></i> CONCLUÍDO</span>' : '';
+      const dataEntregaFormatada = task.dataEntrega ? formatDate(task.dataEntrega) : 'Sem data';
       
       html += `
         <div class="task-card ${urgentClass} ${rotaClass} ${concluidoClass}" data-id="${task.id}" draggable="${!viewAllMode && !showingConcluido}">
@@ -1339,7 +2064,7 @@
             <span class="info-chip"><i class="fas fa-user"></i> ${escapeHtml(task.nome)}</span>
             <span class="info-chip"><i class="fas fa-phone"></i> ${escapeHtml(task.telefone || '—')}</span>
             <span class="info-chip"><i class="fas fa-clipboard-list"></i> ${escapeHtml(task.descricao.substring(0, 35))}</span>
-            <span class="info-chip"><i class="fas fa-calendar-alt"></i> Entrega: ${formatDate(task.dataEntrega)}</span>
+            <span class="info-chip"><i class="fas fa-calendar-alt"></i> Entrega: ${dataEntregaFormatada}</span>
             <span class="info-chip"><i class="fas fa-dollar-sign"></i> R$ ${escapeHtml(task.valor)}</span>
             <span class="info-chip"><i class="fas fa-calendar-plus"></i> Lançado: ${formatDate(task.dataLancamento)}</span>
             ${task.concluido ? `<span class="info-chip"><i class="fas fa-check-circle"></i> Concluído em: ${formatDate(task.dataConclusao)}</span>` : ''}
@@ -1385,7 +2110,7 @@
 
   function abrirModalPosicao(taskId, taskNome) {
     const task = tasks.find(t => t.id === taskId);
-    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita) {
+    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes) {
       const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido);
       document.getElementById("pedidoNome").innerHTML = taskNome;
       document.getElementById("maxPosicao").innerHTML = weekTasks.length;
@@ -1394,7 +2119,7 @@
       document.getElementById("posicaoModal").style.display = "flex";
     } else if(task && task.concluido) {
       alert("Pedidos concluídos não podem ter posição alterada");
-    } else if(viewAllMode || showingConcluido || showingReceita) {
+    } else if(viewAllMode || showingConcluido || showingReceita || showingClientes) {
       alert("Alterar posição disponível apenas na visualização por semana");
     }
   }
@@ -1414,10 +2139,13 @@
 
   const modal = document.getElementById("taskModal");
   const posicaoModal = document.getElementById("posicaoModal");
+  const pdfModal = document.getElementById("pdfModal");
   const openAddBtn = document.getElementById("openAddModalBtn");
   const closeModalBtn = document.getElementById("closeModalBtn");
   const closePosicaoModalBtn = document.getElementById("closePosicaoModalBtn");
+  const closePdfModalBtn = document.getElementById("closePdfModalBtn");
   const confirmarPosicaoBtn = document.getElementById("confirmarPosicaoBtn");
+  const confirmarPdfBtn = document.getElementById("confirmarPdfBtn");
   const saveBtn = document.getElementById("saveTaskBtn");
   const modalTitle = document.getElementById("modalTitle");
   const editIdField = document.getElementById("editId");
@@ -1459,6 +2187,20 @@
     urgenteCheckbox.checked = false;
     rotaEntregaCheckbox.checked = false;
     modal.style.display = "flex";
+    
+    setTimeout(() => {
+      const nomeInput = document.getElementById("nome");
+      if(nomeInput) {
+        nomeInput.addEventListener("input", function() {
+          showSugestoes(this);
+        });
+        nomeInput.addEventListener("blur", function() {
+          setTimeout(() => {
+            document.getElementById("sugestoesClientes").style.display = "none";
+          }, 200);
+        });
+      }
+    }, 100);
   }
 
   function saveTaskFromModal() {
@@ -1466,13 +2208,20 @@
     if(!nome) { alert("Nome do cliente obrigatório"); return; }
     const telefone = telefoneField.value.trim();
     const descricao = descricaoField.value.trim();
-    const dataEntrega = dataEntregaField.value;
+    let dataEntrega = dataEntregaField.value;
     const valor = valorField.value.trim() || "0";
     const status = statusSelect.value;
     const pagamento = pagamentoSelect.value;
     const urgente = urgenteCheckbox.checked;
     const rotaEntrega = rotaEntregaCheckbox.checked;
     const editId = editIdField.value;
+    
+    if(!dataEntrega) {
+      const dataPadrao = new Date();
+      dataPadrao.setDate(dataPadrao.getDate() + 7);
+      dataEntrega = dataPadrao.toISOString().split('T')[0];
+    }
+    
     if(editId) {
       const task = tasks.find(t => t.id == editId);
       if(task) {
@@ -1503,16 +2252,18 @@
         urgente: urgente,
         rotaEntrega: rotaEntrega,
         concluido: false,
-        ordem: tasks.filter(t => t.semana === semanaParaAdicionar && !t.concluido).length
+        ordem: 0
       };
       addTask(newTask);
     }
     modal.style.display = "none";
+    document.getElementById("sugestoesClientes").style.display = "none";
   }
 
   openAddBtn.onclick = openModalForNew;
   closeModalBtn.onclick = () => modal.style.display = "none";
   closePosicaoModalBtn.onclick = () => posicaoModal.style.display = "none";
+  closePdfModalBtn.onclick = () => pdfModal.style.display = "none";
   confirmarPosicaoBtn.onclick = () => {
     const taskId = parseInt(document.getElementById("posicaoEditId").value);
     const novaPosicao = parseInt(document.getElementById("novaPosicao").value);
@@ -1523,28 +2274,58 @@
       alert("Digite uma posição válida");
     }
   };
+  
+  confirmarPdfBtn.onclick = () => {
+    const pdfMensal = document.getElementById("pdfMensal").checked;
+    const pdfAnual = document.getElementById("pdfAnual").checked;
+    const pdfPeriodo = document.getElementById("pdfPeriodo").checked;
+    
+    if(pdfMensal) {
+      const ano = parseInt(document.getElementById("pdfAnoSelect").value);
+      const mes = parseInt(document.getElementById("pdfMesSelect").value);
+      gerarPDFComOpcoes('mensal', ano, mes);
+    } else if(pdfAnual) {
+      const ano = parseInt(document.getElementById("pdfAnoSelect").value);
+      gerarPDFComOpcoes('anual', ano);
+    } else {
+      const dataInicio = document.getElementById("pdfDataInicio").value;
+      const dataFim = document.getElementById("pdfDataFim").value;
+      if(!dataInicio || !dataFim) {
+        alert("Selecione as datas de início e fim");
+        return;
+      }
+      gerarPDFComOpcoes('periodo', null, null, dataInicio, dataFim);
+    }
+    pdfModal.style.display = "none";
+  };
+  
   saveBtn.onclick = saveTaskFromModal;
   window.onclick = (e) => { 
     if(e.target === modal) modal.style.display = "none";
     if(e.target === posicaoModal) posicaoModal.style.display = "none";
+    if(e.target === pdfModal) pdfModal.style.display = "none";
   };
 
   const viewAllBtn = document.getElementById("viewAllBtn");
   const concluidoTab = document.getElementById("concluidoTab");
   const receitaTab = document.getElementById("receitaTab");
+  const clientesTab = document.getElementById("clientesTab");
   const tasksContainer = document.getElementById("tasksContainer");
   const receitaContainer = document.getElementById("receitaContainer");
+  const clientesContainer = document.getElementById("clientesContainer");
   const actionsRow = document.getElementById("actionsRow");
   
   function setViewAllMode(enable) {
     viewAllMode = enable;
     showingConcluido = false;
     showingReceita = false;
+    showingClientes = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
       concluidoTab.classList.remove('active');
       receitaTab.classList.remove('active');
+      clientesTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent-hover)";
     } else {
       viewAllBtn.style.background = "var(--accent)";
@@ -1553,6 +2334,7 @@
     }
     tasksContainer.style.display = "flex";
     receitaContainer.style.display = "none";
+    clientesContainer.style.display = "none";
     actionsRow.style.display = "flex";
     renderTasks();
   }
@@ -1561,17 +2343,20 @@
     showingConcluido = enable;
     viewAllMode = false;
     showingReceita = false;
+    showingClientes = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
       concluidoTab.classList.add('active');
       receitaTab.classList.remove('active');
+      clientesTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
     } else {
       concluidoTab.classList.remove('active');
     }
     tasksContainer.style.display = "flex";
     receitaContainer.style.display = "none";
+    clientesContainer.style.display = "none";
     actionsRow.style.display = "flex";
     renderTasks();
   }
@@ -1580,20 +2365,50 @@
     showingReceita = enable;
     viewAllMode = false;
     showingConcluido = false;
+    showingClientes = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
       receitaTab.classList.add('active');
       concluidoTab.classList.remove('active');
+      clientesTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "none";
       receitaContainer.style.display = "block";
-      actionsRow.style.display = "none";
+      clientesContainer.style.display = "none";
+      actionsRow.style.display = "flex";
       renderReceita();
     } else {
       receitaTab.classList.remove('active');
       tasksContainer.style.display = "flex";
       receitaContainer.style.display = "none";
+      clientesContainer.style.display = "none";
+      actionsRow.style.display = "flex";
+    }
+  }
+
+  function setClientesMode(enable) {
+    showingClientes = enable;
+    viewAllMode = false;
+    showingConcluido = false;
+    showingReceita = false;
+    const tabs = document.querySelectorAll('.tab-btn');
+    if(enable) {
+      tabs.forEach(btn => btn.classList.remove('active'));
+      clientesTab.classList.add('active');
+      concluidoTab.classList.remove('active');
+      receitaTab.classList.remove('active');
+      viewAllBtn.style.background = "var(--accent)";
+      tasksContainer.style.display = "none";
+      receitaContainer.style.display = "none";
+      clientesContainer.style.display = "block";
+      actionsRow.style.display = "flex";
+      renderClientes();
+    } else {
+      clientesTab.classList.remove('active');
+      tasksContainer.style.display = "flex";
+      receitaContainer.style.display = "none";
+      clientesContainer.style.display = "none";
       actionsRow.style.display = "flex";
     }
   }
@@ -1603,15 +2418,18 @@
       if(viewAllMode) setViewAllMode(false);
       if(showingConcluido) setConcluidoMode(false);
       if(showingReceita) setReceitaMode(false);
+      if(showingClientes) setClientesMode(false);
       document.querySelectorAll(".tab-btn[data-week]").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentWeek = parseInt(btn.dataset.week);
       viewAllMode = false;
       showingConcluido = false;
       showingReceita = false;
+      showingClientes = false;
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "flex";
       receitaContainer.style.display = "none";
+      clientesContainer.style.display = "none";
       actionsRow.style.display = "flex";
       renderTasks();
     });
@@ -1620,25 +2438,44 @@
   concluidoTab.addEventListener("click", () => {
     if(viewAllMode) setViewAllMode(false);
     if(showingReceita) setReceitaMode(false);
+    if(showingClientes) setClientesMode(false);
     setConcluidoMode(true);
   });
   
   receitaTab.addEventListener("click", () => {
     if(viewAllMode) setViewAllMode(false);
     if(showingConcluido) setConcluidoMode(false);
+    if(showingClientes) setClientesMode(false);
     setReceitaMode(true);
+  });
+  
+  clientesTab.addEventListener("click", () => {
+    if(viewAllMode) setViewAllMode(false);
+    if(showingConcluido) setConcluidoMode(false);
+    if(showingReceita) setReceitaMode(false);
+    setClientesMode(true);
   });
   
   viewAllBtn.addEventListener("click", () => {
     if(showingConcluido) setConcluidoMode(false);
     if(showingReceita) setReceitaMode(false);
+    if(showingClientes) setClientesMode(false);
     setViewAllMode(true);
   });
+
+  document.getElementById("exportCSVBtn").addEventListener("click", exportToCSV);
+  document.getElementById("importFile").addEventListener("change", (e) => {
+    if(e.target.files.length > 0) {
+      importFromCSV(e.target.files[0]);
+      e.target.value = "";
+    }
+  });
+  document.getElementById("gerarPDFBtn").addEventListener("click", abrirModalPDF);
 
   const searchInput = document.getElementById("searchInput");
   searchInput.addEventListener("input", (e) => {
     searchQuery = e.target.value;
-    if(!showingReceita) renderTasks();
+    if(!showingReceita && !showingClientes) renderTasks();
   });
 
   const themeToggle = document.getElementById("themeToggle");
@@ -1656,6 +2493,7 @@
       themeToggle.innerHTML = '<i class="fas fa-moon"></i> <span>Escuro</span>';
     }
     if(showingReceita) renderReceita();
+    if(showingClientes) renderClientes();
   }
   const savedTheme = localStorage.getItem('theme') || 'light';
   applyTheme(savedTheme);
