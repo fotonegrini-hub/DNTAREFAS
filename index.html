@@ -29,6 +29,7 @@
       --status-aguardando: #f59e0b;
       --status-producao: #8b5cf6;
       --status-retirada: #10b981;
+      --status-concluido: #22c55e;
       --urgent-bg: #fee2e2;
       --urgent-border: #ef4444;
       --pagamento-aguardando: #f59e0b;
@@ -37,6 +38,8 @@
       --rota-entrega-border: #3b82f6;
       --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
       --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+      --concluido-bg: #f0fdf4;
+      --concluido-border: #22c55e;
     }
 
     body.dark {
@@ -54,6 +57,8 @@
       --pagamento-pago: #10b981;
       --rota-entrega-bg: #1e3a5f;
       --rota-entrega-border: #60a5fa;
+      --concluido-bg: #064e3b;
+      --concluido-border: #22c55e;
     }
 
     body {
@@ -149,6 +154,16 @@
       background: var(--accent);
       color: white;
       box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+    }
+
+    .tab-btn.concluido-btn {
+      background: var(--status-concluido);
+      color: white;
+    }
+
+    .tab-btn.concluido-btn.active {
+      background: #16a34a;
+      box-shadow: 0 2px 8px rgba(34,197,94,0.3);
     }
 
     .tab-btn.drag-over {
@@ -262,6 +277,12 @@
       background: var(--rota-entrega-bg);
     }
 
+    .task-card.concluido {
+      opacity: 0.85;
+      background: var(--concluido-bg);
+      border: 1px solid var(--concluido-border);
+    }
+
     .task-number {
       font-weight: 800;
       font-size: 1.4rem;
@@ -274,6 +295,13 @@
       border-radius: 30px;
       color: white;
       flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .task-number:hover {
+      transform: scale(1.05);
+      background: var(--accent-hover);
     }
 
     .task-info {
@@ -348,6 +376,7 @@
     .status-aguardando { background: #fef3c7; color: #b45309; }
     .status-producao { background: #ede9fe; color: #6d28d9; }
     .status-retirada { background: #d1fae5; color: #047857; }
+    .status-concluido { background: #22c55e; color: white; }
 
     .task-actions {
       display: flex;
@@ -377,6 +406,10 @@
 
     .rota-btn {
       color: var(--accent);
+    }
+
+    .concluir-btn {
+      color: #22c55e;
     }
 
     .modal {
@@ -430,6 +463,19 @@
       gap: 0.8rem;
     }
 
+    .posicao-input-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    .posicao-input-group input {
+      width: 80px;
+      margin-bottom: 0;
+      text-align: center;
+    }
+
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px);}
       to { opacity: 1; transform: translateY(0);}
@@ -458,6 +504,7 @@
     <button class="tab-btn active" data-week="1" data-week-num="1">📅 1ª Semana</button>
     <button class="tab-btn" data-week="2" data-week-num="2">📆 2ª Semana</button>
     <button class="tab-btn" data-week="3" data-week-num="3">🗓️ 3ª Semana</button>
+    <button class="tab-btn concluido-btn" data-view="concluido" id="concluidoTab">✅ Concluído</button>
     <button class="view-all-btn" id="viewAllBtn"><i class="fas fa-list-ul"></i> Todos os Pedidos</button>
   </div>
 
@@ -512,12 +559,29 @@
   </div>
 </div>
 
+<div id="posicaoModal" class="modal">
+  <div class="modal-content">
+    <h3>Alterar Posição do Pedido</h3>
+    <input type="hidden" id="posicaoEditId" value="">
+    <label>Nova posição (número)</label>
+    <div class="posicao-input-group">
+      <input type="number" id="novaPosicao" min="1" step="1">
+      <button class="btn-add" id="confirmarPosicaoBtn" style="padding: 0.5rem 1rem;">Aplicar</button>
+    </div>
+    <small>Digite a posição desejada na lista atual</small>
+    <div class="modal-buttons" style="margin-top: 1rem;">
+      <button class="icon-btn" id="closePosicaoModalBtn" style="background: var(--border); padding: 0.5rem 1.2rem;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script>
   let tasks = [];
   let currentWeek = 1;
   let searchQuery = "";
   let nextId = 100;
   let viewAllMode = false;
+  let showingConcluido = false;
 
   function loadData() {
     const stored = localStorage.getItem("flowtasks_app");
@@ -532,14 +596,16 @@
         if(t.dataLancamento === undefined) t.dataLancamento = new Date().toISOString().split('T')[0];
         if(t.pagamento === undefined) t.pagamento = "aguardando";
         if(t.rotaEntrega === undefined) t.rotaEntrega = false;
+        if(t.concluido === undefined) t.concluido = false;
+        if(t.status === undefined) t.status = "aguardando";
       });
     } else {
       const hoje = new Date().toISOString().split('T')[0];
       const ontem = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       tasks = [
-        { id: 1, semana: 1, nome: "Ana Souza", telefone: "11999991111", descricao: "Manutenção PC", dataEntrega: "2026-06-15", valor: "250,00", status: "aguardando", ordem: 0, urgente: true, dataLancamento: ontem, pagamento: "aguardando", rotaEntrega: false },
-        { id: 2, semana: 1, nome: "Carlos Lima", telefone: "21988887777", descricao: "Formatação", dataEntrega: "2026-06-18", valor: "120,00", status: "producao", ordem: 1, urgente: false, dataLancamento: hoje, pagamento: "pago", rotaEntrega: true },
-        { id: 3, semana: 2, nome: "Mariana Rocha", telefone: "31977776666", descricao: "Troca de Tela", dataEntrega: "2026-06-22", valor: "450,00", status: "retirada", ordem: 0, urgente: true, dataLancamento: hoje, pagamento: "aguardando", rotaEntrega: false }
+        { id: 1, semana: 1, nome: "Ana Souza", telefone: "11999991111", descricao: "Manutenção PC", dataEntrega: "2026-06-15", valor: "250,00", status: "aguardando", ordem: 0, urgente: true, dataLancamento: ontem, pagamento: "aguardando", rotaEntrega: false, concluido: false },
+        { id: 2, semana: 1, nome: "Carlos Lima", telefone: "21988887777", descricao: "Formatação", dataEntrega: "2026-06-18", valor: "120,00", status: "producao", ordem: 1, urgente: false, dataLancamento: hoje, pagamento: "pago", rotaEntrega: true, concluido: false },
+        { id: 3, semana: 2, nome: "Mariana Rocha", telefone: "31977776666", descricao: "Troca de Tela", dataEntrega: "2026-06-22", valor: "450,00", status: "retirada", ordem: 0, urgente: true, dataLancamento: hoje, pagamento: "aguardando", rotaEntrega: false, concluido: false }
       ];
       nextId = 4;
     }
@@ -548,7 +614,7 @@
 
   function reorderAllByWeek() {
     for(let w=1; w<=3; w++) {
-      let weekTasks = tasks.filter(t => t.semana === w).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+      let weekTasks = tasks.filter(t => t.semana === w && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
       weekTasks.forEach((t, idx) => { t.ordem = idx; });
     }
     saveToLocal();
@@ -560,13 +626,13 @@
 
   function moveTaskToWeek(taskId, targetWeek) {
     const task = tasks.find(t => t.id === taskId);
-    if(!task || task.semana === targetWeek) return;
+    if(!task || task.semana === targetWeek || task.concluido) return;
     
     const oldWeek = task.semana;
     task.semana = targetWeek;
     
-    const oldWeekTasks = tasks.filter(t => t.semana === oldWeek).sort((a,b) => (a.ordem||0) - (b.ordem||0));
-    const newWeekTasks = tasks.filter(t => t.semana === targetWeek).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    const oldWeekTasks = tasks.filter(t => t.semana === oldWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    const newWeekTasks = tasks.filter(t => t.semana === targetWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
     
     oldWeekTasks.forEach((t, idx) => { t.ordem = idx; });
     newWeekTasks.forEach((t, idx) => { t.ordem = idx; });
@@ -577,8 +643,8 @@
 
   function moveTask(taskId, direction) {
     const task = tasks.find(t => t.id === taskId);
-    if(!task) return;
-    const weekTasks = tasks.filter(t => t.semana === task.semana).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    if(!task || task.concluido) return;
+    const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
     const idx = weekTasks.findIndex(t => t.id === taskId);
     if(direction === 'up' && idx > 0) {
       [weekTasks[idx].ordem, weekTasks[idx-1].ordem] = [weekTasks[idx-1].ordem, weekTasks[idx].ordem];
@@ -589,10 +655,36 @@
     saveToLocal();
     renderTasks();
   }
+
+  function ajustarPosicao(taskId, novaPosicao) {
+    const task = tasks.find(t => t.id === taskId);
+    if(!task || task.concluido) return false;
+    
+    let weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    
+    if(novaPosicao < 1 || novaPosicao > weekTasks.length) {
+      alert(`Posição inválida! Escolha entre 1 e ${weekTasks.length}`);
+      return false;
+    }
+    
+    const currentIndex = weekTasks.findIndex(t => t.id === taskId);
+    const targetIndex = novaPosicao - 1;
+    
+    if(currentIndex === targetIndex) return false;
+    
+    weekTasks.splice(currentIndex, 1);
+    weekTasks.splice(targetIndex, 0, task);
+    
+    weekTasks.forEach((t, idx) => { t.ordem = idx; });
+    
+    saveToLocal();
+    renderTasks();
+    return true;
+  }
   
   function toggleUrgent(taskId) {
     const task = tasks.find(t => t.id === taskId);
-    if(task) {
+    if(task && !task.concluido) {
       task.urgente = !task.urgente;
       saveToLocal();
       renderTasks();
@@ -601,7 +693,7 @@
 
   function toggleRotaEntrega(taskId) {
     const task = tasks.find(t => t.id === taskId);
-    if(task) {
+    if(task && !task.concluido) {
       task.rotaEntrega = !task.rotaEntrega;
       saveToLocal();
       renderTasks();
@@ -617,11 +709,22 @@
     }
   }
 
+  function marcarConcluido(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if(task && !task.concluido) {
+      task.concluido = true;
+      task.dataConclusao = new Date().toISOString().split('T')[0];
+      saveToLocal();
+      renderTasks();
+    }
+  }
+
   function addTask(task) {
     task.id = nextId++;
     task.dataLancamento = new Date().toISOString().split('T')[0];
     if(!task.pagamento) task.pagamento = "aguardando";
     if(task.rotaEntrega === undefined) task.rotaEntrega = false;
+    if(task.concluido === undefined) task.concluido = false;
     tasks.push(task);
     reorderAllByWeek();
     renderTasks();
@@ -631,6 +734,8 @@
     const index = tasks.findIndex(t => t.id === updated.id);
     if(index !== -1) {
       updated.dataLancamento = tasks[index].dataLancamento;
+      updated.concluido = tasks[index].concluido;
+      updated.dataConclusao = tasks[index].dataConclusao;
       tasks[index] = updated;
       reorderAllByWeek();
       renderTasks();
@@ -655,11 +760,11 @@
     
     let msg;
     
-    if(task.rotaEntrega) {
-      // Mensagem simplificada para rota de entrega: sem status, sem data prevista, sem msg motivacional
+    if(task.concluido) {
+      msg = `Olá ${task.nome}, seu pedido *${task.descricao}* foi *CONCLUÍDO* com sucesso! ✅%0A💰 Valor: R$ ${task.valor}%0A💵 Status de pagamento: ${pagamentoText}%0A🎉 Agradecemos pela preferência!`;
+    } else if(task.rotaEntrega) {
       msg = `Olá ${task.nome}, seu pedido *${task.descricao}* está em rota de entrega! 🚚%0A💰 Valor: R$ ${task.valor}%0A💵 Status de pagamento: ${pagamentoText}%0A✅ Seu pedido será entregue hoje! Agradecemos a preferência.`;
     } else {
-      // Mensagem normal com status e data prevista
       const statusText = task.status === 'aguardando' ? 'Aguardando' : (task.status === 'producao' ? 'Em Produção' : 'Pronto para Retirada');
       msg = `Olá ${task.nome}, seu pedido *${task.descricao}* está com status: ${statusText}.%0A📅 Entrega prevista: ${task.dataEntrega || 'não definida'}%0A💰 Valor: R$ ${task.valor}%0A💵 Status de pagamento: ${pagamentoText}%0A✅ Pedido finalizado! Agradecemos a preferência.`;
     }
@@ -669,7 +774,7 @@
 
   function cycleStatus(taskId) {
     const task = tasks.find(t => t.id === taskId);
-    if(!task) return;
+    if(!task || task.concluido) return;
     const statusOrder = ['aguardando', 'producao', 'retirada'];
     let idx = statusOrder.indexOf(task.status);
     let newIdx = (idx+1) % statusOrder.length;
@@ -681,11 +786,11 @@
   let draggedTaskId = null;
   
   function setupDragAndDrop() {
-    const tabs = document.querySelectorAll('.tab-btn');
+    const tabs = document.querySelectorAll('.tab-btn:not(#concluidoTab)');
     tabs.forEach(tab => {
       tab.addEventListener('dragover', (e) => {
         e.preventDefault();
-        if(!viewAllMode) tab.classList.add('drag-over');
+        if(!viewAllMode && !showingConcluido) tab.classList.add('drag-over');
       });
       tab.addEventListener('dragleave', () => {
         tab.classList.remove('drag-over');
@@ -694,7 +799,7 @@
         e.preventDefault();
         tab.classList.remove('drag-over');
         const targetWeek = parseInt(tab.dataset.week);
-        if(draggedTaskId && targetWeek && !viewAllMode) {
+        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido) {
           moveTaskToWeek(draggedTaskId, targetWeek);
           draggedTaskId = null;
         }
@@ -707,7 +812,7 @@
     cards.forEach(card => {
       card.setAttribute('draggable', 'true');
       card.addEventListener('dragstart', (e) => {
-        if(viewAllMode) {
+        if(viewAllMode || showingConcluido) {
           e.preventDefault();
           return false;
         }
@@ -732,13 +837,16 @@
   function renderTasks() {
     let filtered = [];
     
-    if(viewAllMode) {
+    if(showingConcluido) {
+      filtered = tasks.filter(t => t.concluido === true);
+      filtered.sort((a,b) => (b.dataConclusao || '').localeCompare(a.dataConclusao || ''));
+    } else if(viewAllMode) {
       for(let w = 1; w <= 3; w++) {
-        const weekTasks = tasks.filter(t => t.semana === w).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+        const weekTasks = tasks.filter(t => t.semana === w && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
         filtered.push(...weekTasks);
       }
     } else {
-      filtered = tasks.filter(t => t.semana === currentWeek);
+      filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido);
     }
     
     if(searchQuery.trim() !== "") {
@@ -755,37 +863,41 @@
     let html = '';
     let lastWeek = null;
     
-    filtered.forEach((task) => {
-      if(viewAllMode && lastWeek !== task.semana) {
+    filtered.forEach((task, index) => {
+      if(viewAllMode && !showingConcluido && lastWeek !== task.semana) {
         lastWeek = task.semana;
         const weekNames = {1:'1ª Semana', 2:'2ª Semana', 3:'3ª Semana'};
         html += `<div class="week-separator"><i class="fas fa-calendar-week"></i> ${weekNames[task.semana]}</div>`;
       }
       
       const statusClass = `status-${task.status}`;
-      const statusText = task.status === 'aguardando' ? '🟡 Aguardando' : (task.status === 'producao' ? '🟣 Produção' : '🟢 Retirada');
+      const statusText = task.status === 'aguardando' ? '🟡 Aguardando' : (task.status === 'producao' ? '🟣 Produção' : (task.status === 'retirada' ? '🟢 Retirada' : '✅ Concluído'));
       
       let numero;
-      if(viewAllMode) {
+      if(showingConcluido) {
+        numero = index + 1;
+      } else if(viewAllMode) {
         const tasksInSameWeek = filtered.filter(t => t.semana === task.semana);
         const idxInWeek = tasksInSameWeek.findIndex(t => t.id === task.id);
         numero = idxInWeek + 1;
       } else {
-        const weekFiltered = tasks.filter(t => t.semana === currentWeek);
+        const weekFiltered = tasks.filter(t => t.semana === currentWeek && !t.concluido);
         const idxInWeek = weekFiltered.findIndex(t => t.id === task.id);
         numero = idxInWeek + 1;
       }
       
-      const urgentClass = task.urgente ? 'urgente' : '';
-      const rotaClass = task.rotaEntrega ? 'rota-entrega' : '';
-      const urgentBadge = task.urgente ? '<span class="urgent-chip"><i class="fas fa-exclamation-circle"></i> URGENTE</span>' : '';
-      const rotaBadge = task.rotaEntrega ? '<span class="rota-chip"><i class="fas fa-truck"></i> Rota de Entrega</span>' : '';
+      const urgentClass = task.urgente && !task.concluido ? 'urgente' : '';
+      const rotaClass = task.rotaEntrega && !task.concluido ? 'rota-entrega' : '';
+      const concluidoClass = task.concluido ? 'concluido' : '';
+      const urgentBadge = task.urgente && !task.concluido ? '<span class="urgent-chip"><i class="fas fa-exclamation-circle"></i> URGENTE</span>' : '';
+      const rotaBadge = task.rotaEntrega && !task.concluido ? '<span class="rota-chip"><i class="fas fa-truck"></i> Rota de Entrega</span>' : '';
       const pagamentoClass = task.pagamento === "pago" ? "payment-pago" : "payment-aguardando";
       const pagamentoText = task.pagamento === "pago" ? "✅ Pago" : "⏳ Aguardando Pagamento";
+      const concluidoBadge = task.concluido ? '<span class="urgent-chip" style="background:#22c55e;"><i class="fas fa-check-circle"></i> CONCLUÍDO</span>' : '';
       
       html += `
-        <div class="task-card ${urgentClass} ${rotaClass}" data-id="${task.id}" draggable="${!viewAllMode}">
-          <div class="task-number">${numero}</div>
+        <div class="task-card ${urgentClass} ${rotaClass} ${concluidoClass}" data-id="${task.id}" draggable="${!viewAllMode && !showingConcluido}">
+          <div class="task-number" onclick="window.abrirModalPosicao(${task.id})" title="Clique para alterar posição">${numero}</div>
           <div class="task-info">
             <span class="info-chip"><i class="fas fa-user"></i> ${escapeHtml(task.nome)}</span>
             <span class="info-chip"><i class="fas fa-phone"></i> ${escapeHtml(task.telefone || '—')}</span>
@@ -793,18 +905,23 @@
             <span class="info-chip"><i class="fas fa-calendar-alt"></i> Entrega: ${formatDate(task.dataEntrega)}</span>
             <span class="info-chip"><i class="fas fa-dollar-sign"></i> R$ ${escapeHtml(task.valor)}</span>
             <span class="info-chip"><i class="fas fa-calendar-plus"></i> Lançado: ${formatDate(task.dataLancamento)}</span>
+            ${task.concluido ? `<span class="info-chip"><i class="fas fa-check-circle"></i> Concluído em: ${formatDate(task.dataConclusao)}</span>` : ''}
             <span class="payment-status ${pagamentoClass}" onclick="window.togglePagamento(${task.id})" style="cursor:pointer;">${pagamentoText}</span>
             ${urgentBadge}
             ${rotaBadge}
+            ${concluidoBadge}
           </div>
-          <div class="task-status ${statusClass}" onclick="window.cycleStatus(${task.id})" style="cursor:pointer;">
+          ${!task.concluido ? `<div class="task-status ${statusClass}" onclick="window.cycleStatus(${task.id})" style="cursor:pointer;">
             ${statusText}
-          </div>
+          </div>` : ''}
           <div class="task-actions">
-            <button class="icon-btn" onclick="window.moveTask(${task.id}, 'up')" title="Mover para cima" ${viewAllMode ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-arrow-up"></i></button>
-            <button class="icon-btn" onclick="window.moveTask(${task.id}, 'down')" title="Mover para baixo" ${viewAllMode ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-arrow-down"></i></button>
-            <button class="icon-btn urgent-btn" onclick="window.toggleUrgent(${task.id})" title="Marcar/Desmarcar Urgente"><i class="fas fa-exclamation-triangle"></i></button>
-            <button class="icon-btn rota-btn" onclick="window.toggleRotaEntrega(${task.id})" title="Marcar/Desmarcar Rota de Entrega"><i class="fas fa-truck"></i></button>
+            ${!task.concluido ? `
+              <button class="icon-btn" onclick="window.moveTask(${task.id}, 'up')" title="Mover para cima" ${viewAllMode || showingConcluido ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-arrow-up"></i></button>
+              <button class="icon-btn" onclick="window.moveTask(${task.id}, 'down')" title="Mover para baixo" ${viewAllMode || showingConcluido ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-arrow-down"></i></button>
+              <button class="icon-btn urgent-btn" onclick="window.toggleUrgent(${task.id})" title="Marcar/Desmarcar Urgente"><i class="fas fa-exclamation-triangle"></i></button>
+              <button class="icon-btn rota-btn" onclick="window.toggleRotaEntrega(${task.id})" title="Marcar/Desmarcar Rota de Entrega"><i class="fas fa-truck"></i></button>
+            ` : ''}
+            <button class="icon-btn concluir-btn" onclick="window.marcarConcluido(${task.id})" title="Marcar como Concluído" ${task.concluido ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-check-circle"></i></button>
             <button class="icon-btn" onclick="window.editTaskModal(${task.id})"><i class="fas fa-edit"></i></button>
             <button class="icon-btn" onclick="window.deleteTaskConfirm(${task.id})"><i class="fas fa-trash-alt"></i></button>
             <button class="icon-btn whatsapp-btn" onclick="window.sendWhatsAppById(${task.id})"><i class="fab fa-whatsapp"></i></button>
@@ -814,7 +931,7 @@
     });
     
     container.innerHTML = html;
-    if(!viewAllMode) attachCardDragEvents();
+    if(!viewAllMode && !showingConcluido) attachCardDragEvents();
   }
 
   function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
@@ -824,16 +941,32 @@
   window.toggleUrgent = toggleUrgent;
   window.toggleRotaEntrega = toggleRotaEntrega;
   window.togglePagamento = togglePagamento;
+  window.marcarConcluido = marcarConcluido;
   window.sendWhatsAppById = (id) => { const t = tasks.find(t => t.id === id); if(t) sendWhatsApp(t); };
   window.deleteTaskConfirm = (id) => { if(confirm("Remover pedido permanentemente?")) deleteTask(id); };
   window.editTaskModal = (id) => {
     const task = tasks.find(t => t.id === id);
     if(task) openModalForEdit(task);
   };
+  window.abrirModalPosicao = (id) => {
+    const task = tasks.find(t => t.id === id);
+    if(task && !task.concluido && !viewAllMode && !showingConcluido) {
+      document.getElementById("posicaoEditId").value = id;
+      document.getElementById("novaPosicao").value = "";
+      document.getElementById("posicaoModal").style.display = "flex";
+    } else if(task && task.concluido) {
+      alert("Pedidos concluídos não podem ter posição alterada");
+    } else if(viewAllMode || showingConcluido) {
+      alert("Alterar posição disponível apenas na visualização por semana");
+    }
+  };
 
   const modal = document.getElementById("taskModal");
+  const posicaoModal = document.getElementById("posicaoModal");
   const openAddBtn = document.getElementById("openAddModalBtn");
   const closeModalBtn = document.getElementById("closeModalBtn");
+  const closePosicaoModalBtn = document.getElementById("closePosicaoModalBtn");
+  const confirmarPosicaoBtn = document.getElementById("confirmarPosicaoBtn");
   const saveBtn = document.getElementById("saveTaskBtn");
   const modalTitle = document.getElementById("modalTitle");
   const editIdField = document.getElementById("editId");
@@ -905,7 +1038,7 @@
         renderTasks();
       }
     } else {
-      const semanaParaAdicionar = viewAllMode ? 1 : currentWeek;
+      const semanaParaAdicionar = (viewAllMode || showingConcluido) ? 1 : currentWeek;
       const newTask = {
         id: 0,
         semana: semanaParaAdicionar,
@@ -918,7 +1051,8 @@
         pagamento: pagamento,
         urgente: urgente,
         rotaEntrega: rotaEntrega,
-        ordem: tasks.filter(t => t.semana === semanaParaAdicionar).length
+        concluido: false,
+        ordem: tasks.filter(t => t.semana === semanaParaAdicionar && !t.concluido).length
       };
       addTask(newTask);
     }
@@ -927,16 +1061,31 @@
 
   openAddBtn.onclick = openModalForNew;
   closeModalBtn.onclick = () => modal.style.display = "none";
+  closePosicaoModalBtn.onclick = () => posicaoModal.style.display = "none";
+  confirmarPosicaoBtn.onclick = () => {
+    const taskId = parseInt(document.getElementById("posicaoEditId").value);
+    const novaPosicao = parseInt(document.getElementById("novaPosicao").value);
+    if(taskId && novaPosicao) {
+      ajustarPosicao(taskId, novaPosicao);
+      posicaoModal.style.display = "none";
+    }
+  };
   saveBtn.onclick = saveTaskFromModal;
-  window.onclick = (e) => { if(e.target === modal) modal.style.display = "none"; };
+  window.onclick = (e) => { 
+    if(e.target === modal) modal.style.display = "none";
+    if(e.target === posicaoModal) posicaoModal.style.display = "none";
+  };
 
   const viewAllBtn = document.getElementById("viewAllBtn");
+  const concluidoTab = document.getElementById("concluidoTab");
   
   function setViewAllMode(enable) {
     viewAllMode = enable;
+    showingConcluido = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
+      concluidoTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent-hover)";
     } else {
       viewAllBtn.style.background = "var(--accent)";
@@ -946,19 +1095,41 @@
     renderTasks();
   }
   
-  document.querySelectorAll(".tab-btn").forEach(btn => {
+  function setConcluidoMode(enable) {
+    showingConcluido = enable;
+    viewAllMode = false;
+    const tabs = document.querySelectorAll('.tab-btn');
+    if(enable) {
+      tabs.forEach(btn => btn.classList.remove('active'));
+      concluidoTab.classList.add('active');
+      viewAllBtn.style.background = "var(--accent)";
+    } else {
+      concluidoTab.classList.remove('active');
+    }
+    renderTasks();
+  }
+  
+  document.querySelectorAll(".tab-btn[data-week]").forEach(btn => {
     btn.addEventListener("click", (e) => {
       if(viewAllMode) setViewAllMode(false);
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      if(showingConcluido) setConcluidoMode(false);
+      document.querySelectorAll(".tab-btn[data-week]").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentWeek = parseInt(btn.dataset.week);
       viewAllMode = false;
+      showingConcluido = false;
       viewAllBtn.style.background = "var(--accent)";
       renderTasks();
     });
   });
   
+  concluidoTab.addEventListener("click", () => {
+    if(viewAllMode) setViewAllMode(false);
+    setConcluidoMode(true);
+  });
+  
   viewAllBtn.addEventListener("click", () => {
+    if(showingConcluido) setConcluidoMode(false);
     setViewAllMode(true);
   });
 
