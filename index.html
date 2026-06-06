@@ -644,14 +644,26 @@
   function moveTask(taskId, direction) {
     const task = tasks.find(t => t.id === taskId);
     if(!task || task.concluido) return;
+    
     const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
-    const idx = weekTasks.findIndex(t => t.id === taskId);
-    if(direction === 'up' && idx > 0) {
-      [weekTasks[idx].ordem, weekTasks[idx-1].ordem] = [weekTasks[idx-1].ordem, weekTasks[idx].ordem];
-    } else if(direction === 'down' && idx < weekTasks.length-1) {
-      [weekTasks[idx].ordem, weekTasks[idx+1].ordem] = [weekTasks[idx+1].ordem, weekTasks[idx].ordem];
+    const currentIndex = weekTasks.findIndex(t => t.id === taskId);
+    
+    if(direction === 'up' && currentIndex > 0) {
+      // Troca com o anterior
+      const tempOrdem = weekTasks[currentIndex].ordem;
+      weekTasks[currentIndex].ordem = weekTasks[currentIndex - 1].ordem;
+      weekTasks[currentIndex - 1].ordem = tempOrdem;
+    } else if(direction === 'down' && currentIndex < weekTasks.length - 1) {
+      // Troca com o próximo
+      const tempOrdem = weekTasks[currentIndex].ordem;
+      weekTasks[currentIndex].ordem = weekTasks[currentIndex + 1].ordem;
+      weekTasks[currentIndex + 1].ordem = tempOrdem;
     }
-    weekTasks.forEach((t, i) => { t.ordem = i; });
+    
+    // Reordena para garantir consistência
+    weekTasks.sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    weekTasks.forEach((t, idx) => { t.ordem = idx; });
+    
     saveToLocal();
     renderTasks();
   }
@@ -846,7 +858,7 @@
         filtered.push(...weekTasks);
       }
     } else {
-      filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido);
+      filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
     }
     
     if(searchQuery.trim() !== "") {
