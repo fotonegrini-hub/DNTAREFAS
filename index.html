@@ -47,6 +47,7 @@
       --receita-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       --cliente-bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
       --rota-bg: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --poscompra-bg: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
     }
 
     body.dark {
@@ -69,6 +70,7 @@
       --receita-bg: linear-gradient(135deg, #4c51bf 0%, #5b3a8c 100%);
       --cliente-bg: linear-gradient(135deg, #0d6d64 0%, #2b9e5c 100%);
       --rota-bg: linear-gradient(135deg, #9b4d96 0%, #c4455a 100%);
+      --poscompra-bg: linear-gradient(135deg, #b8860b 0%, #cd7a32 100%);
     }
 
     body {
@@ -204,6 +206,16 @@
     .tab-btn.rota-btn.active {
       opacity: 0.9;
       box-shadow: 0 2px 8px rgba(240,147,251,0.5);
+    }
+
+    .tab-btn.poscompra-btn {
+      background: var(--poscompra-bg);
+      color: white;
+    }
+
+    .tab-btn.poscompra-btn.active {
+      opacity: 0.9;
+      box-shadow: 0 2px 8px rgba(246,211,101,0.5);
     }
 
     .tab-btn.drag-over {
@@ -564,14 +576,14 @@
       text-align: center;
     }
 
-    .receita-container, .clientes-container, .rota-container {
+    .receita-container, .clientes-container, .rota-container, .poscompra-container {
       background: var(--card-bg);
       border-radius: 1.5rem;
       padding: 1.5rem;
       border: 1px solid var(--border);
     }
 
-    .receita-header, .clientes-header, .rota-header {
+    .receita-header, .clientes-header, .rota-header, .poscompra-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -582,36 +594,147 @@
       border-bottom: 2px solid var(--border);
     }
 
-    .rota-container .rota-lista {
-      max-height: 500px;
-      overflow-y: auto;
+    .rota-container .rota-lista, .poscompra-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .poscompra-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--bg-page);
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .poscompra-item:hover {
+      transform: translateX(5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .poscompra-numero {
+      width: 50px;
+      height: 50px;
+      background: var(--poscompra-bg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.4rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .poscompra-info {
+      flex: 3;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .poscompra-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
     }
 
     .rota-item {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 1rem;
       padding: 1rem;
-      border-bottom: 1px solid var(--border);
       background: var(--rota-entrega-bg);
       border-radius: 1rem;
-      margin-bottom: 0.5rem;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
     }
 
     .rota-item:hover {
       transform: translateX(5px);
+      box-shadow: var(--shadow-md);
     }
 
-    .receita-total, .clientes-total, .rota-total {
-      background: var(--receita-bg);
+    .rota-numero {
+      width: 50px;
+      height: 50px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.4rem;
+      color: white;
+      flex-shrink: 0;
+      cursor: grab;
+    }
+
+    .rota-numero:active {
+      cursor: grabbing;
+    }
+
+    .rota-info {
+      flex: 3;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .rota-info .info-chip {
+      background: var(--card-bg);
+    }
+
+    .rota-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .move-rota-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .move-rota-btn:hover {
+      background: var(--accent-hover);
+      transform: scale(1.05);
+    }
+
+    .move-rota-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .rota-total, .poscompra-total {
+      background: var(--rota-bg);
       padding: 1rem 2rem;
       border-radius: 1rem;
       color: white;
       text-align: center;
     }
 
-    .rota-total {
-      background: var(--rota-bg);
+    .poscompra-total {
+      background: var(--poscompra-bg);
+    }
+
+    .rota-actions-header {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
     }
 
     .filtros-receita {
@@ -661,6 +784,41 @@
       border-color: var(--accent);
     }
 
+    .cards-receita {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card-receita {
+      background: var(--bg-page);
+      border-radius: 1rem;
+      padding: 1rem;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .card-receita h4 {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .card-receita .valor {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .card-receita .valor-projecao {
+      color: #f59e0b;
+    }
+
+    .card-receita .valor-pago {
+      color: #10b981;
+    }
+
     .receita-lista, .clientes-lista {
       max-height: 400px;
       overflow-y: auto;
@@ -678,15 +836,28 @@
       background: var(--bg-page);
     }
 
-    .chart-container {
-      margin-top: 1.5rem;
-      padding: 1rem;
+    .chart-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-box {
       background: var(--bg-page);
       border-radius: 1rem;
+      padding: 1rem;
+    }
+
+    .chart-box h4 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
     }
 
     canvas {
-      max-height: 300px;
+      max-height: 280px;
+      max-width: 100%;
     }
 
     .cliente-recorrente {
@@ -769,6 +940,16 @@
       margin: 0;
     }
 
+    .mensagem-motivacional {
+      background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      text-align: center;
+      border-left: 4px solid var(--accent);
+      font-style: italic;
+    }
+
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px);}
       to { opacity: 1; transform: translateY(0);}
@@ -780,6 +961,10 @@
       .task-actions { justify-content: flex-end; }
       .receita-header { flex-direction: column; }
       .periodo-inputs { flex-direction: column; }
+      .chart-row { grid-template-columns: 1fr; }
+      .cards-receita { grid-template-columns: 1fr; }
+      .rota-item, .poscompra-item { flex-direction: column; text-align: center; }
+      .rota-info, .poscompra-info { justify-content: center; }
     }
   </style>
 </head>
@@ -801,6 +986,7 @@
     <button class="tab-btn" data-week="3" data-week-num="3">🗓️ 3ª Semana</button>
     <button class="tab-btn concluido-btn" data-view="concluido" id="concluidoTab">✅ Concluído</button>
     <button class="tab-btn rota-btn" data-view="rota" id="rotaTab">🚚 ROTA DE ENTREGA</button>
+    <button class="tab-btn poscompra-btn" data-view="poscompra" id="poscompraTab">💝 PÓS-COMPRA</button>
     <button class="tab-btn receita-btn" data-view="receita" id="receitaTab">💰 RECEITA</button>
     <button class="tab-btn clientes-btn" data-view="clientes" id="clientesTab">👥 CLIENTES</button>
     <button class="view-all-btn" id="viewAllBtn"><i class="fas fa-list-ul"></i> Todos os Pedidos</button>
@@ -822,6 +1008,7 @@
 
   <div id="tasksContainer" class="tasks-horizontal"></div>
   <div id="rotaContainer" style="display: none;"></div>
+  <div id="poscompraContainer" style="display: none;"></div>
   <div id="receitaContainer" style="display: none;"></div>
   <div id="clientesContainer" style="display: none;"></div>
 </div>
@@ -962,8 +1149,10 @@
   let showingReceita = false;
   let showingClientes = false;
   let showingRota = false;
+  let showingPosCompra = false;
   let receitaChart = null;
-  let tipoReceitaAtual = "pago";
+  let pizzaChart = null;
+  let draggedRotaIndex = null;
 
   function loadData() {
     const stored = localStorage.getItem("flowtasks_app");
@@ -980,14 +1169,15 @@
         if(t.rotaEntrega === undefined) t.rotaEntrega = false;
         if(t.concluido === undefined) t.concluido = false;
         if(t.status === undefined) t.status = "aguardando";
+        if(t.rotaOrdem === undefined) t.rotaOrdem = 0;
       });
     } else {
       const hoje = new Date().toISOString().split('T')[0];
       const ontem = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       tasks = [
-        { id: 1, semana: 1, nome: "Ana Souza", telefone: "11999991111", descricao: "Manutenção PC", dataEntrega: "2026-06-15", valor: "250,00", status: "aguardando", ordem: 0, urgente: true, dataLancamento: ontem, pagamento: "aguardando", rotaEntrega: false, concluido: false },
-        { id: 2, semana: 1, nome: "Carlos Lima", telefone: "21988887777", descricao: "Formatação", dataEntrega: "2026-06-18", valor: "120,00", status: "producao", ordem: 1, urgente: false, dataLancamento: hoje, pagamento: "pago", rotaEntrega: true, concluido: false },
-        { id: 3, semana: 2, nome: "Mariana Rocha", telefone: "31977776666", descricao: "Troca de Tela", dataEntrega: "2026-06-22", valor: "450,00", status: "retirada", ordem: 0, urgente: true, dataLancamento: hoje, pagamento: "aguardando", rotaEntrega: false, concluido: false }
+        { id: 1, semana: 1, nome: "Ana Souza", telefone: "11999991111", descricao: "Manutenção PC", dataEntrega: "2026-06-15", valor: "250,00", status: "aguardando", ordem: 0, urgente: true, dataLancamento: ontem, pagamento: "aguardando", rotaEntrega: false, concluido: false, rotaOrdem: 0 },
+        { id: 2, semana: 1, nome: "Carlos Lima", telefone: "21988887777", descricao: "Formatação", dataEntrega: "2026-06-18", valor: "120,00", status: "producao", ordem: 1, urgente: false, dataLancamento: hoje, pagamento: "pago", rotaEntrega: true, concluido: true, rotaOrdem: 0 },
+        { id: 3, semana: 2, nome: "Mariana Rocha", telefone: "31977776666", descricao: "Troca de Tela", dataEntrega: "2026-06-22", valor: "450,00", status: "retirada", ordem: 0, urgente: true, dataLancamento: hoje, pagamento: "aguardando", rotaEntrega: false, concluido: false, rotaOrdem: 0 }
       ];
       nextId = 4;
     }
@@ -1037,6 +1227,100 @@
     
     reorderAllByWeek();
     reordenarPorDataEntrega();
+    atualizarOrdemRota();
+  }
+
+  function enviarMensagemPosCompra(task) {
+    if(!task.telefone || task.telefone.trim() === "") {
+      alert("Número de telefone não informado para enviar mensagem.");
+      return;
+    }
+    let numero = task.telefone.replace(/\D/g, '');
+    if(numero.length < 10) { alert("Número inválido"); return; }
+    
+    const msg = `Olá ${task.nome}! 💝%0A%0A*AGRADECEMOS POR FAZER PARTE DA NOSSA HISTÓRIA, COMO CLIENTE!*%0A%0A✨ *MENSAGEM MOTIVACIONAL:* ✨%0A"O sucesso é a soma de pequenos esforços repetidos dia após dia. Cada compra sua é um passo importante na nossa jornada. Continue acreditando em você e nos permitindo fazer parte da sua história!"%0A%0A🙏 Muito obrigado pela confiança e preferência!%0A🌟 Conte sempre conosco.%0A%0A*Equipe FlowTasks* 🚀`;
+    
+    window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank');
+  }
+
+  function atualizarOrdemRota() {
+    let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+    pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
+    pedidosRota.forEach((t, idx) => {
+      t.rotaOrdem = idx;
+    });
+    saveToLocal();
+  }
+
+  function moverOrdemRota(taskId, direction) {
+    let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+    pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
+    const currentIndex = pedidosRota.findIndex(t => t.id === taskId);
+    
+    if(direction === 'up' && currentIndex > 0) {
+      const tempOrdem = pedidosRota[currentIndex].rotaOrdem;
+      pedidosRota[currentIndex].rotaOrdem = pedidosRota[currentIndex - 1].rotaOrdem;
+      pedidosRota[currentIndex - 1].rotaOrdem = tempOrdem;
+    } else if(direction === 'down' && currentIndex < pedidosRota.length - 1) {
+      const tempOrdem = pedidosRota[currentIndex].rotaOrdem;
+      pedidosRota[currentIndex].rotaOrdem = pedidosRota[currentIndex + 1].rotaOrdem;
+      pedidosRota[currentIndex + 1].rotaOrdem = tempOrdem;
+    }
+    
+    pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
+    pedidosRota.forEach((t, idx) => {
+      t.rotaOrdem = idx;
+    });
+    
+    saveToLocal();
+    if(showingRota) renderRota();
+  }
+
+  function gerarPDFRota() {
+    let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+    pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
+    
+    if(pedidosRota.length === 0) {
+      alert("Nenhum pedido na rota de entrega para gerar PDF!");
+      return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    const hoje = new Date();
+    const dataAtual = hoje.toLocaleDateString('pt-BR');
+    
+    doc.setFontSize(20);
+    doc.text("🚚 ROTA DE ENTREGA", 105, y, { align: 'center' });
+    y += 10;
+    doc.setFontSize(12);
+    doc.text(`Data: ${dataAtual}`, 105, y, { align: 'center' });
+    y += 15;
+    
+    doc.setFontSize(14);
+    doc.text(`Total de entregas: ${pedidosRota.length}`, 20, y);
+    y += 10;
+    
+    doc.setFontSize(12);
+    doc.text("─".repeat(50), 20, y);
+    y += 8;
+    
+    doc.setFontSize(11);
+    for(let i = 0; i < pedidosRota.length; i++) {
+      const p = pedidosRota[i];
+      if(y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      const statusPagamento = p.pagamento === "pago" ? "✅ PAGO" : "⏳ PENDENTE";
+      doc.text(`${i+1}. ${p.nome}`, 20, y);
+      doc.text(`${statusPagamento}`, 140, y);
+      y += 7;
+    }
+    
+    doc.save(`rota_entrega_${dataAtual.replace(/\//g, '_')}.pdf`);
   }
 
   function reordenarPorDataEntrega() {
@@ -1069,13 +1353,6 @@
 
   function buscarClientePorNome(nome) {
     return clientesCadastrados.find(c => c.nome.toLowerCase() === nome.toLowerCase());
-  }
-
-  function autopreencherCliente(nome) {
-    const cliente = buscarClientePorNome(nome);
-    if(cliente && cliente.telefone) {
-      document.getElementById("telefone").value = cliente.telefone;
-    }
   }
 
   function showSugestoes(input) {
@@ -1183,12 +1460,8 @@
   function moveTaskToWeek(taskId, targetWeek) {
     const task = tasks.find(t => t.id === taskId);
     if(!task || task.semana === targetWeek || task.concluido) return;
-    
-    const oldWeek = task.semana;
     task.semana = targetWeek;
-    
     reordenarPorDataEntrega();
-    
     saveToLocal();
     renderTasks();
   }
@@ -1257,6 +1530,9 @@
     const task = tasks.find(t => t.id === taskId);
     if(task && !task.concluido) {
       task.rotaEntrega = !task.rotaEntrega;
+      if(task.rotaEntrega) {
+        atualizarOrdemRota();
+      }
       saveToLocal();
       renderTasks();
       if(showingRota) renderRota();
@@ -1278,6 +1554,7 @@
       saveToLocal();
       renderTasks();
       if(showingReceita) renderReceita();
+      if(showingRota) renderRota();
     }
   }
 
@@ -1298,12 +1575,17 @@
     if(!task.pagamento) task.pagamento = "aguardando";
     if(task.rotaEntrega === undefined) task.rotaEntrega = false;
     if(task.concluido === undefined) task.concluido = false;
+    if(task.rotaOrdem === undefined) task.rotaOrdem = 0;
     tasks.push(task);
     
     atualizarOuAdicionarCliente(task.nome, task.telefone, task.dataLancamento, task.valor);
     
     if(task.pagamento === "pago") {
       registrarReceita(task);
+    }
+    
+    if(task.rotaEntrega) {
+      atualizarOrdemRota();
     }
     
     reordenarPorDataEntrega();
@@ -1338,6 +1620,10 @@
         removerReceita(updated.id);
       }
       
+      if(updated.rotaEntrega && !oldTask.rotaEntrega) {
+        atualizarOrdemRota();
+      }
+      
       reordenarPorDataEntrega();
       renderTasks();
       if(showingReceita) renderReceita();
@@ -1356,6 +1642,7 @@
     }
     tasks = tasks.filter(t => t.id !== id);
     reordenarPorDataEntrega();
+    atualizarOrdemRota();
     renderTasks();
     if(showingReceita) renderReceita();
     if(showingClientes) renderClientes();
@@ -1400,11 +1687,11 @@
   let draggedTaskId = null;
   
   function setupDragAndDrop() {
-    const tabs = document.querySelectorAll('.tab-btn:not(#concluidoTab):not(#receitaTab):not(#clientesTab):not(#rotaTab)');
+    const tabs = document.querySelectorAll('.tab-btn:not(#concluidoTab):not(#receitaTab):not(#clientesTab):not(#rotaTab):not(#poscompraTab)');
     tabs.forEach(tab => {
       tab.addEventListener('dragover', (e) => {
         e.preventDefault();
-        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) tab.classList.add('drag-over');
+        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingPosCompra) tab.classList.add('drag-over');
       });
       tab.addEventListener('dragleave', () => {
         tab.classList.remove('drag-over');
@@ -1413,7 +1700,7 @@
         e.preventDefault();
         tab.classList.remove('drag-over');
         const targetWeek = parseInt(tab.dataset.week);
-        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) {
+        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingPosCompra) {
           moveTaskToWeek(draggedTaskId, targetWeek);
           draggedTaskId = null;
         }
@@ -1426,7 +1713,7 @@
     cards.forEach(card => {
       card.setAttribute('draggable', 'true');
       card.addEventListener('dragstart', (e) => {
-        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota) {
+        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingPosCompra) {
           e.preventDefault();
           return false;
         }
@@ -1556,7 +1843,8 @@
             concluido: pedido.Concluido === "Sim",
             semana: parseInt(pedido.Semana) || 1,
             dataLancamento: pedido["Data Lançamento"] || new Date().toISOString().split('T')[0],
-            ordem: 0
+            ordem: 0,
+            rotaOrdem: 0
           });
         }
       }
@@ -1567,6 +1855,7 @@
           atualizarOuAdicionarCliente(p.nome, p.telefone, p.dataLancamento, p.valor);
           if(p.pagamento === "pago") registrarReceita(p);
         });
+        atualizarOrdemRota();
         reordenarPorDataEntrega();
         renderTasks();
         alert(`${novosPedidos.length} pedidos importados com sucesso!`);
@@ -1578,9 +1867,8 @@
   }
 
   function renderRota() {
-    const hoje = new Date().toISOString().split('T')[0];
-    const pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
-    pedidosRota.sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+    pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
     
     const totalRota = pedidosRota.length;
     const valorTotal = pedidosRota.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
@@ -1597,27 +1885,40 @@
             <h3><i class="fas fa-dollar-sign"></i> VALOR TOTAL</h3>
             <div class="valor" style="font-size: 1.8rem;">R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
           </div>
+          <div class="rota-actions-header">
+            <button class="btn-pdf-rota" id="gerarPDFRotaBtn"><i class="fas fa-file-pdf"></i> PDF da Rota</button>
+          </div>
         </div>
         
-        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-list"></i> Pedidos para Entrega Hoje</h3>
-        <div class="rota-lista">
+        <div style="margin-bottom: 1rem; padding: 0.5rem; background: var(--accent); border-radius: 0.5rem; color: white; text-align: center;">
+          <i class="fas fa-info-circle"></i> Arraste o número ou use as setas para alterar a ordem de entrega
+        </div>
+        
+        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-list-ol"></i> Ordem de Entrega</h3>
+        <div class="rota-lista" id="rotaLista">
           ${pedidosRota.length === 0 ? '<div style="text-align:center; padding:2rem;">🚚 Nenhum pedido marcado para rota de entrega hoje</div>' : 
-            pedidosRota.map(t => `
-              <div class="rota-item">
-                <div style="flex:2">
-                  <strong style="font-size: 1.1rem;">${escapeHtml(t.nome)}</strong><br>
-                  <small><i class="fas fa-phone"></i> ${escapeHtml(t.telefone || '—')}</small><br>
-                  <small><i class="fas fa-clipboard-list"></i> ${escapeHtml(t.descricao.substring(0, 40))}</small><br>
-                  <small><i class="fas fa-dollar-sign"></i> R$ ${formatarValor(t.valor)}</small>
-                  ${t.urgente ? '<span class="urgent-chip" style="margin-left: 0.5rem;"><i class="fas fa-exclamation-circle"></i> URGENTE</span>' : ''}
+            pedidosRota.map((t, idx) => `
+              <div class="rota-item" data-id="${t.id}" data-index="${idx}">
+                <div class="rota-numero" draggable="true" data-id="${t.id}" data-index="${idx}">
+                  ${idx + 1}
                 </div>
-                <div style="text-align: right;">
-                  <div class="payment-status ${t.pagamento === "pago" ? "payment-pago" : "payment-aguardando"}" style="margin-bottom: 0.5rem; cursor: pointer;" onclick="window.togglePagamento(${t.id})">
+                <div class="rota-info">
+                  <span class="info-chip"><strong>${escapeHtml(t.nome)}</strong></span>
+                  <span class="info-chip"><i class="fas fa-phone"></i> ${escapeHtml(t.telefone || '—')}</span>
+                  <span class="info-chip"><i class="fas fa-clipboard-list"></i> ${escapeHtml(t.descricao.substring(0, 30))}</span>
+                  <span class="info-chip"><i class="fas fa-dollar-sign"></i> R$ ${formatarValor(t.valor)}</span>
+                  ${t.urgente ? '<span class="urgent-chip"><i class="fas fa-exclamation-circle"></i> URGENTE</span>' : ''}
+                  <div class="payment-status ${t.pagamento === "pago" ? "payment-pago" : "payment-aguardando"}" style="cursor: pointer;" onclick="window.togglePagamento(${t.id})">
                     ${t.pagamento === "pago" ? "✅ Pago" : "⏳ Aguardando"}
                   </div>
-                  <div class="task-status status-${t.status}" style="margin-bottom: 0.5rem; cursor: pointer;" onclick="window.cycleStatus(${t.id})">
-                    ${t.status === 'aguardando' ? '🟡 Aguardando' : (t.status === 'producao' ? '🟣 Produção' : '🟢 Retirada')}
-                  </div>
+                </div>
+                <div class="rota-actions">
+                  <button class="move-rota-btn" onclick="window.moverOrdemRota(${t.id}, 'up')" ${idx === 0 ? 'disabled' : ''} title="Subir na ordem">
+                    <i class="fas fa-arrow-up"></i>
+                  </button>
+                  <button class="move-rota-btn" onclick="window.moverOrdemRota(${t.id}, 'down')" ${idx === pedidosRota.length - 1 ? 'disabled' : ''} title="Descer na ordem">
+                    <i class="fas fa-arrow-down"></i>
+                  </button>
                   <button class="icon-btn whatsapp-btn" onclick="window.sendWhatsAppById(${t.id})" title="Enviar WhatsApp"><i class="fab fa-whatsapp fa-lg"></i></button>
                   <button class="icon-btn concluir-btn" onclick="window.marcarConcluido(${t.id})" title="Marcar como Concluído"><i class="fas fa-check-circle fa-lg"></i></button>
                   <button class="icon-btn" onclick="window.toggleRotaEntrega(${t.id})" title="Remover da rota"><i class="fas fa-truck fa-lg"></i></button>
@@ -1632,8 +1933,116 @@
     const rotaContainer = document.getElementById("rotaContainer");
     if(rotaContainer) {
       rotaContainer.innerHTML = html;
+      
+      document.getElementById("gerarPDFRotaBtn")?.addEventListener("click", gerarPDFRota);
+      
+      const rotaNumeros = document.querySelectorAll('.rota-numero');
+      
+      rotaNumeros.forEach(num => {
+        num.addEventListener('dragstart', (e) => {
+          draggedRotaIndex = parseInt(num.dataset.index);
+          e.dataTransfer.setData('text/plain', draggedRotaIndex);
+          num.style.opacity = '0.5';
+        });
+        num.addEventListener('dragend', (e) => {
+          num.style.opacity = '';
+          draggedRotaIndex = null;
+        });
+        num.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+        num.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const targetIndex = parseInt(num.dataset.index);
+          if (draggedRotaIndex !== null && draggedRotaIndex !== targetIndex) {
+            const pedidosRotaAtual = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+            pedidosRotaAtual.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
+            const draggedTask = pedidosRotaAtual[draggedRotaIndex];
+            const targetTask = pedidosRotaAtual[targetIndex];
+            
+            if (draggedTask && targetTask) {
+              const tempOrdem = draggedTask.rotaOrdem;
+              draggedTask.rotaOrdem = targetTask.rotaOrdem;
+              targetTask.rotaOrdem = tempOrdem;
+              
+              const todosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+              todosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
+              todosRota.forEach((t, idx) => {
+                t.rotaOrdem = idx;
+              });
+              
+              saveToLocal();
+              renderRota();
+            }
+          }
+        });
+      });
     }
   }
+
+  function renderPosCompra() {
+    let pedidosConcluidos = tasks.filter(t => t.concluido === true);
+    pedidosConcluidos.sort((a,b) => (b.dataConclusao || '').localeCompare(a.dataConclusao || ''));
+    
+    const total = pedidosConcluidos.length;
+    
+    const html = `
+      <div class="poscompra-container">
+        <div class="poscompra-header">
+          <div class="poscompra-total">
+            <h3><i class="fas fa-heart"></i> PÓS-COMPRA</h3>
+            <div class="valor" style="font-size: 2rem;">${total}</div>
+            <small>pedidos concluídos</small>
+          </div>
+          <div class="poscompra-total">
+            <h3><i class="fas fa-smile"></i> CLIENTES SATISFEITOS</h3>
+            <div class="valor" style="font-size: 1.5rem;">${new Set(pedidosConcluidos.map(p => p.nome)).size}</div>
+            <small>clientes atendidos</small>
+          </div>
+        </div>
+        
+        <div class="mensagem-motivacional">
+          <i class="fas fa-quote-left" style="font-size: 1.5rem; color: var(--accent);"></i>
+          <p style="margin: 0.5rem 0; font-size: 1rem;">"O sucesso é a soma de pequenos esforços repetidos dia após dia. Cada compra sua é um passo importante na nossa jornada. Continue acreditando em você e nos permitindo fazer parte da sua história!"</p>
+          <i class="fas fa-quote-right" style="font-size: 1.5rem; color: var(--accent); display: block; text-align: right;"></i>
+          <p style="margin-top: 0.5rem; font-weight: bold;">✨ Agradecemos por fazer parte da nossa história, como cliente! ✨</p>
+        </div>
+        
+        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-gift"></i> Enviar Mensagem de Agradecimento</h3>
+        <div class="poscompra-lista">
+          ${pedidosConcluidos.length === 0 ? '<div style="text-align:center; padding:2rem;">💝 Nenhum pedido concluído ainda</div>' : 
+            pedidosConcluidos.map((t, idx) => `
+              <div class="poscompra-item">
+                <div class="poscompra-numero">
+                  ${idx + 1}
+                </div>
+                <div class="poscompra-info">
+                  <span class="info-chip"><strong>${escapeHtml(t.nome)}</strong></span>
+                  <span class="info-chip"><i class="fas fa-phone"></i> ${escapeHtml(t.telefone || '—')}</span>
+                  <span class="info-chip"><i class="fas fa-clipboard-list"></i> ${escapeHtml(t.descricao.substring(0, 30))}</span>
+                  <span class="info-chip"><i class="fas fa-calendar-check"></i> Concluído: ${formatDate(t.dataConclusao || t.dataLancamento)}</span>
+                  <div class="payment-status ${t.pagamento === "pago" ? "payment-pago" : "payment-aguardando"}">
+                    ${t.pagamento === "pago" ? "✅ Pago" : "⏳ Pendente"}
+                  </div>
+                </div>
+                <div class="poscompra-actions">
+                  <button class="icon-btn whatsapp-btn" onclick="window.enviarMensagemPosCompra(${t.id})" title="Enviar Agradecimento Pós-Compra"><i class="fab fa-whatsapp fa-lg"></i> Agradecer</button>
+                </div>
+              </div>
+            `).join('')
+          }
+        </div>
+      </div>
+    `;
+    
+    const poscompraContainer = document.getElementById("poscompraContainer");
+    if(poscompraContainer) {
+      poscompraContainer.innerHTML = html;
+    }
+  }
+
+  window.enviarMensagemPosCompra = (id) => { const t = tasks.find(t => t.id === id); if(t) enviarMensagemPosCompra(t); };
+  window.moverOrdemRota = moverOrdemRota;
 
   async function gerarPDFComOpcoes(tipo, ano, mes, dataInicio, dataFim) {
     const { jsPDF } = window.jspdf;
@@ -1928,26 +2337,44 @@
     const dataFim = document.getElementById("dataFim")?.value;
     const tipoFiltro = document.getElementById("tipoFiltro")?.value;
     
-    let receitasFiltradas = [...historicoReceita];
+    let projecaoFiltrada = [];
+    let pagosFiltrados = [];
     
-    if(tipoReceitaAtual === "pago") {
-      receitasFiltradas = historicoReceita;
-    } else {
-      receitasFiltradas = tasks.filter(t => !t.concluido).map(t => ({
+    projecaoFiltrada = tasks.filter(t => !t.concluido).map(t => ({
+      id: t.id,
+      nome: t.nome,
+      valor: converterParaNumero(t.valor),
+      dataPagamento: t.dataEntrega || t.dataLancamento,
+      descricao: t.descricao,
+      status_pagamento: t.pagamento
+    }));
+    
+    const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
+    concluidosNaoPagos.forEach(t => {
+      projecaoFiltrada.push({
         id: t.id,
         nome: t.nome,
-        valor: t.valor,
-        dataPagamento: t.dataEntrega || t.dataLancamento,
+        valor: converterParaNumero(t.valor),
+        dataPagamento: t.dataConclusao || t.dataLancamento,
         descricao: t.descricao,
         status_pagamento: t.pagamento
-      }));
-    }
+      });
+    });
+    
+    pagosFiltrados = [...historicoReceita].map(r => ({
+      ...r,
+      valor: converterParaNumero(r.valor)
+    }));
     
     if(dataInicio && dataFim) {
       const inicio = new Date(dataInicio);
       const fim = new Date(dataFim);
       fim.setHours(23, 59, 59);
-      receitasFiltradas = receitasFiltradas.filter(r => {
+      projecaoFiltrada = projecaoFiltrada.filter(r => {
+        const data = new Date(r.dataPagamento);
+        return data >= inicio && data <= fim;
+      });
+      pagosFiltrados = pagosFiltrados.filter(r => {
         const data = new Date(r.dataPagamento);
         return data >= inicio && data <= fim;
       });
@@ -1957,7 +2384,11 @@
       inicioSemana.setDate(hoje.getDate() - hoje.getDay());
       const fimSemana = new Date(hoje);
       fimSemana.setDate(hoje.getDate() + (6 - hoje.getDay()));
-      receitasFiltradas = receitasFiltradas.filter(r => {
+      projecaoFiltrada = projecaoFiltrada.filter(r => {
+        const data = new Date(r.dataPagamento);
+        return data >= inicioSemana && data <= fimSemana;
+      });
+      pagosFiltrados = pagosFiltrados.filter(r => {
         const data = new Date(r.dataPagamento);
         return data >= inicioSemana && data <= fimSemana;
       });
@@ -1965,7 +2396,11 @@
       const hoje = new Date();
       const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
       const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-      receitasFiltradas = receitasFiltradas.filter(r => {
+      projecaoFiltrada = projecaoFiltrada.filter(r => {
+        const data = new Date(r.dataPagamento);
+        return data >= inicioMes && data <= fimMes;
+      });
+      pagosFiltrados = pagosFiltrados.filter(r => {
         const data = new Date(r.dataPagamento);
         return data >= inicioMes && data <= fimMes;
       });
@@ -1973,31 +2408,53 @@
       const hoje = new Date();
       const inicioAno = new Date(hoje.getFullYear(), 0, 1);
       const fimAno = new Date(hoje.getFullYear(), 11, 31);
-      receitasFiltradas = receitasFiltradas.filter(r => {
+      projecaoFiltrada = projecaoFiltrada.filter(r => {
+        const data = new Date(r.dataPagamento);
+        return data >= inicioAno && data <= fimAno;
+      });
+      pagosFiltrados = pagosFiltrados.filter(r => {
         const data = new Date(r.dataPagamento);
         return data >= inicioAno && data <= fimAno;
       });
     }
     
-    const total = receitasFiltradas.reduce((sum, r) => sum + converterParaNumero(r.valor), 0);
+    const totalProjecao = projecaoFiltrada.reduce((sum, r) => sum + r.valor, 0);
+    const totalPago = pagosFiltrados.reduce((sum, r) => sum + r.valor, 0);
+    const totalGeral = totalProjecao;
     
-    const meses = {};
-    receitasFiltradas.forEach(r => {
+    const mesesProjecao = {};
+    projecaoFiltrada.forEach(r => {
       const data = new Date(r.dataPagamento);
       const mesAno = `${data.getMonth()+1}/${data.getFullYear()}`;
-      meses[mesAno] = (meses[mesAno] || 0) + converterParaNumero(r.valor);
+      mesesProjecao[mesAno] = (mesesProjecao[mesAno] || 0) + r.valor;
+    });
+    
+    const mesesPagos = {};
+    pagosFiltrados.forEach(r => {
+      const data = new Date(r.dataPagamento);
+      const mesAno = `${data.getMonth()+1}/${data.getFullYear()}`;
+      mesesPagos[mesAno] = (mesesPagos[mesAno] || 0) + r.valor;
     });
     
     const html = `
       <div class="receita-container">
         <div class="receita-header">
-          <div class="receita-total">
-            <h3>${tipoReceitaAtual === "pago" ? "💰 TOTAL RECEBIDO" : "📊 PROJEÇÃO DE FATURAMENTO"}</h3>
-            <div class="valor">R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-          </div>
-          <div class="tipo-receita">
-            <button class="tipo-receita-btn ${tipoReceitaAtual === 'pago' ? 'active' : ''}" onclick="window.setTipoReceita('pago')">✅ Apenas Pagos</button>
-            <button class="tipo-receita-btn ${tipoReceitaAtual === 'todos' ? 'active' : ''}" onclick="window.setTipoReceita('todos')">📈 Projeção (Todos)</button>
+          <div class="cards-receita">
+            <div class="card-receita">
+              <h4><i class="fas fa-chart-line"></i> PROJEÇÃO TOTAL</h4>
+              <div class="valor valor-projecao">R$ ${totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+              <small>Valor previsto para receber</small>
+            </div>
+            <div class="card-receita">
+              <h4><i class="fas fa-check-circle"></i> TOTAL RECEBIDO</h4>
+              <div class="valor valor-pago">R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+              <small>Valor já recebido</small>
+            </div>
+            <div class="card-receita">
+              <h4><i class="fas fa-chart-pie"></i> FATURAMENTO TOTAL</h4>
+              <div class="valor">R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+              <small>Valor total dos pedidos</small>
+            </div>
           </div>
         </div>
         
@@ -2021,23 +2478,47 @@
           <button class="btn-filtrar" onclick="window.aplicarFiltroReceita()">Filtrar</button>
         </div>
         
-        <div class="chart-container">
-          <canvas id="receitaChart"></canvas>
+        <div class="chart-row">
+          <div class="chart-box">
+            <h4><i class="fas fa-chart-pie"></i> Projeção vs Recebido</h4>
+            <canvas id="pizzaChart"></canvas>
+          </div>
+          <div class="chart-box">
+            <h4><i class="fas fa-chart-bar"></i> Evolução Mensal</h4>
+            <canvas id="receitaChart"></canvas>
+          </div>
         </div>
         
-        <h3 style="margin: 1rem 0 0.5rem 0;">📋 Histórico de Receitas</h3>
+        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-history"></i> Histórico de Receitas (Pagos)</h3>
         <div class="receita-lista">
-          ${receitasFiltradas.length === 0 ? '<div style="text-align:center; padding:2rem;">Nenhuma receita encontrada</div>' : 
-            receitasFiltradas.map(r => `
+          ${pagosFiltrados.length === 0 ? '<div style="text-align:center; padding:2rem;">Nenhuma receita encontrada</div>' : 
+            pagosFiltrados.map(r => `
               <div class="receita-item">
                 <div>
                   <strong>${escapeHtml(r.nome)}</strong><br>
                   <small>${escapeHtml(r.descricao?.substring(0, 30) || '')}</small>
                 </div>
                 <div>
-                  <span style="color: #10b981; font-weight: bold;">R$ ${formatarValor(r.valor)}</span><br>
+                  <span style="color: #10b981; font-weight: bold;">R$ ${r.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span><br>
                   <small>${formatDate(r.dataPagamento)}</small>
-                  ${r.status_pagamento === 'aguardando' ? '<small style="color: #f59e0b;"> (Pendente)</small>' : ''}
+                </div>
+              </div>
+            `).join('')
+          }
+        </div>
+        
+        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-clock"></i> Projeção de Recebimento (Pendentes)</h3>
+        <div class="receita-lista">
+          ${projecaoFiltrada.filter(r => r.status_pagamento !== "pago").length === 0 ? '<div style="text-align:center; padding:2rem;">Nenhum pedido pendente</div>' : 
+            projecaoFiltrada.filter(r => r.status_pagamento !== "pago").map(r => `
+              <div class="receita-item">
+                <div>
+                  <strong>${escapeHtml(r.nome)}</strong><br>
+                  <small>${escapeHtml(r.descricao?.substring(0, 30) || '')}</small>
+                </div>
+                <div>
+                  <span style="color: #f59e0b; font-weight: bold;">R$ ${r.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span><br>
+                  <small>${formatDate(r.dataPagamento)}</small>
                 </div>
               </div>
             `).join('')
@@ -2058,29 +2539,69 @@
         });
       }
       
-      const ctx = document.getElementById('receitaChart')?.getContext('2d');
-      if(ctx && receitaChart) {
-        receitaChart.destroy();
+      const pizzaCtx = document.getElementById('pizzaChart')?.getContext('2d');
+      if(pizzaCtx && pizzaChart) {
+        pizzaChart.destroy();
       }
-      if(ctx && Object.keys(meses).length > 0) {
-        receitaChart = new Chart(ctx, {
-          type: 'bar',
+      if(pizzaCtx) {
+        pizzaChart = new Chart(pizzaCtx, {
+          type: 'pie',
           data: {
-            labels: Object.keys(meses),
+            labels: [`Recebido (R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})})`, `A Receber (R$ ${(totalProjecao - totalPago).toLocaleString('pt-BR', {minimumFractionDigits: 2})})`],
             datasets: [{
-              label: tipoReceitaAtual === "pago" ? 'Valor Recebido (R$)' : 'Projeção de Faturamento (R$)',
-              data: Object.values(meses),
-              backgroundColor: 'rgba(59, 130, 246, 0.6)',
-              borderColor: 'rgba(59, 130, 246, 1)',
-              borderWidth: 1
+              data: [totalPago, Math.max(0, totalProjecao - totalPago)],
+              backgroundColor: ['#10b981', '#f59e0b'],
+              borderColor: ['#059669', '#d97706'],
+              borderWidth: 2
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
+              legend: { position: 'bottom' },
+              tooltip: { callbacks: { label: (ctx) => `${ctx.label}: R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${((ctx.raw / totalProjecao) * 100).toFixed(1)}%)` } }
+            }
+          }
+        });
+      }
+      
+      const barCtx = document.getElementById('receitaChart')?.getContext('2d');
+      if(barCtx && receitaChart) {
+        receitaChart.destroy();
+      }
+      if(barCtx) {
+        const labels = Array.from(new Set([...Object.keys(mesesProjecao), ...Object.keys(mesesPagos)])).sort();
+        const dadosProjecao = labels.map(l => mesesProjecao[l] || 0);
+        const dadosPagos = labels.map(l => mesesPagos[l] || 0);
+        
+        receitaChart = new Chart(barCtx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Projeção (R$)',
+                data: dadosProjecao,
+                backgroundColor: 'rgba(245, 158, 11, 0.6)',
+                borderColor: 'rgba(245, 158, 11, 1)',
+                borderWidth: 1
+              },
+              {
+                label: 'Recebido (R$)',
+                data: dadosPagos,
+                backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                borderColor: 'rgba(16, 185, 129, 1)',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
               legend: { position: 'top' },
-              tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` } }
+              tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` } }
             },
             scales: { y: { ticks: { callback: (v) => `R$ ${v.toLocaleString('pt-BR')}` } } }
           }
@@ -2093,12 +2614,6 @@
     renderReceita();
   }
 
-  function setTipoReceita(tipo) {
-    tipoReceitaAtual = tipo;
-    renderReceita();
-  }
-
-  window.setTipoReceita = setTipoReceita;
   window.aplicarFiltroReceita = aplicarFiltroReceita;
 
   function renderTasks() {
@@ -2106,6 +2621,9 @@
     
     if(showingRota) {
       renderRota();
+      return;
+    } else if(showingPosCompra) {
+      renderPosCompra();
       return;
     } else if(showingReceita) {
       renderReceita();
@@ -2225,7 +2743,7 @@
 
   function abrirModalPosicao(taskId, taskNome) {
     const task = tasks.find(t => t.id === taskId);
-    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) {
+    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingPosCompra) {
       const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido);
       document.getElementById("pedidoNome").innerHTML = taskNome;
       document.getElementById("maxPosicao").innerHTML = weekTasks.length;
@@ -2234,7 +2752,7 @@
       document.getElementById("posicaoModal").style.display = "flex";
     } else if(task && task.concluido) {
       alert("Pedidos concluídos não podem ter posição alterada");
-    } else if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota) {
+    } else if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingPosCompra) {
       alert("Alterar posição disponível apenas na visualização por semana");
     }
   }
@@ -2367,7 +2885,8 @@
         urgente: urgente,
         rotaEntrega: rotaEntrega,
         concluido: false,
-        ordem: 0
+        ordem: 0,
+        rotaOrdem: 0
       };
       addTask(newTask);
     }
@@ -2426,10 +2945,12 @@
   const receitaTab = document.getElementById("receitaTab");
   const clientesTab = document.getElementById("clientesTab");
   const rotaTab = document.getElementById("rotaTab");
+  const poscompraTab = document.getElementById("poscompraTab");
   const tasksContainer = document.getElementById("tasksContainer");
   const receitaContainer = document.getElementById("receitaContainer");
   const clientesContainer = document.getElementById("clientesContainer");
   const rotaContainer = document.getElementById("rotaContainer");
+  const poscompraContainer = document.getElementById("poscompraContainer");
   const actionsRow = document.getElementById("actionsRow");
   
   function setViewAllMode(enable) {
@@ -2438,6 +2959,7 @@
     showingReceita = false;
     showingClientes = false;
     showingRota = false;
+    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -2445,6 +2967,7 @@
       receitaTab.classList.remove('active');
       clientesTab.classList.remove('active');
       rotaTab.classList.remove('active');
+      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent-hover)";
     } else {
       viewAllBtn.style.background = "var(--accent)";
@@ -2455,6 +2978,7 @@
     receitaContainer.style.display = "none";
     clientesContainer.style.display = "none";
     rotaContainer.style.display = "none";
+    poscompraContainer.style.display = "none";
     actionsRow.style.display = "flex";
     renderTasks();
   }
@@ -2465,6 +2989,7 @@
     showingReceita = false;
     showingClientes = false;
     showingRota = false;
+    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -2472,6 +2997,7 @@
       receitaTab.classList.remove('active');
       clientesTab.classList.remove('active');
       rotaTab.classList.remove('active');
+      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
     } else {
       concluidoTab.classList.remove('active');
@@ -2480,6 +3006,7 @@
     receitaContainer.style.display = "none";
     clientesContainer.style.display = "none";
     rotaContainer.style.display = "none";
+    poscompraContainer.style.display = "none";
     actionsRow.style.display = "flex";
     renderTasks();
   }
@@ -2490,6 +3017,7 @@
     showingConcluido = false;
     showingClientes = false;
     showingRota = false;
+    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -2497,11 +3025,13 @@
       concluidoTab.classList.remove('active');
       clientesTab.classList.remove('active');
       rotaTab.classList.remove('active');
+      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "none";
       receitaContainer.style.display = "block";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
+      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
       renderReceita();
     } else {
@@ -2510,6 +3040,7 @@
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
+      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
     }
   }
@@ -2520,6 +3051,7 @@
     showingConcluido = false;
     showingReceita = false;
     showingRota = false;
+    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -2527,11 +3059,13 @@
       concluidoTab.classList.remove('active');
       receitaTab.classList.remove('active');
       rotaTab.classList.remove('active');
+      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "none";
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "block";
       rotaContainer.style.display = "none";
+      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
       renderClientes();
     } else {
@@ -2540,6 +3074,7 @@
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
+      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
     }
   }
@@ -2550,6 +3085,7 @@
     showingConcluido = false;
     showingReceita = false;
     showingClientes = false;
+    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -2557,11 +3093,13 @@
       concluidoTab.classList.remove('active');
       receitaTab.classList.remove('active');
       clientesTab.classList.remove('active');
+      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "none";
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "block";
+      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
       renderRota();
     } else {
@@ -2570,6 +3108,41 @@
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
+      poscompraContainer.style.display = "none";
+      actionsRow.style.display = "flex";
+    }
+  }
+
+  function setPosCompraMode(enable) {
+    showingPosCompra = enable;
+    viewAllMode = false;
+    showingConcluido = false;
+    showingReceita = false;
+    showingClientes = false;
+    showingRota = false;
+    const tabs = document.querySelectorAll('.tab-btn');
+    if(enable) {
+      tabs.forEach(btn => btn.classList.remove('active'));
+      poscompraTab.classList.add('active');
+      concluidoTab.classList.remove('active');
+      receitaTab.classList.remove('active');
+      clientesTab.classList.remove('active');
+      rotaTab.classList.remove('active');
+      viewAllBtn.style.background = "var(--accent)";
+      tasksContainer.style.display = "none";
+      receitaContainer.style.display = "none";
+      clientesContainer.style.display = "none";
+      rotaContainer.style.display = "none";
+      poscompraContainer.style.display = "block";
+      actionsRow.style.display = "flex";
+      renderPosCompra();
+    } else {
+      poscompraTab.classList.remove('active');
+      tasksContainer.style.display = "flex";
+      receitaContainer.style.display = "none";
+      clientesContainer.style.display = "none";
+      rotaContainer.style.display = "none";
+      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
     }
   }
@@ -2581,6 +3154,7 @@
       if(showingReceita) setReceitaMode(false);
       if(showingClientes) setClientesMode(false);
       if(showingRota) setRotaMode(false);
+      if(showingPosCompra) setPosCompraMode(false);
       document.querySelectorAll(".tab-btn[data-week]").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentWeek = parseInt(btn.dataset.week);
@@ -2589,11 +3163,13 @@
       showingReceita = false;
       showingClientes = false;
       showingRota = false;
+      showingPosCompra = false;
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "flex";
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
+      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
       renderTasks();
     });
@@ -2604,6 +3180,7 @@
     if(showingReceita) setReceitaMode(false);
     if(showingClientes) setClientesMode(false);
     if(showingRota) setRotaMode(false);
+    if(showingPosCompra) setPosCompraMode(false);
     setConcluidoMode(true);
   });
   
@@ -2612,6 +3189,7 @@
     if(showingConcluido) setConcluidoMode(false);
     if(showingClientes) setClientesMode(false);
     if(showingRota) setRotaMode(false);
+    if(showingPosCompra) setPosCompraMode(false);
     setReceitaMode(true);
   });
   
@@ -2620,6 +3198,7 @@
     if(showingConcluido) setConcluidoMode(false);
     if(showingReceita) setReceitaMode(false);
     if(showingRota) setRotaMode(false);
+    if(showingPosCompra) setPosCompraMode(false);
     setClientesMode(true);
   });
 
@@ -2628,7 +3207,17 @@
     if(showingConcluido) setConcluidoMode(false);
     if(showingReceita) setReceitaMode(false);
     if(showingClientes) setClientesMode(false);
+    if(showingPosCompra) setPosCompraMode(false);
     setRotaMode(true);
+  });
+
+  poscompraTab.addEventListener("click", () => {
+    if(viewAllMode) setViewAllMode(false);
+    if(showingConcluido) setConcluidoMode(false);
+    if(showingReceita) setReceitaMode(false);
+    if(showingClientes) setClientesMode(false);
+    if(showingRota) setRotaMode(false);
+    setPosCompraMode(true);
   });
   
   viewAllBtn.addEventListener("click", () => {
@@ -2636,6 +3225,7 @@
     if(showingReceita) setReceitaMode(false);
     if(showingClientes) setClientesMode(false);
     if(showingRota) setRotaMode(false);
+    if(showingPosCompra) setPosCompraMode(false);
     setViewAllMode(true);
   });
 
@@ -2651,7 +3241,7 @@
   const searchInput = document.getElementById("searchInput");
   searchInput.addEventListener("input", (e) => {
     searchQuery = e.target.value;
-    if(!showingReceita && !showingClientes && !showingRota) renderTasks();
+    if(!showingReceita && !showingClientes && !showingRota && !showingPosCompra) renderTasks();
   });
 
   const themeToggle = document.getElementById("themeToggle");
@@ -2671,6 +3261,7 @@
     if(showingReceita) renderReceita();
     if(showingClientes) renderClientes();
     if(showingRota) renderRota();
+    if(showingPosCompra) renderPosCompra();
   }
   const savedTheme = localStorage.getItem('theme') || 'light';
   applyTheme(savedTheme);
