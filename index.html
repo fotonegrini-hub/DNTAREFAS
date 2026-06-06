@@ -47,7 +47,6 @@
       --receita-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       --cliente-bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
       --rota-bg: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      --poscompra-bg: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
     }
 
     body.dark {
@@ -70,7 +69,6 @@
       --receita-bg: linear-gradient(135deg, #4c51bf 0%, #5b3a8c 100%);
       --cliente-bg: linear-gradient(135deg, #0d6d64 0%, #2b9e5c 100%);
       --rota-bg: linear-gradient(135deg, #9b4d96 0%, #c4455a 100%);
-      --poscompra-bg: linear-gradient(135deg, #b8860b 0%, #cd7a32 100%);
     }
 
     body {
@@ -208,16 +206,6 @@
       box-shadow: 0 2px 8px rgba(240,147,251,0.5);
     }
 
-    .tab-btn.poscompra-btn {
-      background: var(--poscompra-bg);
-      color: white;
-    }
-
-    .tab-btn.poscompra-btn.active {
-      opacity: 0.9;
-      box-shadow: 0 2px 8px rgba(246,211,101,0.5);
-    }
-
     .tab-btn.drag-over {
       background: var(--accent);
       opacity: 0.7;
@@ -319,6 +307,19 @@
 
     .btn-pdf {
       background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      padding: 0 1rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .btn-pdf-rota {
+      background: #f5576c;
       color: white;
       border: none;
       border-radius: 2rem;
@@ -576,14 +577,14 @@
       text-align: center;
     }
 
-    .receita-container, .clientes-container, .rota-container, .poscompra-container {
+    .receita-container, .clientes-container, .rota-container {
       background: var(--card-bg);
       border-radius: 1.5rem;
       padding: 1.5rem;
       border: 1px solid var(--border);
     }
 
-    .receita-header, .clientes-header, .rota-header, .poscompra-header {
+    .receita-header, .clientes-header, .rota-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -594,54 +595,10 @@
       border-bottom: 2px solid var(--border);
     }
 
-    .rota-container .rota-lista, .poscompra-lista {
+    .rota-container .rota-lista {
       display: flex;
       flex-direction: column;
       gap: 1rem;
-    }
-
-    .poscompra-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      background: var(--bg-page);
-      border-radius: 1rem;
-      border: 1px solid var(--border);
-      transition: all 0.2s;
-    }
-
-    .poscompra-item:hover {
-      transform: translateX(5px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .poscompra-numero {
-      width: 50px;
-      height: 50px;
-      background: var(--poscompra-bg);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 1.4rem;
-      color: white;
-      flex-shrink: 0;
-    }
-
-    .poscompra-info {
-      flex: 3;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .poscompra-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-shrink: 0;
     }
 
     .rota-item {
@@ -719,16 +676,12 @@
       cursor: not-allowed;
     }
 
-    .rota-total, .poscompra-total {
+    .rota-total {
       background: var(--rota-bg);
       padding: 1rem 2rem;
       border-radius: 1rem;
       color: white;
       text-align: center;
-    }
-
-    .poscompra-total {
-      background: var(--poscompra-bg);
     }
 
     .rota-actions-header {
@@ -940,16 +893,6 @@
       margin: 0;
     }
 
-    .mensagem-motivacional {
-      background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      margin-top: 1rem;
-      text-align: center;
-      border-left: 4px solid var(--accent);
-      font-style: italic;
-    }
-
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px);}
       to { opacity: 1; transform: translateY(0);}
@@ -963,8 +906,8 @@
       .periodo-inputs { flex-direction: column; }
       .chart-row { grid-template-columns: 1fr; }
       .cards-receita { grid-template-columns: 1fr; }
-      .rota-item, .poscompra-item { flex-direction: column; text-align: center; }
-      .rota-info, .poscompra-info { justify-content: center; }
+      .rota-item { flex-direction: column; text-align: center; }
+      .rota-info { justify-content: center; }
     }
   </style>
 </head>
@@ -986,7 +929,6 @@
     <button class="tab-btn" data-week="3" data-week-num="3">🗓️ 3ª Semana</button>
     <button class="tab-btn concluido-btn" data-view="concluido" id="concluidoTab">✅ Concluído</button>
     <button class="tab-btn rota-btn" data-view="rota" id="rotaTab">🚚 ROTA DE ENTREGA</button>
-    <button class="tab-btn poscompra-btn" data-view="poscompra" id="poscompraTab">💝 PÓS-COMPRA</button>
     <button class="tab-btn receita-btn" data-view="receita" id="receitaTab">💰 RECEITA</button>
     <button class="tab-btn clientes-btn" data-view="clientes" id="clientesTab">👥 CLIENTES</button>
     <button class="view-all-btn" id="viewAllBtn"><i class="fas fa-list-ul"></i> Todos os Pedidos</button>
@@ -1008,7 +950,6 @@
 
   <div id="tasksContainer" class="tasks-horizontal"></div>
   <div id="rotaContainer" style="display: none;"></div>
-  <div id="poscompraContainer" style="display: none;"></div>
   <div id="receitaContainer" style="display: none;"></div>
   <div id="clientesContainer" style="display: none;"></div>
 </div>
@@ -1149,7 +1090,6 @@
   let showingReceita = false;
   let showingClientes = false;
   let showingRota = false;
-  let showingPosCompra = false;
   let receitaChart = null;
   let pizzaChart = null;
   let draggedRotaIndex = null;
@@ -1176,7 +1116,7 @@
       const ontem = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       tasks = [
         { id: 1, semana: 1, nome: "Ana Souza", telefone: "11999991111", descricao: "Manutenção PC", dataEntrega: "2026-06-15", valor: "250,00", status: "aguardando", ordem: 0, urgente: true, dataLancamento: ontem, pagamento: "aguardando", rotaEntrega: false, concluido: false, rotaOrdem: 0 },
-        { id: 2, semana: 1, nome: "Carlos Lima", telefone: "21988887777", descricao: "Formatação", dataEntrega: "2026-06-18", valor: "120,00", status: "producao", ordem: 1, urgente: false, dataLancamento: hoje, pagamento: "pago", rotaEntrega: true, concluido: true, rotaOrdem: 0 },
+        { id: 2, semana: 1, nome: "Carlos Lima", telefone: "21988887777", descricao: "Formatação", dataEntrega: "2026-06-18", valor: "120,00", status: "producao", ordem: 1, urgente: false, dataLancamento: hoje, pagamento: "pago", rotaEntrega: true, concluido: false, rotaOrdem: 0 },
         { id: 3, semana: 2, nome: "Mariana Rocha", telefone: "31977776666", descricao: "Troca de Tela", dataEntrega: "2026-06-22", valor: "450,00", status: "retirada", ordem: 0, urgente: true, dataLancamento: hoje, pagamento: "aguardando", rotaEntrega: false, concluido: false, rotaOrdem: 0 }
       ];
       nextId = 4;
@@ -1228,19 +1168,6 @@
     reorderAllByWeek();
     reordenarPorDataEntrega();
     atualizarOrdemRota();
-  }
-
-  function enviarMensagemPosCompra(task) {
-    if(!task.telefone || task.telefone.trim() === "") {
-      alert("Número de telefone não informado para enviar mensagem.");
-      return;
-    }
-    let numero = task.telefone.replace(/\D/g, '');
-    if(numero.length < 10) { alert("Número inválido"); return; }
-    
-    const msg = `Olá ${task.nome}! 💝%0A%0A*AGRADECEMOS POR FAZER PARTE DA NOSSA HISTÓRIA, COMO CLIENTE!*%0A%0A✨ *MENSAGEM MOTIVACIONAL:* ✨%0A"O sucesso é a soma de pequenos esforços repetidos dia após dia. Cada compra sua é um passo importante na nossa jornada. Continue acreditando em você e nos permitindo fazer parte da sua história!"%0A%0A🙏 Muito obrigado pela confiança e preferência!%0A🌟 Conte sempre conosco.%0A%0A*Equipe FlowTasks* 🚀`;
-    
-    window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank');
   }
 
   function atualizarOrdemRota() {
@@ -1687,11 +1614,11 @@
   let draggedTaskId = null;
   
   function setupDragAndDrop() {
-    const tabs = document.querySelectorAll('.tab-btn:not(#concluidoTab):not(#receitaTab):not(#clientesTab):not(#rotaTab):not(#poscompraTab)');
+    const tabs = document.querySelectorAll('.tab-btn:not(#concluidoTab):not(#receitaTab):not(#clientesTab):not(#rotaTab)');
     tabs.forEach(tab => {
       tab.addEventListener('dragover', (e) => {
         e.preventDefault();
-        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingPosCompra) tab.classList.add('drag-over');
+        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) tab.classList.add('drag-over');
       });
       tab.addEventListener('dragleave', () => {
         tab.classList.remove('drag-over');
@@ -1700,7 +1627,7 @@
         e.preventDefault();
         tab.classList.remove('drag-over');
         const targetWeek = parseInt(tab.dataset.week);
-        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingPosCompra) {
+        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) {
           moveTaskToWeek(draggedTaskId, targetWeek);
           draggedTaskId = null;
         }
@@ -1713,7 +1640,7 @@
     cards.forEach(card => {
       card.setAttribute('draggable', 'true');
       card.addEventListener('dragstart', (e) => {
-        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingPosCompra) {
+        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota) {
           e.preventDefault();
           return false;
         }
@@ -1937,6 +1864,7 @@
       document.getElementById("gerarPDFRotaBtn")?.addEventListener("click", gerarPDFRota);
       
       const rotaNumeros = document.querySelectorAll('.rota-numero');
+      const rotaItems = document.querySelectorAll('.rota-item');
       
       rotaNumeros.forEach(num => {
         num.addEventListener('dragstart', (e) => {
@@ -1980,68 +1908,6 @@
     }
   }
 
-  function renderPosCompra() {
-    let pedidosConcluidos = tasks.filter(t => t.concluido === true);
-    pedidosConcluidos.sort((a,b) => (b.dataConclusao || '').localeCompare(a.dataConclusao || ''));
-    
-    const total = pedidosConcluidos.length;
-    
-    const html = `
-      <div class="poscompra-container">
-        <div class="poscompra-header">
-          <div class="poscompra-total">
-            <h3><i class="fas fa-heart"></i> PÓS-COMPRA</h3>
-            <div class="valor" style="font-size: 2rem;">${total}</div>
-            <small>pedidos concluídos</small>
-          </div>
-          <div class="poscompra-total">
-            <h3><i class="fas fa-smile"></i> CLIENTES SATISFEITOS</h3>
-            <div class="valor" style="font-size: 1.5rem;">${new Set(pedidosConcluidos.map(p => p.nome)).size}</div>
-            <small>clientes atendidos</small>
-          </div>
-        </div>
-        
-        <div class="mensagem-motivacional">
-          <i class="fas fa-quote-left" style="font-size: 1.5rem; color: var(--accent);"></i>
-          <p style="margin: 0.5rem 0; font-size: 1rem;">"O sucesso é a soma de pequenos esforços repetidos dia após dia. Cada compra sua é um passo importante na nossa jornada. Continue acreditando em você e nos permitindo fazer parte da sua história!"</p>
-          <i class="fas fa-quote-right" style="font-size: 1.5rem; color: var(--accent); display: block; text-align: right;"></i>
-          <p style="margin-top: 0.5rem; font-weight: bold;">✨ Agradecemos por fazer parte da nossa história, como cliente! ✨</p>
-        </div>
-        
-        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-gift"></i> Enviar Mensagem de Agradecimento</h3>
-        <div class="poscompra-lista">
-          ${pedidosConcluidos.length === 0 ? '<div style="text-align:center; padding:2rem;">💝 Nenhum pedido concluído ainda</div>' : 
-            pedidosConcluidos.map((t, idx) => `
-              <div class="poscompra-item">
-                <div class="poscompra-numero">
-                  ${idx + 1}
-                </div>
-                <div class="poscompra-info">
-                  <span class="info-chip"><strong>${escapeHtml(t.nome)}</strong></span>
-                  <span class="info-chip"><i class="fas fa-phone"></i> ${escapeHtml(t.telefone || '—')}</span>
-                  <span class="info-chip"><i class="fas fa-clipboard-list"></i> ${escapeHtml(t.descricao.substring(0, 30))}</span>
-                  <span class="info-chip"><i class="fas fa-calendar-check"></i> Concluído: ${formatDate(t.dataConclusao || t.dataLancamento)}</span>
-                  <div class="payment-status ${t.pagamento === "pago" ? "payment-pago" : "payment-aguardando"}">
-                    ${t.pagamento === "pago" ? "✅ Pago" : "⏳ Pendente"}
-                  </div>
-                </div>
-                <div class="poscompra-actions">
-                  <button class="icon-btn whatsapp-btn" onclick="window.enviarMensagemPosCompra(${t.id})" title="Enviar Agradecimento Pós-Compra"><i class="fab fa-whatsapp fa-lg"></i> Agradecer</button>
-                </div>
-              </div>
-            `).join('')
-          }
-        </div>
-      </div>
-    `;
-    
-    const poscompraContainer = document.getElementById("poscompraContainer");
-    if(poscompraContainer) {
-      poscompraContainer.innerHTML = html;
-    }
-  }
-
-  window.enviarMensagemPosCompra = (id) => { const t = tasks.find(t => t.id === id); if(t) enviarMensagemPosCompra(t); };
   window.moverOrdemRota = moverOrdemRota;
 
   async function gerarPDFComOpcoes(tipo, ano, mes, dataInicio, dataFim) {
@@ -2622,9 +2488,6 @@
     if(showingRota) {
       renderRota();
       return;
-    } else if(showingPosCompra) {
-      renderPosCompra();
-      return;
     } else if(showingReceita) {
       renderReceita();
       return;
@@ -2743,7 +2606,7 @@
 
   function abrirModalPosicao(taskId, taskNome) {
     const task = tasks.find(t => t.id === taskId);
-    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingPosCompra) {
+    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) {
       const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido);
       document.getElementById("pedidoNome").innerHTML = taskNome;
       document.getElementById("maxPosicao").innerHTML = weekTasks.length;
@@ -2752,7 +2615,7 @@
       document.getElementById("posicaoModal").style.display = "flex";
     } else if(task && task.concluido) {
       alert("Pedidos concluídos não podem ter posição alterada");
-    } else if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingPosCompra) {
+    } else if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota) {
       alert("Alterar posição disponível apenas na visualização por semana");
     }
   }
@@ -2945,12 +2808,10 @@
   const receitaTab = document.getElementById("receitaTab");
   const clientesTab = document.getElementById("clientesTab");
   const rotaTab = document.getElementById("rotaTab");
-  const poscompraTab = document.getElementById("poscompraTab");
   const tasksContainer = document.getElementById("tasksContainer");
   const receitaContainer = document.getElementById("receitaContainer");
   const clientesContainer = document.getElementById("clientesContainer");
   const rotaContainer = document.getElementById("rotaContainer");
-  const poscompraContainer = document.getElementById("poscompraContainer");
   const actionsRow = document.getElementById("actionsRow");
   
   function setViewAllMode(enable) {
@@ -2959,7 +2820,6 @@
     showingReceita = false;
     showingClientes = false;
     showingRota = false;
-    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -2967,7 +2827,6 @@
       receitaTab.classList.remove('active');
       clientesTab.classList.remove('active');
       rotaTab.classList.remove('active');
-      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent-hover)";
     } else {
       viewAllBtn.style.background = "var(--accent)";
@@ -2978,7 +2837,6 @@
     receitaContainer.style.display = "none";
     clientesContainer.style.display = "none";
     rotaContainer.style.display = "none";
-    poscompraContainer.style.display = "none";
     actionsRow.style.display = "flex";
     renderTasks();
   }
@@ -2989,7 +2847,6 @@
     showingReceita = false;
     showingClientes = false;
     showingRota = false;
-    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -2997,7 +2854,6 @@
       receitaTab.classList.remove('active');
       clientesTab.classList.remove('active');
       rotaTab.classList.remove('active');
-      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
     } else {
       concluidoTab.classList.remove('active');
@@ -3006,7 +2862,6 @@
     receitaContainer.style.display = "none";
     clientesContainer.style.display = "none";
     rotaContainer.style.display = "none";
-    poscompraContainer.style.display = "none";
     actionsRow.style.display = "flex";
     renderTasks();
   }
@@ -3017,7 +2872,6 @@
     showingConcluido = false;
     showingClientes = false;
     showingRota = false;
-    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -3025,13 +2879,11 @@
       concluidoTab.classList.remove('active');
       clientesTab.classList.remove('active');
       rotaTab.classList.remove('active');
-      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "none";
       receitaContainer.style.display = "block";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
-      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
       renderReceita();
     } else {
@@ -3040,7 +2892,6 @@
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
-      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
     }
   }
@@ -3051,7 +2902,6 @@
     showingConcluido = false;
     showingReceita = false;
     showingRota = false;
-    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -3059,13 +2909,11 @@
       concluidoTab.classList.remove('active');
       receitaTab.classList.remove('active');
       rotaTab.classList.remove('active');
-      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "none";
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "block";
       rotaContainer.style.display = "none";
-      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
       renderClientes();
     } else {
@@ -3074,7 +2922,6 @@
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
-      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
     }
   }
@@ -3085,7 +2932,6 @@
     showingConcluido = false;
     showingReceita = false;
     showingClientes = false;
-    showingPosCompra = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -3093,13 +2939,11 @@
       concluidoTab.classList.remove('active');
       receitaTab.classList.remove('active');
       clientesTab.classList.remove('active');
-      poscompraTab.classList.remove('active');
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "none";
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "block";
-      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
       renderRota();
     } else {
@@ -3108,41 +2952,6 @@
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
-      poscompraContainer.style.display = "none";
-      actionsRow.style.display = "flex";
-    }
-  }
-
-  function setPosCompraMode(enable) {
-    showingPosCompra = enable;
-    viewAllMode = false;
-    showingConcluido = false;
-    showingReceita = false;
-    showingClientes = false;
-    showingRota = false;
-    const tabs = document.querySelectorAll('.tab-btn');
-    if(enable) {
-      tabs.forEach(btn => btn.classList.remove('active'));
-      poscompraTab.classList.add('active');
-      concluidoTab.classList.remove('active');
-      receitaTab.classList.remove('active');
-      clientesTab.classList.remove('active');
-      rotaTab.classList.remove('active');
-      viewAllBtn.style.background = "var(--accent)";
-      tasksContainer.style.display = "none";
-      receitaContainer.style.display = "none";
-      clientesContainer.style.display = "none";
-      rotaContainer.style.display = "none";
-      poscompraContainer.style.display = "block";
-      actionsRow.style.display = "flex";
-      renderPosCompra();
-    } else {
-      poscompraTab.classList.remove('active');
-      tasksContainer.style.display = "flex";
-      receitaContainer.style.display = "none";
-      clientesContainer.style.display = "none";
-      rotaContainer.style.display = "none";
-      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
     }
   }
@@ -3154,7 +2963,6 @@
       if(showingReceita) setReceitaMode(false);
       if(showingClientes) setClientesMode(false);
       if(showingRota) setRotaMode(false);
-      if(showingPosCompra) setPosCompraMode(false);
       document.querySelectorAll(".tab-btn[data-week]").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentWeek = parseInt(btn.dataset.week);
@@ -3163,13 +2971,11 @@
       showingReceita = false;
       showingClientes = false;
       showingRota = false;
-      showingPosCompra = false;
       viewAllBtn.style.background = "var(--accent)";
       tasksContainer.style.display = "flex";
       receitaContainer.style.display = "none";
       clientesContainer.style.display = "none";
       rotaContainer.style.display = "none";
-      poscompraContainer.style.display = "none";
       actionsRow.style.display = "flex";
       renderTasks();
     });
@@ -3180,7 +2986,6 @@
     if(showingReceita) setReceitaMode(false);
     if(showingClientes) setClientesMode(false);
     if(showingRota) setRotaMode(false);
-    if(showingPosCompra) setPosCompraMode(false);
     setConcluidoMode(true);
   });
   
@@ -3189,7 +2994,6 @@
     if(showingConcluido) setConcluidoMode(false);
     if(showingClientes) setClientesMode(false);
     if(showingRota) setRotaMode(false);
-    if(showingPosCompra) setPosCompraMode(false);
     setReceitaMode(true);
   });
   
@@ -3198,7 +3002,6 @@
     if(showingConcluido) setConcluidoMode(false);
     if(showingReceita) setReceitaMode(false);
     if(showingRota) setRotaMode(false);
-    if(showingPosCompra) setPosCompraMode(false);
     setClientesMode(true);
   });
 
@@ -3207,17 +3010,7 @@
     if(showingConcluido) setConcluidoMode(false);
     if(showingReceita) setReceitaMode(false);
     if(showingClientes) setClientesMode(false);
-    if(showingPosCompra) setPosCompraMode(false);
     setRotaMode(true);
-  });
-
-  poscompraTab.addEventListener("click", () => {
-    if(viewAllMode) setViewAllMode(false);
-    if(showingConcluido) setConcluidoMode(false);
-    if(showingReceita) setReceitaMode(false);
-    if(showingClientes) setClientesMode(false);
-    if(showingRota) setRotaMode(false);
-    setPosCompraMode(true);
   });
   
   viewAllBtn.addEventListener("click", () => {
@@ -3225,7 +3018,6 @@
     if(showingReceita) setReceitaMode(false);
     if(showingClientes) setClientesMode(false);
     if(showingRota) setRotaMode(false);
-    if(showingPosCompra) setPosCompraMode(false);
     setViewAllMode(true);
   });
 
@@ -3241,7 +3033,7 @@
   const searchInput = document.getElementById("searchInput");
   searchInput.addEventListener("input", (e) => {
     searchQuery = e.target.value;
-    if(!showingReceita && !showingClientes && !showingRota && !showingPosCompra) renderTasks();
+    if(!showingReceita && !showingClientes && !showingRota) renderTasks();
   });
 
   const themeToggle = document.getElementById("themeToggle");
@@ -3261,7 +3053,6 @@
     if(showingReceita) renderReceita();
     if(showingClientes) renderClientes();
     if(showingRota) renderRota();
-    if(showingPosCompra) renderPosCompra();
   }
   const savedTheme = localStorage.getItem('theme') || 'light';
   applyTheme(savedTheme);
