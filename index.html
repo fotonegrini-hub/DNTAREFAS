@@ -227,12 +227,6 @@
       box-shadow: 0 2px 8px rgba(239,68,68,0.5);
     }
 
-    .tab-btn.drag-over {
-      background: var(--accent);
-      opacity: 0.7;
-      transform: scale(1.02);
-    }
-
     .btn-mover-semana {
       background: var(--bg-page);
       border: 1px solid var(--border);
@@ -254,11 +248,6 @@
       border-color: var(--accent);
     }
 
-    .btn-mover-semana:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
-
     .btn-add-semana {
       background: var(--accent);
       color: white;
@@ -271,10 +260,6 @@
       align-items: center;
       gap: 6px;
       font-size: 0.9rem;
-    }
-
-    .btn-add-semana:hover {
-      background: var(--accent-hover);
     }
 
     .view-all-btn {
@@ -688,10 +673,6 @@
       margin-bottom: 0.5rem;
     }
 
-    .despesa-item:hover {
-      background: var(--border);
-    }
-
     .btn-add-despesa {
       background: var(--accent);
       color: white;
@@ -722,22 +703,6 @@
       transition: all 0.2s;
     }
 
-    .rota-item.drag-over {
-      border: 2px solid var(--accent);
-      background: var(--accent);
-      opacity: 0.5;
-      transform: scale(1.01);
-    }
-
-    .rota-item.dragging {
-      opacity: 0.3;
-    }
-
-    .rota-item:hover {
-      transform: translateX(5px);
-      box-shadow: var(--shadow-md);
-    }
-
     .rota-numero {
       width: 50px;
       height: 50px;
@@ -754,29 +719,6 @@
       transition: all 0.2s;
     }
 
-    .rota-numero:hover {
-      transform: scale(1.05);
-      background: var(--accent-hover);
-    }
-
-    .rota-info {
-      flex: 3;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .rota-info .info-chip {
-      background: var(--card-bg);
-    }
-
-    .rota-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-shrink: 0;
-    }
-
     .move-rota-btn {
       background: var(--accent);
       color: white;
@@ -787,16 +729,6 @@
       cursor: pointer;
       font-size: 1rem;
       transition: all 0.2s;
-    }
-
-    .move-rota-btn:hover {
-      background: var(--accent-hover);
-      transform: scale(1.05);
-    }
-
-    .move-rota-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
     }
 
     .rota-total {
@@ -817,7 +749,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       align-items: center;
     }
 
@@ -840,84 +772,48 @@
       cursor: pointer;
     }
 
-    .tipo-receita {
+    .cards-receita-horizontal {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+      justify-content: flex-start;
     }
 
-    .tipo-receita-btn, .acao-cliente-btn {
-      padding: 0.5rem 1.5rem;
-      border-radius: 2rem;
-      border: 1px solid var(--border);
-      background: var(--bg-page);
-      cursor: pointer;
-    }
-
-    .tipo-receita-btn.active, .acao-cliente-btn.active {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-    }
-
-    .cards-receita {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .card-receita {
+    .card-receita-mini {
       background: var(--bg-page);
       border-radius: 1rem;
-      padding: 1rem;
+      padding: 0.5rem 1rem;
       text-align: center;
       border: 1px solid var(--border);
+      min-width: 110px;
     }
 
-    .card-receita h4 {
-      font-size: 0.9rem;
+    .card-receita-mini h4 {
+      font-size: 0.7rem;
       color: var(--text-secondary);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.2rem;
     }
 
-    .card-receita .valor {
-      font-size: 1.8rem;
+    .card-receita-mini .valor {
+      font-size: 1rem;
       font-weight: bold;
-      color: var(--accent);
     }
 
-    .card-receita .valor-projecao {
+    .card-receita-mini .valor-projecao {
       color: #f59e0b;
     }
 
-    .card-receita .valor-pago {
+    .card-receita-mini .valor-pago {
       color: #10b981;
     }
 
-    .card-receita .valor-despesa {
+    .card-receita-mini .valor-despesa {
       color: #ef4444;
     }
 
-    .card-receita .valor-lucro {
+    .card-receita-mini .valor-lucro {
       color: #8b5cf6;
-    }
-
-    .receita-lista, .clientes-lista {
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .receita-item, .cliente-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.8rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .receita-item:hover, .cliente-item:hover {
-      background: var(--bg-page);
     }
 
     .chart-row {
@@ -937,10 +833,11 @@
       text-align: center;
       margin-bottom: 1rem;
       color: var(--text-primary);
+      font-size: 0.9rem;
     }
 
     canvas {
-      max-height: 280px;
+      max-height: 250px;
       max-width: 100%;
     }
 
@@ -1036,7 +933,7 @@
       .receita-header { flex-direction: column; }
       .periodo-inputs { flex-direction: column; }
       .chart-row { grid-template-columns: 1fr; }
-      .cards-receita { grid-template-columns: 1fr; }
+      .cards-receita-horizontal { justify-content: center; }
       .rota-item { flex-direction: column; text-align: center; }
       .rota-info { justify-content: center; }
       .tab-wrapper { margin-bottom: 0.5rem; }
@@ -1252,6 +1149,7 @@
   let showingDespesa = false;
   let receitaChart = null;
   let pizzaChart = null;
+  let lucroChart = null;
   let draggedRotaIndex = null;
   let draggedTaskId = null;
 
@@ -1263,6 +1161,126 @@
 
   function numeroParaLetra(numero) {
     return String.fromCharCode(64 + numero);
+  }
+
+  function converterParaNumero(valorStr) {
+    if(!valorStr) return 0;
+    let v = valorStr.toString().replace(/\./g, '').replace(',', '.');
+    let num = parseFloat(v);
+    return isNaN(num) ? 0 : num;
+  }
+
+  function formatarValor(valor) {
+    if(!valor) return "0,00";
+    let v = valor.toString().replace(/[^\d,.-]/g, '');
+    if(v.includes(',')) {
+      v = v.replace(/\./g, '');
+    } else if(v.includes('.')) {
+      let partes = v.split('.');
+      if(partes.length === 2) {
+        v = partes[0] + ',' + partes[1].padEnd(2, '0').slice(0,2);
+      }
+    }
+    return v;
+  }
+
+  function formatDate(dateStr) {
+    if(!dateStr) return '—';
+    const partes = dateStr.split('-');
+    if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    return dateStr;
+  }
+
+  function escapeHtml(str) { 
+    if(!str) return ''; 
+    return str.replace(/[&<>]/g, function(m){
+      if(m==='&') return '&amp;'; 
+      if(m==='<') return '&lt;'; 
+      if(m==='>') return '&gt;'; 
+      return m;
+    }); 
+  }
+
+  // FUNÇÃO MELHORADA: Exclui APENAS os pedidos da aba CONCLUÍDO
+  // Os valores financeiros na aba RECEITA permanecem INALTERADOS
+  function excluirTodosConcluidos() {
+    if(confirm("ATENÇÃO! Esta ação irá excluir permanentemente TODOS os pedidos concluídos.\n\n✅ Os valores financeiros na aba RECEITA permanecerão INALTERADOS!\n\nDeseja continuar?")) {
+      
+      // Identificar os pedidos concluídos
+      const idsConcluidos = tasks.filter(t => t.concluido).map(t => t.id);
+      
+      // REMOVER OS PEDIDOS CONCLUÍDOS DA LISTA PRINCIPAL
+      const novosTasks = tasks.filter(t => !t.concluido);
+      tasks = novosTasks;
+      
+      // Reordenar as semanas após exclusão
+      renomearSemanasPorPosicao();
+      reordenarPorDataEntrega();
+      atualizarOrdemRota();
+      
+      saveToLocal();
+      atualizarAbasSemanas();
+      renderTasks();
+      
+      // Se estiver na aba de receita, apenas re-renderizar (os valores permanecem)
+      if(showingReceita) renderReceita();
+      if(showingRota) renderRota();
+      
+      alert("✅ Pedidos concluídos removidos com sucesso!\n\n📊 Os valores financeiros na aba RECEITA permanecem inalterados!");
+    }
+  }
+
+  function gerarPDFRota() {
+    let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+    pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
+    
+    if(pedidosRota.length === 0) {
+      alert("Nenhum pedido na rota de entrega para gerar PDF!");
+      return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    const hoje = new Date();
+    const dataAtual = hoje.toLocaleDateString('pt-BR');
+    
+    const valorTotalRota = pedidosRota.reduce((total, p) => total + converterParaNumero(p.valor), 0);
+    
+    doc.setFontSize(20);
+    doc.text("ROTA DE ENTREGA", 105, y, { align: 'center' });
+    y += 10;
+    doc.setFontSize(12);
+    doc.text("Data: " + dataAtual, 105, y, { align: 'center' });
+    y += 10;
+    
+    doc.setFontSize(14);
+    doc.text("Total de entregas: " + pedidosRota.length, 20, y);
+    y += 7;
+    doc.text("Valor total dos pedidos: R$ " + valorTotalRota.toLocaleString('pt-BR', {minimumFractionDigits: 2}), 20, y);
+    y += 12;
+    
+    doc.setFontSize(12);
+    doc.text("-------------------------------------------", 20, y);
+    y += 8;
+    
+    doc.setFontSize(11);
+    for(let i = 0; i < pedidosRota.length; i++) {
+      const p = pedidosRota[i];
+      if(y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      const letra = numeroParaLetra(i + 1);
+      const valorPedido = converterParaNumero(p.valor);
+      const statusPagamento = p.pagamento === "pago" ? "PAGO" : "PENDENTE";
+      const texto = (i+1) + " (" + letra + ") " + p.nome + " - R$ " + valorPedido.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + " - " + statusPagamento;
+      doc.text(texto, 20, y);
+      y += 7;
+    }
+    
+    doc.save("rota_entrega_" + dataAtual.replace(/\//g, '_') + ".pdf");
   }
 
   function renomearSemanasPorPosicao() {
@@ -1325,17 +1343,6 @@
     atualizarAbasSemanas();
     renderTasks();
     return true;
-  }
-
-  function excluirTodosConcluidos() {
-    if(confirm("ATENÇÃO! Esta ação irá excluir permanentemente TODOS os pedidos concluídos.\nOs clientes serão mantidos no banco de dados para futuras consultas.\nDeseja continuar?")) {
-      const novosTasks = tasks.filter(t => !t.concluido);
-      tasks = novosTasks;
-      saveToLocal();
-      renderTasks();
-      if(showingRota) renderRota();
-      alert("Todos os pedidos concluídos foram removidos com sucesso!");
-    }
   }
 
   function loadDespesas() {
@@ -1708,54 +1715,6 @@
     renderRota();
   }
 
-  function gerarPDFRota() {
-    let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
-    pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
-    
-    if(pedidosRota.length === 0) {
-      alert("Nenhum pedido na rota de entrega para gerar PDF!");
-      return;
-    }
-    
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let y = 20;
-    const hoje = new Date();
-    const dataAtual = hoje.toLocaleDateString('pt-BR');
-    
-    doc.setFontSize(20);
-    doc.text("ROTA DE ENTREGA", 105, y, { align: 'center' });
-    y += 10;
-    doc.setFontSize(12);
-    doc.text("Data: " + dataAtual, 105, y, { align: 'center' });
-    y += 15;
-    
-    doc.setFontSize(14);
-    doc.text("Total de entregas: " + pedidosRota.length, 20, y);
-    y += 10;
-    
-    doc.setFontSize(12);
-    doc.text("-------------------------------------------", 20, y);
-    y += 8;
-    
-    doc.setFontSize(11);
-    for(let i = 0; i < pedidosRota.length; i++) {
-      const p = pedidosRota[i];
-      if(y > 270) {
-        doc.addPage();
-        y = 20;
-      }
-      
-      const letra = numeroParaLetra(i + 1);
-      const statusPagamento = p.pagamento === "pago" ? "PAGO" : "PENDENTE";
-      const texto = (i+1) + " (" + letra + ") " + p.nome + " - " + statusPagamento;
-      doc.text(texto, 20, y);
-      y += 7;
-    }
-    
-    doc.save("rota_entrega_" + dataAtual.replace(/\//g, '_') + ".pdf");
-  }
-
   function reordenarPorDataEntrega() {
     for(let semana of semanasOrdenadas) {
       let weekTasks = tasks.filter(t => t.semana === semana && !t.concluido);
@@ -1984,10 +1943,22 @@
     if(task && !task.concluido) {
       task.concluido = true;
       task.dataConclusao = new Date().toISOString().split('T')[0];
+      task.rotaEntrega = false;
       saveToLocal();
+      
+      if(task.pagamento === "pago") {
+        registrarReceita(task);
+      }
+      
       atualizarAbasSemanas();
-      renderTasks();
-      if(showingRota) renderRota();
+      
+      if(showingConcluido) {
+        renderTasks();
+      } else if(showingRota) {
+        renderRota();
+      } else {
+        renderTasks();
+      }
     }
   }
 
@@ -2130,34 +2101,6 @@
         draggedTaskId = null;
       });
     });
-  }
-
-  function formatDate(dateStr) {
-    if(!dateStr) return '—';
-    const partes = dateStr.split('-');
-    if(partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
-    return dateStr;
-  }
-
-  function formatarValor(valor) {
-    if(!valor) return "0,00";
-    let v = valor.toString().replace(/[^\d,.-]/g, '');
-    if(v.includes(',')) {
-      v = v.replace(/\./g, '');
-    } else if(v.includes('.')) {
-      let partes = v.split('.');
-      if(partes.length === 2) {
-        v = partes[0] + ',' + partes[1].padEnd(2, '0').slice(0,2);
-      }
-    }
-    return v;
-  }
-
-  function converterParaNumero(valorStr) {
-    if(!valorStr) return 0;
-    let v = valorStr.toString().replace(/\./g, '').replace(',', '.');
-    let num = parseFloat(v);
-    return isNaN(num) ? 0 : num;
   }
 
   function exportToCSV() {
@@ -2687,6 +2630,8 @@
   window.filtrarClientes = filtrarClientes;
   window.filtrarPedidosCliente = filtrarPedidosCliente;
 
+  // FUNÇÃO MELHORADA: Exibe APENAS os cards de valores financeiros e gráficos
+  // Removeu completamente as listas de itens (Histórico de Receitas, Projeção e Despesas)
   function renderReceita() {
     const dataInicio = document.getElementById("dataInicio")?.value;
     const dataFim = document.getElementById("dataFim")?.value;
@@ -2696,6 +2641,7 @@
     let pagosFiltrados = [];
     let despesasFiltradas = [...despesas];
     
+    // Buscar pedidos não concluídos para projeção
     projecaoFiltrada = tasks.filter(t => !t.concluido).map(t => ({
       id: t.id,
       nome: t.nome,
@@ -2705,6 +2651,7 @@
       status_pagamento: t.pagamento
     }));
     
+    // Adicionar concluídos que ainda não foram pagos
     const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
     concluidosNaoPagos.forEach(t => {
       projecaoFiltrada.push({
@@ -2717,11 +2664,13 @@
       });
     });
     
+    // Buscar receitas já pagas do histórico
     pagosFiltrados = [...historicoReceita].map(r => ({
       ...r,
       valor: converterParaNumero(r.valor)
     }));
     
+    // Aplicar filtros de data
     if(dataInicio && dataFim) {
       const inicio = new Date(dataInicio);
       const fim = new Date(dataFim);
@@ -2792,17 +2741,12 @@
     
     const totalProjecao = projecaoFiltrada.reduce((sum, r) => sum + r.valor, 0);
     const totalPago = pagosFiltrados.reduce((sum, r) => sum + r.valor, 0);
-    const totalGeral = totalProjecao;
     const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
     const lucroLiquido = totalPago - totalDespesas;
+    const percentualLucro = totalPago > 0 ? (lucroLiquido / totalPago) * 100 : 0;
+    const percentualDespesa = totalPago > 0 ? (totalDespesas / totalPago) * 100 : 0;
     
-    const mesesProjecao = {};
-    projecaoFiltrada.forEach(r => {
-      const data = new Date(r.dataPagamento);
-      const mesAno = `${data.getMonth()+1}/${data.getFullYear()}`;
-      mesesProjecao[mesAno] = (mesesProjecao[mesAno] || 0) + r.valor;
-    });
-    
+    // Dados para gráficos
     const mesesPagos = {};
     pagosFiltrados.forEach(r => {
       const data = new Date(r.dataPagamento);
@@ -2817,35 +2761,29 @@
       mesesDespesas[mesAno] = (mesesDespesas[mesAno] || 0) + d.valor;
     });
     
+    // HTML modificado: APENAS cards de valores e gráficos - SEM listas de itens
     const html = `
       <div class="receita-container">
-        <div class="receita-header">
-          <div class="cards-receita">
-            <div class="card-receita">
-              <h4><i class="fas fa-chart-line"></i> PROJEÇÃO TOTAL</h4>
-              <div class="valor valor-projecao">R$ ${totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-              <small>Valor previsto para receber</small>
-            </div>
-            <div class="card-receita">
-              <h4><i class="fas fa-check-circle"></i> TOTAL RECEBIDO</h4>
-              <div class="valor valor-pago">R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-              <small>Valor já recebido</small>
-            </div>
-            <div class="card-receita">
-              <h4><i class="fas fa-chart-pie"></i> FATURAMENTO TOTAL</h4>
-              <div class="valor">R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-              <small>Valor total dos pedidos</small>
-            </div>
-            <div class="card-receita">
-              <h4><i class="fas fa-chart-line"></i> TOTAL DESPESAS</h4>
-              <div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-              <small>Despesas do período</small>
-            </div>
-            <div class="card-receita">
-              <h4><i class="fas fa-chart-line"></i> LUCRO LÍQUIDO</h4>
-              <div class="valor valor-lucro">R$ ${lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-              <small>Recebido - Despesas</small>
-            </div>
+        <div class="cards-receita-horizontal">
+          <div class="card-receita-mini">
+            <h4><i class="fas fa-chart-line"></i> PROJEÇÃO</h4>
+            <div class="valor valor-projecao">R$ ${totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+          </div>
+          <div class="card-receita-mini">
+            <h4><i class="fas fa-check-circle"></i> RECEBIDO</h4>
+            <div class="valor valor-pago">R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+          </div>
+          <div class="card-receita-mini">
+            <h4><i class="fas fa-chart-pie"></i> FATURAMENTO</h4>
+            <div class="valor">R$ ${(totalProjecao).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+          </div>
+          <div class="card-receita-mini">
+            <h4><i class="fas fa-chart-line"></i> DESPESAS</h4>
+            <div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+          </div>
+          <div class="card-receita-mini">
+            <h4><i class="fas fa-chart-line"></i> LUCRO</h4>
+            <div class="valor valor-lucro">R$ ${lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
           </div>
         </div>
         
@@ -2883,57 +2821,15 @@
           </div>
         </div>
         
-        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-history"></i> Histórico de Receitas (Pagos)</h3>
-        <div class="receita-lista">
-          ${pagosFiltrados.length === 0 ? '<div style="text-align:center; padding:2rem;">Nenhuma receita encontrada</div>' : 
-            pagosFiltrados.map(r => `
-              <div class="receita-item">
-                <div>
-                  <strong>${escapeHtml(r.nome)}</strong><br>
-                  <small>${escapeHtml(r.descricao?.substring(0, 30) || '')}</small>
-                </div>
-                <div>
-                  <span style="color: #10b981; font-weight: bold;">R$ ${r.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span><br>
-                  <small>${formatDate(r.dataPagamento)}</small>
-                </div>
-              </div>
-            `).join('')
-          }
-        </div>
-        
-        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-clock"></i> Projeção de Recebimento (Pendentes)</h3>
-        <div class="receita-lista">
-          ${projecaoFiltrada.filter(r => r.status_pagamento !== "pago").length === 0 ? '<div style="text-align:center; padding:2rem;">Nenhum pedido pendente</div>' : 
-            projecaoFiltrada.filter(r => r.status_pagamento !== "pago").map(r => `
-              <div class="receita-item">
-                <div>
-                  <strong>${escapeHtml(r.nome)}</strong><br>
-                  <small>${escapeHtml(r.descricao?.substring(0, 30) || '')}</small>
-                </div>
-                <div>
-                  <span style="color: #f59e0b; font-weight: bold;">R$ ${r.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span><br>
-                  <small>${formatDate(r.dataPagamento)}</small>
-                </div>
-              </div>
-            `).join('')
-          }
-        </div>
-        
-        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-receipt"></i> Despesas do Período</h3>
-        <div class="receita-lista">
-          ${despesasFiltradas.length === 0 ? '<div style="text-align:center; padding:2rem;">Nenhuma despesa cadastrada neste período</div>' : 
-            despesasFiltradas.sort((a,b) => b.id - a.id).map(d => `
-              <div class="receita-item">
-                <div>
-                  <strong>${escapeHtml(d.descricao)}</strong><br>
-                  <small>${formatDate(d.data)}</small>
-                </div>
-                <div>
-                  <span style="color: #ef4444; font-weight: bold;">R$ ${d.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
-                </div>
-              </div>
-            `).join('')
-          }
+        <div class="chart-row">
+          <div class="chart-box">
+            <h4><i class="fas fa-chart-line"></i> Lucro vs Despesas (R$)</h4>
+            <canvas id="lucroChart"></canvas>
+          </div>
+          <div class="chart-box">
+            <h4><i class="fas fa-chart-pie"></i> Distribuição (%)</h4>
+            <canvas id="distribuicaoChart"></canvas>
+          </div>
         </div>
       </div>
     `;
@@ -2954,6 +2850,7 @@
         document.getElementById("despesaModal").style.display = "flex";
       });
       
+      // Gráfico de Pizza
       const pizzaCtx = document.getElementById('pizzaChart')?.getContext('2d');
       if(pizzaCtx && pizzaChart) {
         pizzaChart.destroy();
@@ -2981,13 +2878,13 @@
         });
       }
       
+      // Gráfico de Barras
       const barCtx = document.getElementById('receitaChart')?.getContext('2d');
       if(barCtx && receitaChart) {
         receitaChart.destroy();
       }
       if(barCtx) {
-        const labels = Array.from(new Set([...Object.keys(mesesProjecao), ...Object.keys(mesesPagos), ...Object.keys(mesesDespesas)])).sort();
-        const dadosProjecao = labels.map(l => mesesProjecao[l] || 0);
+        const labels = Array.from(new Set([...Object.keys(mesesPagos), ...Object.keys(mesesDespesas)])).sort();
         const dadosPagos = labels.map(l => mesesPagos[l] || 0);
         const dadosDespesas = labels.map(l => mesesDespesas[l] || 0);
         
@@ -2996,13 +2893,6 @@
           data: {
             labels: labels,
             datasets: [
-              {
-                label: 'Projeção (R$)',
-                data: dadosProjecao,
-                backgroundColor: 'rgba(245, 158, 11, 0.6)',
-                borderColor: 'rgba(245, 158, 11, 1)',
-                borderWidth: 1
-              },
               {
                 label: 'Recebido (R$)',
                 data: dadosPagos,
@@ -3027,6 +2917,78 @@
               tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` } }
             },
             scales: { y: { ticks: { callback: (v) => `R$ ${v.toLocaleString('pt-BR')}` } } }
+          }
+        });
+      }
+      
+      // Gráfico de Linha
+      const lucroCtx = document.getElementById('lucroChart')?.getContext('2d');
+      if(lucroCtx && lucroChart) {
+        lucroChart.destroy();
+      }
+      if(lucroCtx) {
+        const labels = Array.from(new Set([...Object.keys(mesesPagos), ...Object.keys(mesesDespesas)])).sort();
+        const dadosLucro = labels.map(l => ((mesesPagos[l] || 0) - (mesesDespesas[l] || 0)));
+        const dadosDespesasPercent = labels.map(l => mesesDespesas[l] || 0);
+        
+        lucroChart = new Chart(lucroCtx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Lucro Líquido (R$)',
+                data: dadosLucro,
+                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                borderColor: 'rgba(139, 92, 246, 1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+              },
+              {
+                label: 'Despesas (R$)',
+                data: dadosDespesasPercent,
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                borderColor: 'rgba(239, 68, 68, 1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` } }
+            },
+            scales: { y: { ticks: { callback: (v) => `R$ ${v.toLocaleString('pt-BR')}` } } }
+          }
+        });
+      }
+      
+      // Gráfico de Distribuição (Doughnut)
+      const distribuicaoCtx = document.getElementById('distribuicaoChart')?.getContext('2d');
+      if(distribuicaoCtx) {
+        new Chart(distribuicaoCtx, {
+          type: 'doughnut',
+          data: {
+            labels: [`Lucro (${percentualLucro.toFixed(1)}%)`, `Despesas (${percentualDespesa.toFixed(1)}%)`],
+            datasets: [{
+              data: [Math.max(0, lucroLiquido), totalDespesas],
+              backgroundColor: ['#8b5cf6', '#ef4444'],
+              borderColor: ['#7c3aed', '#dc2626'],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: { position: 'bottom' },
+              tooltip: { callbacks: { label: (ctx) => `${ctx.label}: R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${ctx.raw > 0 ? ((ctx.raw / totalPago) * 100).toFixed(1) : 0}%)` } }
+            }
           }
         });
       }
@@ -3216,8 +3178,6 @@
     
     if(!viewAllMode && !showingConcluido) attachCardDragEvents();
   }
-
-  function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
 
   function abrirModalPosicao(taskId, taskNome) {
     const task = tasks.find(t => t.id === taskId);
