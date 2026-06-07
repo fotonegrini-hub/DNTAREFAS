@@ -44,6 +44,13 @@
       --cliente-bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
       --rota-bg: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
       --despesa-bg: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      
+      --foto-bg: #fef9e3;
+      --foto-border: #fbbf24;
+      --foto-urgent-bg: #fef3c7;
+      --caneca-bg: #f3e8ff;
+      --caneca-border: #a855f7;
+      --caneca-urgent-bg: #ede9fe;
     }
 
     body.dark {
@@ -67,6 +74,13 @@
       --cliente-bg: linear-gradient(135deg, #0d6d64 0%, #2b9e5c 100%);
       --rota-bg: linear-gradient(135deg, #9b4d96 0%, #c4455a 100%);
       --despesa-bg: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+      
+      --foto-bg: #422800;
+      --foto-border: #fbbf24;
+      --foto-urgent-bg: #451a00;
+      --caneca-bg: #2e1065;
+      --caneca-border: #a855f7;
+      --caneca-urgent-bg: #3b0764;
     }
 
     body {
@@ -125,7 +139,6 @@
       gap: 6px;
     }
 
-    /* NOVAS ABAS DE FILTRO POR STATUS */
     .status-filter-bar {
       display: flex;
       gap: 0.5rem;
@@ -177,6 +190,120 @@
 
     .filter-status-btn:hover {
       background: var(--border);
+      transform: scale(1.02);
+    }
+
+    .payment-filter-bar {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .filter-payment-btn {
+      background: transparent;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-payment-btn.active {
+      color: white;
+    }
+
+    .filter-payment-btn[data-payment="aguardando"].active {
+      background: var(--pagamento-aguardando);
+      color: white;
+    }
+
+    .filter-payment-btn[data-payment="pago"].active {
+      background: var(--pagamento-pago);
+      color: white;
+    }
+
+    .filter-payment-btn[data-payment="todos-pagamento"].active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .filter-payment-btn:hover {
+      background: var(--border);
+      transform: scale(1.02);
+    }
+
+    /* NOVO BOTÃO E CAMPO DE BUSCA POR PRODUTO */
+    .product-search-bar {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .product-search-input {
+      border: none;
+      background: transparent;
+      padding: 0.4rem 0.5rem;
+      outline: none;
+      color: var(--text-primary);
+      width: 150px;
+    }
+
+    .product-search-input::placeholder {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+
+    .btn-product-search {
+      background: var(--accent);
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      color: white;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .btn-product-search:hover {
+      background: var(--accent-hover);
+      transform: scale(1.02);
+    }
+
+    .btn-clear-search {
+      background: #ef4444;
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      color: white;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .btn-clear-search:hover {
+      background: #dc2626;
       transform: scale(1.02);
     }
 
@@ -492,12 +619,36 @@
 
     .task-card.urgente {
       border-left: 6px solid #ef4444;
-      background: var(--urgent-bg);
+    }
+
+    .task-card.tipo-foto {
+      background: var(--foto-bg);
+      border: 1px solid var(--foto-border);
+    }
+    
+    .task-card.tipo-foto.urgente {
+      background: var(--foto-urgent-bg);
+      border-left: 6px solid #ef4444;
+      border-top: 1px solid var(--foto-border);
+      border-right: 1px solid var(--foto-border);
+      border-bottom: 1px solid var(--foto-border);
+    }
+    
+    .task-card.tipo-caneca {
+      background: var(--caneca-bg);
+      border: 1px solid var(--caneca-border);
+    }
+    
+    .task-card.tipo-caneca.urgente {
+      background: var(--caneca-urgent-bg);
+      border-left: 6px solid #ef4444;
+      border-top: 1px solid var(--caneca-border);
+      border-right: 1px solid var(--caneca-border);
+      border-bottom: 1px solid var(--caneca-border);
     }
 
     .task-card.rota-entrega {
       border-right: 6px solid var(--accent);
-      background: var(--rota-entrega-bg);
     }
 
     .task-card.concluido {
@@ -976,6 +1127,28 @@
       margin: 0;
     }
 
+    .tipo-badge {
+      background: var(--accent);
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2rem;
+      font-size: 0.7rem;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tipo-badge.foto {
+      background: #fbbf24;
+      color: #78350f;
+    }
+
+    .tipo-badge.caneca {
+      background: #a855f7;
+      color: white;
+    }
+
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px);}
       to { opacity: 1; transform: translateY(0);}
@@ -993,6 +1166,8 @@
       .rota-info { justify-content: center; }
       .tab-wrapper { margin-bottom: 0.5rem; }
       .status-filter-bar { margin-top: 0.5rem; }
+      .payment-filter-bar { margin-top: 0.5rem; }
+      .product-search-bar { margin-top: 0.5rem; }
     }
   </style>
 </head>
@@ -1004,7 +1179,6 @@
       <div class="dn-tarefas"><i class="fas fa-calendar-day"></i> DN Tarefas Diárias</div>
     </div>
     
-    <!-- NOVAS ABAS DE FILTRO POR STATUS -->
     <div class="status-filter-bar">
       <button class="filter-status-btn active" data-filter="todos" id="filterTodosBtn">
         <i class="fas fa-list"></i> Todos
@@ -1017,6 +1191,29 @@
       </button>
       <button class="filter-status-btn" data-filter="retirada" id="filterRetiradaBtn">
         <i class="fas fa-hand-peace"></i> Retirada
+      </button>
+    </div>
+    
+    <div class="payment-filter-bar">
+      <button class="filter-payment-btn active" data-payment="todos-pagamento" id="filterTodosPagamentoBtn">
+        <i class="fas fa-credit-card"></i> Todos
+      </button>
+      <button class="filter-payment-btn" data-payment="aguardando" id="filterAguardandoPagamentoBtn">
+        <i class="fas fa-hourglass-half"></i> Aguardando Pagto
+      </button>
+      <button class="filter-payment-btn" data-payment="pago" id="filterPagoBtn">
+        <i class="fas fa-check-circle"></i> Pago
+      </button>
+    </div>
+    
+    <!-- NOVO CAMPO DE BUSCA POR PRODUTO (CANECA + FOTO) -->
+    <div class="product-search-bar">
+      <input type="text" id="productSearchInput" class="product-search-input" placeholder="🔍 Buscar produto...">
+      <button class="btn-product-search" id="searchProductBtn">
+        <i class="fas fa-search"></i> Buscar
+      </button>
+      <button class="btn-clear-search" id="clearProductSearchBtn">
+        <i class="fas fa-times"></i> Limpar
       </button>
     </div>
     
@@ -1212,6 +1409,7 @@
   let despesas = [];
   let currentWeek = 1;
   let searchQuery = "";
+  let productSearchQuery = ""; // NOVO: busca por produto
   let nextId = 100;
   let nextDespesaId = 1;
   let viewAllMode = false;
@@ -1226,8 +1424,8 @@
   let draggedRotaIndex = null;
   let draggedTaskId = null;
   
-  // NOVA VARIÁVEL PARA FILTRO DE STATUS
   let currentStatusFilter = "todos";
+  let currentPaymentFilter = "todos-pagamento";
 
   let semanasOrdenadas = [1, 2, 3];
 
@@ -1277,14 +1475,36 @@
     }); 
   }
 
+  function getTipoPedido(descricao) {
+    if(!descricao) return 'normal';
+    const descLower = descricao.toLowerCase();
+    if(descLower.includes('foto') || descLower.includes('fotografia') || descLower.includes('impressão') || descLower.includes('impressao')) {
+      return 'foto';
+    }
+    if(descLower.includes('caneca') || descLower.includes('copo') || descLower.includes('xícara') || descLower.includes('xicara')) {
+      return 'caneca';
+    }
+    return 'normal';
+  }
+
+  // FUNÇÃO MELHORADA: Exclui APENAS os concluídos da aba CONCLUÍDOS
+  // NÃO ALTERA os valores na aba RECEITA
   function excluirTodosConcluidos() {
-    if(confirm("ATENÇÃO! Esta ação irá excluir permanentemente TODOS os pedidos concluídos.\n\n✅ Os valores financeiros na aba RECEITA permanecerão INALTERADOS!\n\nDeseja continuar?")) {
+    const concluidos = tasks.filter(t => t.concluido === true);
+    
+    if(concluidos.length === 0) {
+      alert("Nenhum pedido concluído para excluir!");
+      return;
+    }
+    
+    if(confirm(`ATENÇÃO! Esta ação irá excluir permanentemente ${concluidos.length} pedido(s) concluído(s).\n\n✅ Os valores financeiros na aba RECEITA permanecerão INALTERADOS!\n\nDeseja continuar?`)) {
       
-      const idsConcluidos = tasks.filter(t => t.concluido).map(t => t.id);
-      
-      const novosTasks = tasks.filter(t => !t.concluido);
+      // REMOVER APENAS OS PEDIDOS CONCLUÍDOS DA LISTA PRINCIPAL
+      // NÃO remove do histórico de receita para manter os valores
+      const novosTasks = tasks.filter(t => t.concluido !== true);
       tasks = novosTasks;
       
+      // Reordenar as semanas após exclusão
       renomearSemanasPorPosicao();
       reordenarPorDataEntrega();
       atualizarOrdemRota();
@@ -1296,7 +1516,7 @@
       if(showingReceita) renderReceita();
       if(showingRota) renderRota();
       
-      alert("✅ Pedidos concluídos removidos com sucesso!\n\n📊 Os valores financeiros na aba RECEITA permanecem inalterados!");
+      alert(`✅ ${concluidos.length} pedido(s) concluído(s) removido(s) com sucesso!\n\n📊 Os valores financeiros na aba RECEITA permanecem inalterados!`);
     }
   }
 
@@ -2692,6 +2912,8 @@
 
   function filtrarPedidosCliente(nome) {
     searchQuery = nome;
+    productSearchQuery = "";
+    document.getElementById("productSearchInput").value = "";
     setClientesMode(false);
     setViewAllMode(true);
     renderTasks();
@@ -3115,7 +3337,7 @@
 
   window.aplicarFiltroReceita = aplicarFiltroReceita;
 
-  // FUNÇÃO RENDER TASKS MODIFICADA - AGORA COM SUPORTE AO FILTRO POR STATUS
+  // FUNÇÃO RENDER TASKS MODIFICADA - COM SUPORTE A BUSCA POR PRODUTO
   function renderTasks() {
     let filtered = [];
     
@@ -3143,9 +3365,23 @@
       filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
     }
     
-    // APLICAR FILTRO DE STATUS (NOVO)
+    // APLICAR FILTRO DE STATUS DO PEDIDO
     if(currentStatusFilter !== "todos") {
       filtered = filtered.filter(t => t.status === currentStatusFilter);
+    }
+    
+    // APLICAR FILTRO DE PAGAMENTO
+    if(currentPaymentFilter !== "todos-pagamento") {
+      filtered = filtered.filter(t => t.pagamento === currentPaymentFilter);
+    }
+    
+    // NOVO: APLICAR FILTRO DE BUSCA POR PRODUTO (CANECA + FOTO)
+    if(productSearchQuery.trim() !== "") {
+      const q = productSearchQuery.trim().toLowerCase();
+      filtered = filtered.filter(t => {
+        const descricaoLower = (t.descricao || "").toLowerCase();
+        return descricaoLower.includes(q);
+      });
     }
     
     if(searchQuery.trim() !== "") {
@@ -3155,7 +3391,11 @@
 
     const container = document.getElementById("tasksContainer");
     if(filtered.length === 0) {
-      container.innerHTML = `<div style="text-align:center; padding:2rem;">Nenhum pedido encontrado ☁️</div>`;
+      let msg = "Nenhum pedido encontrado ☁️";
+      if(productSearchQuery.trim() !== "") {
+        msg = `Nenhum pedido encontrado para o produto "${productSearchQuery}" ☁️`;
+      }
+      container.innerHTML = `<div style="text-align:center; padding:2rem;">${msg}</div>`;
       return;
     }
 
@@ -3187,6 +3427,19 @@
       const urgentClass = task.urgente && !task.concluido ? 'urgente' : '';
       const rotaClass = task.rotaEntrega && !task.concluido ? 'rota-entrega' : '';
       const concluidoClass = task.concluido ? 'concluido' : '';
+      
+      const tipoPedido = getTipoPedido(task.descricao);
+      let tipoClass = '';
+      let tipoBadge = '';
+      
+      if(tipoPedido === 'foto') {
+        tipoClass = 'tipo-foto';
+        tipoBadge = '<span class="tipo-badge foto"><i class="fas fa-camera"></i> FOTO</span>';
+      } else if(tipoPedido === 'caneca') {
+        tipoClass = 'tipo-caneca';
+        tipoBadge = '<span class="tipo-badge caneca"><i class="fas fa-mug-hot"></i> CANECA</span>';
+      }
+      
       const urgentBadge = task.urgente && !task.concluido ? '<span class="urgent-chip"><i class="fas fa-exclamation-circle"></i> URGENTE</span>' : '';
       const rotaBadge = task.rotaEntrega && !task.concluido ? '<span class="rota-chip"><i class="fas fa-truck"></i> Rota de Entrega</span>' : '';
       const pagamentoClass = task.pagamento === "pago" ? "payment-pago" : "payment-aguardando";
@@ -3195,7 +3448,7 @@
       const dataEntregaFormatada = task.dataEntrega ? formatDate(task.dataEntrega) : 'Sem data';
       
       html += `
-        <div class="task-card ${urgentClass} ${rotaClass} ${concluidoClass}" data-id="${task.id}" draggable="${!viewAllMode && !showingConcluido}">
+        <div class="task-card ${urgentClass} ${rotaClass} ${concluidoClass} ${tipoClass}" data-id="${task.id}" draggable="${!viewAllMode && !showingConcluido}">
           <div class="task-number" data-task-id="${task.id}" data-task-nome="${escapeHtml(task.nome)}" style="cursor: pointer;">${numero}</div>
           <div class="task-info">
             <span class="info-chip"><i class="fas fa-user"></i> ${escapeHtml(task.nome)}</span>
@@ -3206,6 +3459,7 @@
             <span class="info-chip"><i class="fas fa-calendar-plus"></i> Lançado: ${formatDate(task.dataLancamento)}</span>
             ${task.concluido ? `<span class="info-chip"><i class="fas fa-check-circle"></i> Concluído em: ${formatDate(task.dataConclusao)}</span>` : ''}
             <span class="payment-status ${pagamentoClass}" onclick="window.togglePagamento(${task.id})" style="cursor:pointer;">${pagamentoText}</span>
+            ${tipoBadge}
             ${urgentBadge}
             ${rotaBadge}
             ${concluidoBadge}
@@ -3259,11 +3513,9 @@
     }
   }
 
-  // FUNÇÕES PARA OS FILTROS DE STATUS
   function setStatusFilter(filter) {
     currentStatusFilter = filter;
     
-    // Atualizar classes ativas dos botões
     document.querySelectorAll('.filter-status-btn').forEach(btn => {
       btn.classList.remove('active');
       if(btn.dataset.filter === filter) {
@@ -3271,6 +3523,32 @@
       }
     });
     
+    renderTasks();
+  }
+  
+  function setPaymentFilter(filter) {
+    currentPaymentFilter = filter;
+    
+    document.querySelectorAll('.filter-payment-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if(btn.dataset.payment === filter) {
+        btn.classList.add('active');
+      }
+    });
+    
+    renderTasks();
+  }
+  
+  // NOVAS FUNÇÕES PARA BUSCA POR PRODUTO
+  function searchByProduct() {
+    const input = document.getElementById("productSearchInput");
+    productSearchQuery = input.value;
+    renderTasks();
+  }
+  
+  function clearProductSearch() {
+    document.getElementById("productSearchInput").value = "";
+    productSearchQuery = "";
     renderTasks();
   }
 
@@ -3712,11 +3990,21 @@
     if(!showingReceita && !showingClientes && !showingRota && !showingDespesa) renderTasks();
   });
 
-  // INICIALIZAR BOTÕES DE FILTRO DE STATUS
   document.getElementById("filterTodosBtn")?.addEventListener("click", () => setStatusFilter("todos"));
   document.getElementById("filterAguardandoBtn")?.addEventListener("click", () => setStatusFilter("aguardando"));
   document.getElementById("filterProducaoBtn")?.addEventListener("click", () => setStatusFilter("producao"));
   document.getElementById("filterRetiradaBtn")?.addEventListener("click", () => setStatusFilter("retirada"));
+  
+  document.getElementById("filterTodosPagamentoBtn")?.addEventListener("click", () => setPaymentFilter("todos-pagamento"));
+  document.getElementById("filterAguardandoPagamentoBtn")?.addEventListener("click", () => setPaymentFilter("aguardando"));
+  document.getElementById("filterPagoBtn")?.addEventListener("click", () => setPaymentFilter("pago"));
+  
+  // NOVOS EVENTOS PARA BUSCA POR PRODUTO
+  document.getElementById("searchProductBtn")?.addEventListener("click", searchByProduct);
+  document.getElementById("clearProductSearchBtn")?.addEventListener("click", clearProductSearch);
+  document.getElementById("productSearchInput")?.addEventListener("keypress", (e) => {
+    if(e.key === "Enter") searchByProduct();
+  });
 
   const themeToggle = document.getElementById("themeToggle");
   const themeTextSpan = document.getElementById("themeText");
