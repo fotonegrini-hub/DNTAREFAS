@@ -125,6 +125,61 @@
       gap: 6px;
     }
 
+    /* NOVAS ABAS DE FILTRO POR STATUS */
+    .status-filter-bar {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .filter-status-btn {
+      background: transparent;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-status-btn.active {
+      color: white;
+    }
+
+    .filter-status-btn[data-filter="aguardando"].active {
+      background: var(--status-aguardando);
+      color: #b45309;
+    }
+
+    .filter-status-btn[data-filter="producao"].active {
+      background: var(--status-producao);
+      color: white;
+    }
+
+    .filter-status-btn[data-filter="retirada"].active {
+      background: var(--status-retirada);
+      color: white;
+    }
+
+    .filter-status-btn[data-filter="todos"].active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .filter-status-btn:hover {
+      background: var(--border);
+      transform: scale(1.02);
+    }
+
     .theme-toggle {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -937,6 +992,7 @@
       .rota-item { flex-direction: column; text-align: center; }
       .rota-info { justify-content: center; }
       .tab-wrapper { margin-bottom: 0.5rem; }
+      .status-filter-bar { margin-top: 0.5rem; }
     }
   </style>
 </head>
@@ -947,6 +1003,23 @@
       <i class="fas fa-tasks"></i>
       <div class="dn-tarefas"><i class="fas fa-calendar-day"></i> DN Tarefas Diárias</div>
     </div>
+    
+    <!-- NOVAS ABAS DE FILTRO POR STATUS -->
+    <div class="status-filter-bar">
+      <button class="filter-status-btn active" data-filter="todos" id="filterTodosBtn">
+        <i class="fas fa-list"></i> Todos
+      </button>
+      <button class="filter-status-btn" data-filter="aguardando" id="filterAguardandoBtn">
+        <i class="fas fa-clock"></i> Aguardando
+      </button>
+      <button class="filter-status-btn" data-filter="producao" id="filterProducaoBtn">
+        <i class="fas fa-cogs"></i> Produção
+      </button>
+      <button class="filter-status-btn" data-filter="retirada" id="filterRetiradaBtn">
+        <i class="fas fa-hand-peace"></i> Retirada
+      </button>
+    </div>
+    
     <div class="theme-toggle" id="themeToggle">
       <i class="fas fa-moon"></i> <span id="themeText">Escuro</span>
     </div>
@@ -1152,6 +1225,9 @@
   let lucroChart = null;
   let draggedRotaIndex = null;
   let draggedTaskId = null;
+  
+  // NOVA VARIÁVEL PARA FILTRO DE STATUS
+  let currentStatusFilter = "todos";
 
   let semanasOrdenadas = [1, 2, 3];
 
@@ -1201,19 +1277,14 @@
     }); 
   }
 
-  // FUNÇÃO MELHORADA: Exclui APENAS os pedidos da aba CONCLUÍDO
-  // Os valores financeiros na aba RECEITA permanecem INALTERADOS
   function excluirTodosConcluidos() {
     if(confirm("ATENÇÃO! Esta ação irá excluir permanentemente TODOS os pedidos concluídos.\n\n✅ Os valores financeiros na aba RECEITA permanecerão INALTERADOS!\n\nDeseja continuar?")) {
       
-      // Identificar os pedidos concluídos
       const idsConcluidos = tasks.filter(t => t.concluido).map(t => t.id);
       
-      // REMOVER OS PEDIDOS CONCLUÍDOS DA LISTA PRINCIPAL
       const novosTasks = tasks.filter(t => !t.concluido);
       tasks = novosTasks;
       
-      // Reordenar as semanas após exclusão
       renomearSemanasPorPosicao();
       reordenarPorDataEntrega();
       atualizarOrdemRota();
@@ -1222,7 +1293,6 @@
       atualizarAbasSemanas();
       renderTasks();
       
-      // Se estiver na aba de receita, apenas re-renderizar (os valores permanecem)
       if(showingReceita) renderReceita();
       if(showingRota) renderRota();
       
@@ -2630,8 +2700,6 @@
   window.filtrarClientes = filtrarClientes;
   window.filtrarPedidosCliente = filtrarPedidosCliente;
 
-  // FUNÇÃO MELHORADA: Exibe APENAS os cards de valores financeiros e gráficos
-  // Removeu completamente as listas de itens (Histórico de Receitas, Projeção e Despesas)
   function renderReceita() {
     const dataInicio = document.getElementById("dataInicio")?.value;
     const dataFim = document.getElementById("dataFim")?.value;
@@ -2641,7 +2709,6 @@
     let pagosFiltrados = [];
     let despesasFiltradas = [...despesas];
     
-    // Buscar pedidos não concluídos para projeção
     projecaoFiltrada = tasks.filter(t => !t.concluido).map(t => ({
       id: t.id,
       nome: t.nome,
@@ -2651,7 +2718,6 @@
       status_pagamento: t.pagamento
     }));
     
-    // Adicionar concluídos que ainda não foram pagos
     const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
     concluidosNaoPagos.forEach(t => {
       projecaoFiltrada.push({
@@ -2664,13 +2730,11 @@
       });
     });
     
-    // Buscar receitas já pagas do histórico
     pagosFiltrados = [...historicoReceita].map(r => ({
       ...r,
       valor: converterParaNumero(r.valor)
     }));
     
-    // Aplicar filtros de data
     if(dataInicio && dataFim) {
       const inicio = new Date(dataInicio);
       const fim = new Date(dataFim);
@@ -2746,7 +2810,6 @@
     const percentualLucro = totalPago > 0 ? (lucroLiquido / totalPago) * 100 : 0;
     const percentualDespesa = totalPago > 0 ? (totalDespesas / totalPago) * 100 : 0;
     
-    // Dados para gráficos
     const mesesPagos = {};
     pagosFiltrados.forEach(r => {
       const data = new Date(r.dataPagamento);
@@ -2761,7 +2824,6 @@
       mesesDespesas[mesAno] = (mesesDespesas[mesAno] || 0) + d.valor;
     });
     
-    // HTML modificado: APENAS cards de valores e gráficos - SEM listas de itens
     const html = `
       <div class="receita-container">
         <div class="cards-receita-horizontal">
@@ -2850,7 +2912,6 @@
         document.getElementById("despesaModal").style.display = "flex";
       });
       
-      // Gráfico de Pizza
       const pizzaCtx = document.getElementById('pizzaChart')?.getContext('2d');
       if(pizzaCtx && pizzaChart) {
         pizzaChart.destroy();
@@ -2878,7 +2939,6 @@
         });
       }
       
-      // Gráfico de Barras
       const barCtx = document.getElementById('receitaChart')?.getContext('2d');
       if(barCtx && receitaChart) {
         receitaChart.destroy();
@@ -2921,7 +2981,6 @@
         });
       }
       
-      // Gráfico de Linha
       const lucroCtx = document.getElementById('lucroChart')?.getContext('2d');
       if(lucroCtx && lucroChart) {
         lucroChart.destroy();
@@ -2968,7 +3027,6 @@
         });
       }
       
-      // Gráfico de Distribuição (Doughnut)
       const distribuicaoCtx = document.getElementById('distribuicaoChart')?.getContext('2d');
       if(distribuicaoCtx) {
         new Chart(distribuicaoCtx, {
@@ -3057,6 +3115,7 @@
 
   window.aplicarFiltroReceita = aplicarFiltroReceita;
 
+  // FUNÇÃO RENDER TASKS MODIFICADA - AGORA COM SUPORTE AO FILTRO POR STATUS
   function renderTasks() {
     let filtered = [];
     
@@ -3082,6 +3141,11 @@
       }
     } else {
       filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
+    }
+    
+    // APLICAR FILTRO DE STATUS (NOVO)
+    if(currentStatusFilter !== "todos") {
+      filtered = filtered.filter(t => t.status === currentStatusFilter);
     }
     
     if(searchQuery.trim() !== "") {
@@ -3193,6 +3257,21 @@
     } else if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa) {
       alert("Alterar posição disponível apenas na visualização por semana");
     }
+  }
+
+  // FUNÇÕES PARA OS FILTROS DE STATUS
+  function setStatusFilter(filter) {
+    currentStatusFilter = filter;
+    
+    // Atualizar classes ativas dos botões
+    document.querySelectorAll('.filter-status-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if(btn.dataset.filter === filter) {
+        btn.classList.add('active');
+      }
+    });
+    
+    renderTasks();
   }
 
   window.moveTask = moveTask;
@@ -3632,6 +3711,12 @@
     searchQuery = e.target.value;
     if(!showingReceita && !showingClientes && !showingRota && !showingDespesa) renderTasks();
   });
+
+  // INICIALIZAR BOTÕES DE FILTRO DE STATUS
+  document.getElementById("filterTodosBtn")?.addEventListener("click", () => setStatusFilter("todos"));
+  document.getElementById("filterAguardandoBtn")?.addEventListener("click", () => setStatusFilter("aguardando"));
+  document.getElementById("filterProducaoBtn")?.addEventListener("click", () => setStatusFilter("producao"));
+  document.getElementById("filterRetiradaBtn")?.addEventListener("click", () => setStatusFilter("retirada"));
 
   const themeToggle = document.getElementById("themeToggle");
   const themeTextSpan = document.getElementById("themeText");
