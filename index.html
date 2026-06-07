@@ -4,13 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>FlowTasks - Gestão de Pedidos</title>
-  <!-- Font Awesome 6 (ícones modernos) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Google Fonts Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-  <!-- Chart.js para gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- jsPDF para gerar PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * {
@@ -47,6 +43,7 @@
       --receita-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       --cliente-bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
       --rota-bg: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --despesa-bg: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     }
 
     body.dark {
@@ -69,6 +66,7 @@
       --receita-bg: linear-gradient(135deg, #4c51bf 0%, #5b3a8c 100%);
       --cliente-bg: linear-gradient(135deg, #0d6d64 0%, #2b9e5c 100%);
       --rota-bg: linear-gradient(135deg, #9b4d96 0%, #c4455a 100%);
+      --despesa-bg: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
     }
 
     body {
@@ -219,6 +217,16 @@
       box-shadow: 0 2px 8px rgba(240,147,251,0.5);
     }
 
+    .tab-btn.despesa-btn {
+      background: var(--despesa-bg);
+      color: white;
+    }
+
+    .tab-btn.despesa-btn.active {
+      opacity: 0.9;
+      box-shadow: 0 2px 8px rgba(239,68,68,0.5);
+    }
+
     .tab-btn.drag-over {
       background: var(--accent);
       opacity: 0.7;
@@ -280,6 +288,24 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .btn-excluir-concluidos {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .btn-excluir-concluidos:hover {
+      background: #dc2626;
     }
 
     .actions-row {
@@ -651,6 +677,34 @@
       border-bottom: 2px solid var(--border);
     }
 
+    .despesa-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-page);
+      border-radius: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .despesa-item:hover {
+      background: var(--border);
+    }
+
+    .btn-add-despesa {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
     .rota-container .rota-lista {
       display: flex;
       flex-direction: column;
@@ -696,12 +750,8 @@
       font-size: 1.4rem;
       color: white;
       flex-shrink: 0;
-      cursor: grab;
+      cursor: pointer;
       transition: all 0.2s;
-    }
-
-    .rota-numero:active {
-      cursor: grabbing;
     }
 
     .rota-numero:hover {
@@ -843,6 +893,14 @@
 
     .card-receita .valor-pago {
       color: #10b981;
+    }
+
+    .card-receita .valor-despesa {
+      color: #ef4444;
+    }
+
+    .card-receita .valor-lucro {
+      color: #8b5cf6;
     }
 
     .receita-lista, .clientes-lista {
@@ -1011,6 +1069,7 @@
       <input type="file" id="importFile" accept=".csv">
     </button>
     <button class="btn-pdf" id="gerarPDFBtn"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
+    <button class="btn-excluir-concluidos" id="excluirConcluidosBtn"><i class="fas fa-trash-alt"></i> Excluir Concluídos</button>
   </div>
 
   <div id="tasksContainer" class="tasks-horizontal"></div>
@@ -1079,6 +1138,23 @@
   </div>
 </div>
 
+<div id="posicaoRotaModal" class="modal">
+  <div class="modal-content">
+    <h3>Alterar Posição na Rota de Entrega</h3>
+    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Pedido: <strong id="rotaPedidoNome"></strong></p>
+    <input type="hidden" id="rotaPosicaoEditId" value="">
+    <label>Nova posição (número)</label>
+    <div class="posicao-input-group">
+      <input type="number" id="novaPosicaoRota" min="1" step="1" placeholder="Nº">
+      <button class="btn-add" id="confirmarPosicaoRotaBtn" style="padding: 0.5rem 1rem;">Aplicar</button>
+    </div>
+    <small>Digite o número da nova posição desejada (1 a <span id="maxPosicaoRota"></span>)</small>
+    <div class="modal-buttons" style="margin-top: 1rem;">
+      <button class="icon-btn" id="closePosicaoRotaModalBtn" style="background: var(--border); padding: 0.5rem 1.2rem;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div id="pdfModal" class="modal">
   <div class="modal-content">
     <h3><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</h3>
@@ -1143,33 +1219,53 @@
   </div>
 </div>
 
+<div id="despesaModal" class="modal">
+  <div class="modal-content">
+    <h3><i class="fas fa-plus-circle"></i> Adicionar Despesa</h3>
+    <label>Descrição da Despesa *</label>
+    <input type="text" id="despesaDescricao" placeholder="Ex: Conta de Luz, Internet, Aluguel...">
+    <label>Valor (R$) *</label>
+    <input type="text" id="despesaValor" placeholder="0,00">
+    <label>Data da Despesa</label>
+    <input type="date" id="despesaData">
+    <div class="modal-buttons" style="margin-top: 1rem;">
+      <button class="icon-btn" id="closeDespesaModalBtn" style="background: var(--border); padding: 0.5rem 1.2rem;">Cancelar</button>
+      <button class="btn-add" id="saveDespesaBtn" style="border-radius: 2rem;">Salvar Despesa</button>
+    </div>
+  </div>
+</div>
+
 <script>
   let tasks = [];
   let historicoReceita = [];
   let clientesCadastrados = [];
+  let despesas = [];
   let currentWeek = 1;
   let searchQuery = "";
   let nextId = 100;
+  let nextDespesaId = 1;
   let viewAllMode = false;
   let showingConcluido = false;
   let showingReceita = false;
   let showingClientes = false;
   let showingRota = false;
+  let showingDespesa = false;
   let receitaChart = null;
   let pizzaChart = null;
   let draggedRotaIndex = null;
   let draggedTaskId = null;
 
-  // Lista de IDs das semanas na ordem visual (os números reais das semanas)
   let semanasOrdenadas = [1, 2, 3];
 
   function getSemanaNome(semanaNum) {
     return `${semanaNum}ª Semana`;
   }
 
-  // Função para renomear as semanas baseado na posição visual
+  function numeroParaLetra(numero) {
+    return String.fromCharCode(64 + numero);
+  }
+
   function renomearSemanasPorPosicao() {
-    // Criar mapeamento da posição (índice + 1) para o valor real da semana
     const novoMapeamento = {};
     semanasOrdenadas.forEach((semanaReal, idx) => {
       novoMapeamento[semanaReal] = idx + 1;
@@ -1184,7 +1280,6 @@
     });
     
     if(alterado) {
-      // Reordenar a lista semanasOrdenadas com os novos nomes
       const novasSemanasOrdenadas = [];
       for(let i = 0; i < semanasOrdenadas.length; i++) {
         novasSemanasOrdenadas.push(i + 1);
@@ -1195,7 +1290,6 @@
     }
   }
 
-  // Mover semana de posição no cabeçalho com renomeação automática
   function moverSemana(index, direcao) {
     if(direcao === 'left' && index > 0) {
       [semanasOrdenadas[index], semanasOrdenadas[index - 1]] = [semanasOrdenadas[index - 1], semanasOrdenadas[index]];
@@ -1205,17 +1299,13 @@
       return;
     }
     
-    // Renomear as semanas baseado na nova posição
     renomearSemanasPorPosicao();
-    
-    // Salvar e atualizar
     saveSemanasOrdem();
     saveToLocal();
     atualizarAbasSemanas();
     renderTasks();
   }
 
-  // Adicionar nova semana
   function adicionarSemana() {
     const novaSemana = semanasOrdenadas.length + 1;
     semanasOrdenadas.push(novaSemana);
@@ -1229,8 +1319,6 @@
     if(!task || task.semana === targetWeek || task.concluido) return false;
     
     task.semana = targetWeek;
-    
-    // Reordenar e renomear se necessário
     renomearSemanasPorPosicao();
     reordenarPorDataEntrega();
     saveToLocal();
@@ -1239,12 +1327,58 @@
     return true;
   }
 
+  function excluirTodosConcluidos() {
+    if(confirm("ATENÇÃO! Esta ação irá excluir permanentemente TODOS os pedidos concluídos.\nOs clientes serão mantidos no banco de dados para futuras consultas.\nDeseja continuar?")) {
+      const novosTasks = tasks.filter(t => !t.concluido);
+      tasks = novosTasks;
+      saveToLocal();
+      renderTasks();
+      if(showingRota) renderRota();
+      alert("Todos os pedidos concluídos foram removidos com sucesso!");
+    }
+  }
+
+  function loadDespesas() {
+    const stored = localStorage.getItem("flowtasks_despesas");
+    if(stored) {
+      despesas = JSON.parse(stored);
+      if(despesas.length) {
+        const maxId = Math.max(...despesas.map(d => d.id), 0);
+        nextDespesaId = maxId + 1;
+      }
+    } else {
+      despesas = [];
+      nextDespesaId = 1;
+    }
+  }
+
+  function saveDespesas() {
+    localStorage.setItem("flowtasks_despesas", JSON.stringify(despesas));
+  }
+
+  function adicionarDespesa(descricao, valor, data) {
+    if(!descricao || !valor) return false;
+    despesas.push({
+      id: nextDespesaId++,
+      descricao: descricao,
+      valor: converterParaNumero(valor),
+      data: data || new Date().toISOString().split('T')[0]
+    });
+    saveDespesas();
+    return true;
+  }
+
+  function removerDespesa(id) {
+    despesas = despesas.filter(d => d.id !== id);
+    saveDespesas();
+  }
+
   function atualizarAbasSemanas() {
     const tabContainer = document.getElementById("tabContainer");
     
     let html = '';
     semanasOrdenadas.forEach((semana, idx) => {
-      const isActive = (!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && currentWeek === semana);
+      const isActive = (!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && currentWeek === semana);
       html += `
         <div class="tab-wrapper">
           <button class="tab-btn ${isActive ? 'active' : ''}" data-week="${semana}" data-week-num="${semana}">
@@ -1268,6 +1402,7 @@
       <button class="tab-btn rota-btn" id="rotaTab" ${showingRota ? 'active' : ''}>🚚 ROTA DE ENTREGA</button>
       <button class="tab-btn receita-btn" id="receitaTab" ${showingReceita ? 'active' : ''}>💰 RECEITA</button>
       <button class="tab-btn clientes-btn" id="clientesTab" ${showingClientes ? 'active' : ''}>👥 CLIENTES</button>
+      <button class="tab-btn despesa-btn" id="despesaTab" ${showingDespesa ? 'active' : ''}>📉 DESPESAS</button>
       <button class="view-all-btn" id="viewAllBtn"><i class="fas fa-list-ul"></i> Todos os Pedidos</button>
     `;
     
@@ -1280,6 +1415,7 @@
         if(showingReceita) setReceitaMode(false);
         if(showingClientes) setClientesMode(false);
         if(showingRota) setRotaMode(false);
+        if(showingDespesa) setDespesaMode(false);
         document.querySelectorAll(".tab-btn[data-week]").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         currentWeek = parseInt(btn.dataset.week);
@@ -1288,6 +1424,7 @@
         showingReceita = false;
         showingClientes = false;
         showingRota = false;
+        showingDespesa = false;
         if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
         tasksContainer.style.display = "flex";
         if(receitaContainer) receitaContainer.style.display = "none";
@@ -1299,7 +1436,7 @@
       
       btn.addEventListener('dragover', (e) => {
         e.preventDefault();
-        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) btn.classList.add('drag-over');
+        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa) btn.classList.add('drag-over');
       });
       btn.addEventListener('dragleave', () => {
         btn.classList.remove('drag-over');
@@ -1308,7 +1445,7 @@
         e.preventDefault();
         btn.classList.remove('drag-over');
         const targetWeek = parseInt(btn.dataset.week);
-        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) {
+        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa) {
           moveTaskToWeek(draggedTaskId, targetWeek);
           draggedTaskId = null;
         }
@@ -1321,6 +1458,7 @@
     const receitaTabBtn = document.getElementById("receitaTab");
     const clientesTabBtn = document.getElementById("clientesTab");
     const rotaTabBtn = document.getElementById("rotaTab");
+    const despesaTabBtn = document.getElementById("despesaTab");
     const viewAllBtnEl = document.getElementById("viewAllBtn");
     
     if(concluidoTabBtn) {
@@ -1329,6 +1467,7 @@
         if(showingReceita) setReceitaMode(false);
         if(showingClientes) setClientesMode(false);
         if(showingRota) setRotaMode(false);
+        if(showingDespesa) setDespesaMode(false);
         setConcluidoMode(true);
       });
     }
@@ -1339,6 +1478,7 @@
         if(showingConcluido) setConcluidoMode(false);
         if(showingClientes) setClientesMode(false);
         if(showingRota) setRotaMode(false);
+        if(showingDespesa) setDespesaMode(false);
         setReceitaMode(true);
       });
     }
@@ -1349,6 +1489,7 @@
         if(showingConcluido) setConcluidoMode(false);
         if(showingReceita) setReceitaMode(false);
         if(showingRota) setRotaMode(false);
+        if(showingDespesa) setDespesaMode(false);
         setClientesMode(true);
       });
     }
@@ -1359,7 +1500,19 @@
         if(showingConcluido) setConcluidoMode(false);
         if(showingReceita) setReceitaMode(false);
         if(showingClientes) setClientesMode(false);
+        if(showingDespesa) setDespesaMode(false);
         setRotaMode(true);
+      });
+    }
+    
+    if(despesaTabBtn) {
+      despesaTabBtn.addEventListener("click", () => {
+        if(viewAllMode) setViewAllMode(false);
+        if(showingConcluido) setConcluidoMode(false);
+        if(showingReceita) setReceitaMode(false);
+        if(showingClientes) setClientesMode(false);
+        if(showingRota) setRotaMode(false);
+        setDespesaMode(true);
       });
     }
     
@@ -1369,6 +1522,7 @@
         if(showingReceita) setReceitaMode(false);
         if(showingClientes) setClientesMode(false);
         if(showingRota) setRotaMode(false);
+        if(showingDespesa) setDespesaMode(false);
         setViewAllMode(true);
       });
     }
@@ -1415,6 +1569,8 @@
       }
       renomearSemanasPorPosicao();
     }
+    
+    loadDespesas();
     
     const storedHistorico = localStorage.getItem("flowtasks_historico_receita");
     if(storedHistorico) {
@@ -1501,6 +1657,40 @@
     if(showingRota) renderRota();
   }
 
+  function moverRotaParaPosicao(taskId, novaPosicao) {
+    let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+    pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
+    
+    if(novaPosicao < 1 || novaPosicao > pedidosRota.length) {
+      alert(`Posição inválida! Escolha entre 1 e ${pedidosRota.length}`);
+      return false;
+    }
+    
+    const currentIndex = pedidosRota.findIndex(t => t.id === taskId);
+    const targetIndex = novaPosicao - 1;
+    
+    if(currentIndex === targetIndex) return false;
+    
+    const [itemMovido] = pedidosRota.splice(currentIndex, 1);
+    pedidosRota.splice(targetIndex, 0, itemMovido);
+    
+    pedidosRota.forEach((t, idx) => {
+      t.rotaOrdem = idx;
+    });
+    
+    saveToLocal();
+    if(showingRota) renderRota();
+    return true;
+  }
+
+  function abrirModalPosicaoRota(taskId, taskNome, maxPosicao) {
+    document.getElementById("rotaPedidoNome").innerHTML = taskNome;
+    document.getElementById("maxPosicaoRota").innerHTML = maxPosicao;
+    document.getElementById("rotaPosicaoEditId").value = taskId;
+    document.getElementById("novaPosicaoRota").value = "";
+    document.getElementById("posicaoRotaModal").style.display = "flex";
+  }
+
   function moverRotaPorArrasto(origemIndex, destinoIndex) {
     let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
     pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
@@ -1534,18 +1724,18 @@
     const dataAtual = hoje.toLocaleDateString('pt-BR');
     
     doc.setFontSize(20);
-    doc.text("🚚 ROTA DE ENTREGA", 105, y, { align: 'center' });
+    doc.text("ROTA DE ENTREGA", 105, y, { align: 'center' });
     y += 10;
     doc.setFontSize(12);
-    doc.text(`Data: ${dataAtual}`, 105, y, { align: 'center' });
+    doc.text("Data: " + dataAtual, 105, y, { align: 'center' });
     y += 15;
     
     doc.setFontSize(14);
-    doc.text(`Total de entregas: ${pedidosRota.length}`, 20, y);
+    doc.text("Total de entregas: " + pedidosRota.length, 20, y);
     y += 10;
     
     doc.setFontSize(12);
-    doc.text("─".repeat(50), 20, y);
+    doc.text("-------------------------------------------", 20, y);
     y += 8;
     
     doc.setFontSize(11);
@@ -1556,13 +1746,14 @@
         y = 20;
       }
       
-      const statusPagamento = p.pagamento === "pago" ? "✅ PAGO" : "⏳ PENDENTE";
-      doc.text(`${i+1}. ${p.nome}`, 20, y);
-      doc.text(`${statusPagamento}`, 140, y);
+      const letra = numeroParaLetra(i + 1);
+      const statusPagamento = p.pagamento === "pago" ? "PAGO" : "PENDENTE";
+      const texto = (i+1) + " (" + letra + ") " + p.nome + " - " + statusPagamento;
+      doc.text(texto, 20, y);
       y += 7;
     }
     
-    doc.save(`rota_entrega_${dataAtual.replace(/\//g, '_')}.pdf`);
+    doc.save("rota_entrega_" + dataAtual.replace(/\//g, '_') + ".pdf");
   }
 
   function reordenarPorDataEntrega() {
@@ -1591,10 +1782,6 @@
 
   function saveClientes() {
     localStorage.setItem("flowtasks_clientes", JSON.stringify(clientesCadastrados));
-  }
-
-  function buscarClientePorNome(nome) {
-    return clientesCadastrados.find(c => c.nome.toLowerCase() === nome.toLowerCase());
   }
 
   function showSugestoes(input) {
@@ -1930,7 +2117,7 @@
     cards.forEach(card => {
       card.setAttribute('draggable', 'true');
       card.addEventListener('dragstart', (e) => {
-        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota) {
+        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa) {
           e.preventDefault();
           return false;
         }
@@ -2110,15 +2297,16 @@
         </div>
         
         <div style="margin-bottom: 1rem; padding: 0.5rem; background: var(--accent); border-radius: 0.5rem; color: white; text-align: center;">
-          <i class="fas fa-info-circle"></i> Arraste o número para qualquer posição desejada para reordenar a entrega
+          <i class="fas fa-info-circle"></i> Clique duas vezes no número para escolher a posição desejada
         </div>
         
         <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-list-ol"></i> Ordem de Entrega</h3>
         <div class="rota-lista" id="rotaLista">
           ${pedidosRota.length === 0 ? '<div style="text-align:center; padding:2rem;">🚚 Nenhum pedido marcado para rota de entrega hoje</div>' : 
-            pedidosRota.map((t, idx) => `
-              <div class="rota-item" data-id="${t.id}" data-index="${idx}" draggable="true">
-                <div class="rota-numero" data-index="${idx}">
+            pedidosRota.map((t, idx) => {
+              return `
+              <div class="rota-item" data-id="${t.id}" data-index="${idx}">
+                <div class="rota-numero" data-id="${t.id}" data-nome="${escapeHtml(t.nome)}" data-max="${pedidosRota.length}" data-index="${idx}">
                   ${idx + 1}
                 </div>
                 <div class="rota-info">
@@ -2143,7 +2331,7 @@
                   <button class="icon-btn" onclick="window.toggleRotaEntrega(${t.id})" title="Remover da rota"><i class="fas fa-truck fa-lg"></i></button>
                 </div>
               </div>
-            `).join('')
+            `}).join('')
           }
         </div>
       </div>
@@ -2155,56 +2343,26 @@
       
       document.getElementById("gerarPDFRotaBtn")?.addEventListener("click", gerarPDFRota);
       
-      const rotaItems = document.querySelectorAll('.rota-item');
-      
-      rotaItems.forEach(item => {
-        const numeroDiv = item.querySelector('.rota-numero');
-        
-        if(numeroDiv) {
-          numeroDiv.setAttribute('draggable', 'true');
-          
-          numeroDiv.addEventListener('dragstart', (e) => {
-            const origemIndex = parseInt(numeroDiv.dataset.index);
-            e.dataTransfer.setData('text/plain', origemIndex);
-            e.dataTransfer.effectAllowed = 'move';
-            numeroDiv.style.opacity = '0.5';
-            draggedRotaIndex = origemIndex;
-          });
-          
-          numeroDiv.addEventListener('dragend', (e) => {
-            numeroDiv.style.opacity = '';
-            draggedRotaIndex = null;
-            rotaItems.forEach(i => i.classList.remove('drag-over'));
-          });
-        }
-        
-        item.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          if(draggedRotaIndex !== null && parseInt(item.dataset.index) !== draggedRotaIndex) {
-            item.classList.add('drag-over');
-          }
-        });
-        
-        item.addEventListener('dragleave', (e) => {
-          item.classList.remove('drag-over');
-        });
-        
-        item.addEventListener('drop', (e) => {
-          e.preventDefault();
-          item.classList.remove('drag-over');
-          
-          const destinoIndex = parseInt(item.dataset.index);
-          
-          if(draggedRotaIndex !== null && destinoIndex !== draggedRotaIndex) {
-            moverRotaPorArrasto(draggedRotaIndex, destinoIndex);
-          }
+      document.querySelectorAll('.rota-numero').forEach(el => {
+        el.addEventListener('dblclick', function(e) {
+          e.stopPropagation();
+          const taskId = parseInt(this.dataset.id);
+          const taskNome = this.dataset.nome;
+          const maxPosicao = parseInt(this.dataset.max);
+          abrirModalPosicaoRota(taskId, taskNome, maxPosicao);
         });
       });
     }
   }
 
   window.moverOrdemRota = moverOrdemRota;
+  window.removerDespesaConfirm = (id) => {
+    if(confirm("Remover esta despesa permanentemente?")) {
+      removerDespesa(id);
+      if(showingDespesa) renderDespesas();
+      if(showingReceita) renderReceita();
+    }
+  };
 
   async function gerarPDFComOpcoes(tipo, ano, mes, dataInicio, dataFim) {
     const { jsPDF } = window.jspdf;
@@ -2225,10 +2383,17 @@
         return data >= inicio && data <= fim;
       });
       
+      const despesasFiltradas = despesas.filter(d => {
+        const data = new Date(d.data);
+        return data >= inicio && data <= fim;
+      });
+      
       const totalPedidos = pedidosFiltrados.length;
       const totalPagos = pedidosFiltrados.filter(t => t.pagamento === "pago").length;
       const totalValor = pedidosFiltrados.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
       const totalPago = pedidosFiltrados.filter(t => t.pagamento === "pago").reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
+      const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
+      const lucro = totalPago - totalDespesas;
       
       doc.setFontSize(12);
       doc.text(`Período: ${formatDate(inicio.toISOString().split('T')[0])} a ${formatDate(fim.toISOString().split('T')[0])}`, 20, y);
@@ -2240,6 +2405,10 @@
       doc.text(`Valor Total: R$ ${totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
       y += 7;
       doc.text(`Valor Recebido: R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 7;
+      doc.text(`Total Despesas: R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 7;
+      doc.text(`Lucro Líquido: R$ ${lucro.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
       y += 15;
       
       doc.setFontSize(14);
@@ -2266,6 +2435,7 @@
       const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
       let totalGeral = 0;
       let totalPagosGeral = 0;
+      let totalDespesasGeral = 0;
       const mesesComMovimento = [];
       
       for(let i = 0; i < meses.length; i++) {
@@ -2277,18 +2447,26 @@
           return data >= inicio && data <= fim;
         });
         
+        const despesasMes = despesas.filter(d => {
+          const data = new Date(d.data);
+          return data >= inicio && data <= fim;
+        });
+        
         const totalVendas = pedidosMes.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
         const totalPagos = pedidosMes.filter(t => t.pagamento === "pago").reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
+        const totalDespesas = despesasMes.reduce((sum, d) => sum + d.valor, 0);
         
-        if(totalVendas > 0 || pedidosMes.length > 0) {
+        if(totalVendas > 0 || pedidosMes.length > 0 || totalDespesas > 0) {
           mesesComMovimento.push({
             nome: meses[i],
             totalVendas,
             totalPagos,
+            totalDespesas,
             qtdPedidos: pedidosMes.length
           });
           totalGeral += totalVendas;
           totalPagosGeral += totalPagos;
+          totalDespesasGeral += totalDespesas;
         }
       }
       
@@ -2308,24 +2486,28 @@
           doc.addPage();
           y = 20;
         }
-        doc.text(`${mes.nome}: ${mes.qtdPedidos} pedido(s) - R$ ${mes.totalVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (Recebido: R$ ${mes.totalPagos.toLocaleString('pt-BR', {minimumFractionDigits: 2})})`, 20, y);
+        doc.text(`${mes.nome}: ${mes.qtdPedidos} pedido(s) - R$ ${mes.totalVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (Recebido: R$ ${mes.totalPagos.toLocaleString('pt-BR', {minimumFractionDigits: 2})}) - Despesas: R$ ${mes.totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
         y += 6;
       }
       
       y += 10;
       doc.setFontSize(12);
-      doc.text(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 20, y);
+      doc.text(`-------------------------------------------`, 20, y);
       y += 7;
       doc.setFontSize(14);
-      doc.text(`📊 TOTAL DO ANO ${ano}: R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      doc.text(`TOTAL DO ANO ${ano}: R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
       y += 7;
-      doc.text(`💰 TOTAL RECEBIDO: R$ ${totalPagosGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      doc.text(`TOTAL RECEBIDO: R$ ${totalPagosGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 7;
+      doc.text(`TOTAL DESPESAS: R$ ${totalDespesasGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 7;
+      doc.text(`LUCRO LIQUIDO: R$ ${(totalPagosGeral - totalDespesasGeral).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
       
       doc.save(`relatorio_anual_${ano}.pdf`);
       
     } else if(tipo === 'periodo') {
       doc.setFontSize(20);
-      doc.text(`Relatório Personalizado`, 105, y, { align: 'center' });
+      doc.text(`Relatorio Personalizado`, 105, y, { align: 'center' });
       y += 15;
       
       const dataInicioObj = new Date(dataInicio);
@@ -2336,13 +2518,20 @@
         return data >= dataInicioObj && data <= dataFimObj;
       });
       
+      const despesasFiltradas = despesas.filter(d => {
+        const data = new Date(d.data);
+        return data >= dataInicioObj && data <= dataFimObj;
+      });
+      
       const totalPedidos = pedidosFiltrados.length;
       const totalPagos = pedidosFiltrados.filter(t => t.pagamento === "pago").length;
       const totalValor = pedidosFiltrados.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
       const totalPago = pedidosFiltrados.filter(t => t.pagamento === "pago").reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
+      const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
+      const lucro = totalPago - totalDespesas;
       
       doc.setFontSize(12);
-      doc.text(`Período: ${formatDate(dataInicio)} a ${formatDate(dataFim)}`, 20, y);
+      doc.text(`Periodo: ${formatDate(dataInicio)} a ${formatDate(dataFim)}`, 20, y);
       y += 10;
       doc.text(`Total de Pedidos: ${totalPedidos}`, 20, y);
       y += 7;
@@ -2351,6 +2540,10 @@
       doc.text(`Valor Total: R$ ${totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
       y += 7;
       doc.text(`Valor Recebido: R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 7;
+      doc.text(`Total Despesas: R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 7;
+      doc.text(`Lucro Liquido: R$ ${lucro.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
       y += 15;
       
       doc.setFontSize(14);
@@ -2501,6 +2694,7 @@
     
     let projecaoFiltrada = [];
     let pagosFiltrados = [];
+    let despesasFiltradas = [...despesas];
     
     projecaoFiltrada = tasks.filter(t => !t.concluido).map(t => ({
       id: t.id,
@@ -2540,6 +2734,10 @@
         const data = new Date(r.dataPagamento);
         return data >= inicio && data <= fim;
       });
+      despesasFiltradas = despesasFiltradas.filter(d => {
+        const data = new Date(d.data);
+        return data >= inicio && data <= fim;
+      });
     } else if(tipoFiltro === "semana") {
       const hoje = new Date();
       const inicioSemana = new Date(hoje);
@@ -2554,6 +2752,10 @@
         const data = new Date(r.dataPagamento);
         return data >= inicioSemana && data <= fimSemana;
       });
+      despesasFiltradas = despesasFiltradas.filter(d => {
+        const data = new Date(d.data);
+        return data >= inicioSemana && data <= fimSemana;
+      });
     } else if(tipoFiltro === "mes") {
       const hoje = new Date();
       const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
@@ -2564,6 +2766,10 @@
       });
       pagosFiltrados = pagosFiltrados.filter(r => {
         const data = new Date(r.dataPagamento);
+        return data >= inicioMes && data <= fimMes;
+      });
+      despesasFiltradas = despesasFiltradas.filter(d => {
+        const data = new Date(d.data);
         return data >= inicioMes && data <= fimMes;
       });
     } else if(tipoFiltro === "ano") {
@@ -2578,11 +2784,17 @@
         const data = new Date(r.dataPagamento);
         return data >= inicioAno && data <= fimAno;
       });
+      despesasFiltradas = despesasFiltradas.filter(d => {
+        const data = new Date(d.data);
+        return data >= inicioAno && data <= fimAno;
+      });
     }
     
     const totalProjecao = projecaoFiltrada.reduce((sum, r) => sum + r.valor, 0);
     const totalPago = pagosFiltrados.reduce((sum, r) => sum + r.valor, 0);
     const totalGeral = totalProjecao;
+    const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
+    const lucroLiquido = totalPago - totalDespesas;
     
     const mesesProjecao = {};
     projecaoFiltrada.forEach(r => {
@@ -2596,6 +2808,13 @@
       const data = new Date(r.dataPagamento);
       const mesAno = `${data.getMonth()+1}/${data.getFullYear()}`;
       mesesPagos[mesAno] = (mesesPagos[mesAno] || 0) + r.valor;
+    });
+    
+    const mesesDespesas = {};
+    despesasFiltradas.forEach(d => {
+      const data = new Date(d.data);
+      const mesAno = `${data.getMonth()+1}/${data.getFullYear()}`;
+      mesesDespesas[mesAno] = (mesesDespesas[mesAno] || 0) + d.valor;
     });
     
     const html = `
@@ -2616,6 +2835,16 @@
               <h4><i class="fas fa-chart-pie"></i> FATURAMENTO TOTAL</h4>
               <div class="valor">R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
               <small>Valor total dos pedidos</small>
+            </div>
+            <div class="card-receita">
+              <h4><i class="fas fa-chart-line"></i> TOTAL DESPESAS</h4>
+              <div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+              <small>Despesas do período</small>
+            </div>
+            <div class="card-receita">
+              <h4><i class="fas fa-chart-line"></i> LUCRO LÍQUIDO</h4>
+              <div class="valor valor-lucro">R$ ${lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+              <small>Recebido - Despesas</small>
             </div>
           </div>
         </div>
@@ -2638,6 +2867,9 @@
             <input type="date" id="dataFim">
           </div>
           <button class="btn-filtrar" onclick="window.aplicarFiltroReceita()">Filtrar</button>
+          <button class="btn-add-despesa" id="openAddDespesaBtnReceita">
+            <i class="fas fa-plus"></i> Nova Despesa
+          </button>
         </div>
         
         <div class="chart-row">
@@ -2686,6 +2918,23 @@
             `).join('')
           }
         </div>
+        
+        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-receipt"></i> Despesas do Período</h3>
+        <div class="receita-lista">
+          ${despesasFiltradas.length === 0 ? '<div style="text-align:center; padding:2rem;">Nenhuma despesa cadastrada neste período</div>' : 
+            despesasFiltradas.sort((a,b) => b.id - a.id).map(d => `
+              <div class="receita-item">
+                <div>
+                  <strong>${escapeHtml(d.descricao)}</strong><br>
+                  <small>${formatDate(d.data)}</small>
+                </div>
+                <div>
+                  <span style="color: #ef4444; font-weight: bold;">R$ ${d.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                </div>
+              </div>
+            `).join('')
+          }
+        </div>
       </div>
     `;
     
@@ -2700,6 +2949,10 @@
           periodoPersonalizado.style.display = e.target.value === "personalizado" ? "flex" : "none";
         });
       }
+      
+      document.getElementById("openAddDespesaBtnReceita")?.addEventListener("click", () => {
+        document.getElementById("despesaModal").style.display = "flex";
+      });
       
       const pizzaCtx = document.getElementById('pizzaChart')?.getContext('2d');
       if(pizzaCtx && pizzaChart) {
@@ -2733,9 +2986,10 @@
         receitaChart.destroy();
       }
       if(barCtx) {
-        const labels = Array.from(new Set([...Object.keys(mesesProjecao), ...Object.keys(mesesPagos)])).sort();
+        const labels = Array.from(new Set([...Object.keys(mesesProjecao), ...Object.keys(mesesPagos), ...Object.keys(mesesDespesas)])).sort();
         const dadosProjecao = labels.map(l => mesesProjecao[l] || 0);
         const dadosPagos = labels.map(l => mesesPagos[l] || 0);
+        const dadosDespesas = labels.map(l => mesesDespesas[l] || 0);
         
         receitaChart = new Chart(barCtx, {
           type: 'bar',
@@ -2755,6 +3009,13 @@
                 backgroundColor: 'rgba(16, 185, 129, 0.6)',
                 borderColor: 'rgba(16, 185, 129, 1)',
                 borderWidth: 1
+              },
+              {
+                label: 'Despesas (R$)',
+                data: dadosDespesas,
+                backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                borderColor: 'rgba(239, 68, 68, 1)',
+                borderWidth: 1
               }
             ]
           },
@@ -2769,6 +3030,62 @@
           }
         });
       }
+    }
+  }
+
+  function renderDespesas() {
+    const totalDespesas = despesas.reduce((sum, d) => sum + d.valor, 0);
+    
+    const html = `
+      <div class="receita-container">
+        <div class="receita-header">
+          <div class="cards-receita">
+            <div class="card-receita">
+              <h4><i class="fas fa-chart-line"></i> TOTAL DE DESPESAS</h4>
+              <div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+              <small>Total de despesas cadastradas</small>
+            </div>
+            <div class="card-receita">
+              <h4><i class="fas fa-list"></i> QUANTIDADE</h4>
+              <div class="valor">${despesas.length}</div>
+              <small>despesas registradas</small>
+            </div>
+          </div>
+          <div>
+            <button class="btn-add-despesa" id="openAddDespesaBtn">
+              <i class="fas fa-plus"></i> Nova Despesa
+            </button>
+          </div>
+        </div>
+        
+        <h3 style="margin: 1rem 0 0.5rem 0;"><i class="fas fa-receipt"></i> Lista de Despesas</h3>
+        <div class="receita-lista">
+          ${despesas.length === 0 ? '<div style="text-align:center; padding:2rem;">Nenhuma despesa cadastrada. Clique em "Nova Despesa" para adicionar.</div>' : 
+            despesas.sort((a,b) => b.id - a.id).map(d => `
+              <div class="despesa-item">
+                <div>
+                  <strong>${escapeHtml(d.descricao)}</strong><br>
+                  <small><i class="fas fa-calendar"></i> ${formatDate(d.data)}</small>
+                </div>
+                <div style="text-align: right;">
+                  <div style="color: #ef4444; font-weight: bold;">R$ ${d.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                  <button class="icon-btn" onclick="window.removerDespesaConfirm(${d.id})" title="Remover despesa" style="color: #ef4444;">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </div>
+            `).join('')
+          }
+        </div>
+      </div>
+    `;
+    
+    const receitaContainer = document.getElementById("receitaContainer");
+    if(receitaContainer) {
+      receitaContainer.innerHTML = html;
+      document.getElementById("openAddDespesaBtn")?.addEventListener("click", () => {
+        document.getElementById("despesaModal").style.display = "flex";
+      });
     }
   }
 
@@ -2789,6 +3106,9 @@
       return;
     } else if(showingClientes) {
       renderClientes();
+      return;
+    } else if(showingDespesa) {
+      renderDespesas();
       return;
     } else if(showingConcluido) {
       filtered = tasks.filter(t => t.concluido === true);
@@ -2901,7 +3221,7 @@
 
   function abrirModalPosicao(taskId, taskNome) {
     const task = tasks.find(t => t.id === taskId);
-    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota) {
+    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa) {
       const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido);
       document.getElementById("pedidoNome").innerHTML = taskNome;
       document.getElementById("maxPosicao").innerHTML = weekTasks.length;
@@ -2910,7 +3230,7 @@
       document.getElementById("posicaoModal").style.display = "flex";
     } else if(task && task.concluido) {
       alert("Pedidos concluídos não podem ter posição alterada");
-    } else if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota) {
+    } else if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa) {
       alert("Alterar posição disponível apenas na visualização por semana");
     }
   }
@@ -2930,14 +3250,21 @@
 
   const modal = document.getElementById("taskModal");
   const posicaoModal = document.getElementById("posicaoModal");
+  const posicaoRotaModal = document.getElementById("posicaoRotaModal");
   const pdfModal = document.getElementById("pdfModal");
+  const despesaModal = document.getElementById("despesaModal");
   const openAddBtn = document.getElementById("openAddModalBtn");
   const closeModalBtn = document.getElementById("closeModalBtn");
   const closePosicaoModalBtn = document.getElementById("closePosicaoModalBtn");
+  const closePosicaoRotaModalBtn = document.getElementById("closePosicaoRotaModalBtn");
   const closePdfModalBtn = document.getElementById("closePdfModalBtn");
+  const closeDespesaModalBtn = document.getElementById("closeDespesaModalBtn");
   const confirmarPosicaoBtn = document.getElementById("confirmarPosicaoBtn");
+  const confirmarPosicaoRotaBtn = document.getElementById("confirmarPosicaoRotaBtn");
   const confirmarPdfBtn = document.getElementById("confirmarPdfBtn");
+  const saveDespesaBtn = document.getElementById("saveDespesaBtn");
   const saveBtn = document.getElementById("saveTaskBtn");
+  const excluirConcluidosBtn = document.getElementById("excluirConcluidosBtn");
   const modalTitle = document.getElementById("modalTitle");
   const editIdField = document.getElementById("editId");
   const nomeField = document.getElementById("nome");
@@ -3052,10 +3379,34 @@
     document.getElementById("sugestoesClientes").style.display = "none";
   }
 
+  function saveDespesaFromModal() {
+    const descricao = document.getElementById("despesaDescricao").value.trim();
+    const valor = document.getElementById("despesaValor").value.trim();
+    let data = document.getElementById("despesaData").value;
+    
+    if(!descricao) { alert("Digite a descrição da despesa"); return; }
+    if(!valor) { alert("Digite o valor da despesa"); return; }
+    if(!data) {
+      data = new Date().toISOString().split('T')[0];
+    }
+    
+    adicionarDespesa(descricao, valor, data);
+    document.getElementById("despesaDescricao").value = "";
+    document.getElementById("despesaValor").value = "";
+    document.getElementById("despesaData").value = "";
+    despesaModal.style.display = "none";
+    
+    if(showingReceita) renderReceita();
+    if(showingDespesa) renderDespesas();
+  }
+
   openAddBtn.onclick = openModalForNew;
   closeModalBtn.onclick = () => modal.style.display = "none";
   closePosicaoModalBtn.onclick = () => posicaoModal.style.display = "none";
+  closePosicaoRotaModalBtn.onclick = () => posicaoRotaModal.style.display = "none";
   closePdfModalBtn.onclick = () => pdfModal.style.display = "none";
+  closeDespesaModalBtn.onclick = () => despesaModal.style.display = "none";
+  saveDespesaBtn.onclick = saveDespesaFromModal;
   confirmarPosicaoBtn.onclick = () => {
     const taskId = parseInt(document.getElementById("posicaoEditId").value);
     const novaPosicao = parseInt(document.getElementById("novaPosicao").value);
@@ -3066,7 +3417,16 @@
       alert("Digite uma posição válida");
     }
   };
-  
+  confirmarPosicaoRotaBtn.onclick = () => {
+    const taskId = parseInt(document.getElementById("rotaPosicaoEditId").value);
+    const novaPosicao = parseInt(document.getElementById("novaPosicaoRota").value);
+    if(taskId && novaPosicao) {
+      moverRotaParaPosicao(taskId, novaPosicao);
+      posicaoRotaModal.style.display = "none";
+    } else {
+      alert("Digite uma posição válida");
+    }
+  };
   confirmarPdfBtn.onclick = () => {
     const pdfMensal = document.getElementById("pdfMensal").checked;
     const pdfAnual = document.getElementById("pdfAnual").checked;
@@ -3091,11 +3451,15 @@
     pdfModal.style.display = "none";
   };
   
+  excluirConcluidosBtn.onclick = excluirTodosConcluidos;
+  
   saveBtn.onclick = saveTaskFromModal;
   window.onclick = (e) => { 
     if(e.target === modal) modal.style.display = "none";
     if(e.target === posicaoModal) posicaoModal.style.display = "none";
+    if(e.target === posicaoRotaModal) posicaoRotaModal.style.display = "none";
     if(e.target === pdfModal) pdfModal.style.display = "none";
+    if(e.target === despesaModal) despesaModal.style.display = "none";
   };
 
   const viewAllBtn = document.getElementById("viewAllBtn");
@@ -3103,6 +3467,7 @@
   const receitaTab = document.getElementById("receitaTab");
   const clientesTab = document.getElementById("clientesTab");
   const rotaTab = document.getElementById("rotaTab");
+  const despesaTab = document.getElementById("despesaTab");
   const tasksContainer = document.getElementById("tasksContainer");
   const receitaContainer = document.getElementById("receitaContainer");
   const clientesContainer = document.getElementById("clientesContainer");
@@ -3115,6 +3480,7 @@
     showingReceita = false;
     showingClientes = false;
     showingRota = false;
+    showingDespesa = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -3122,6 +3488,7 @@
       if(receitaTab) receitaTab.classList.remove('active');
       if(clientesTab) clientesTab.classList.remove('active');
       if(rotaTab) rotaTab.classList.remove('active');
+      if(despesaTab) despesaTab.classList.remove('active');
       if(viewAllBtn) viewAllBtn.style.background = "var(--accent-hover)";
     } else {
       if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
@@ -3142,6 +3509,7 @@
     showingReceita = false;
     showingClientes = false;
     showingRota = false;
+    showingDespesa = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -3149,6 +3517,7 @@
       if(receitaTab) receitaTab.classList.remove('active');
       if(clientesTab) clientesTab.classList.remove('active');
       if(rotaTab) rotaTab.classList.remove('active');
+      if(despesaTab) despesaTab.classList.remove('active');
       if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
     } else {
       if(concluidoTab) concluidoTab.classList.remove('active');
@@ -3167,6 +3536,7 @@
     showingConcluido = false;
     showingClientes = false;
     showingRota = false;
+    showingDespesa = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -3174,6 +3544,7 @@
       if(concluidoTab) concluidoTab.classList.remove('active');
       if(clientesTab) clientesTab.classList.remove('active');
       if(rotaTab) rotaTab.classList.remove('active');
+      if(despesaTab) despesaTab.classList.remove('active');
       if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
       if(tasksContainer) tasksContainer.style.display = "none";
       if(receitaContainer) receitaContainer.style.display = "block";
@@ -3197,6 +3568,7 @@
     showingConcluido = false;
     showingReceita = false;
     showingRota = false;
+    showingDespesa = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -3204,6 +3576,7 @@
       if(concluidoTab) concluidoTab.classList.remove('active');
       if(receitaTab) receitaTab.classList.remove('active');
       if(rotaTab) rotaTab.classList.remove('active');
+      if(despesaTab) despesaTab.classList.remove('active');
       if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
       if(tasksContainer) tasksContainer.style.display = "none";
       if(receitaContainer) receitaContainer.style.display = "none";
@@ -3227,6 +3600,7 @@
     showingConcluido = false;
     showingReceita = false;
     showingClientes = false;
+    showingDespesa = false;
     const tabs = document.querySelectorAll('.tab-btn');
     if(enable) {
       tabs.forEach(btn => btn.classList.remove('active'));
@@ -3234,6 +3608,7 @@
       if(concluidoTab) concluidoTab.classList.remove('active');
       if(receitaTab) receitaTab.classList.remove('active');
       if(clientesTab) clientesTab.classList.remove('active');
+      if(despesaTab) despesaTab.classList.remove('active');
       if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
       if(tasksContainer) tasksContainer.style.display = "none";
       if(receitaContainer) receitaContainer.style.display = "none";
@@ -3243,6 +3618,38 @@
       renderRota();
     } else {
       if(rotaTab) rotaTab.classList.remove('active');
+      if(tasksContainer) tasksContainer.style.display = "flex";
+      if(receitaContainer) receitaContainer.style.display = "none";
+      if(clientesContainer) clientesContainer.style.display = "none";
+      if(rotaContainer) rotaContainer.style.display = "none";
+      if(actionsRow) actionsRow.style.display = "flex";
+    }
+  }
+
+  function setDespesaMode(enable) {
+    showingDespesa = enable;
+    viewAllMode = false;
+    showingConcluido = false;
+    showingReceita = false;
+    showingClientes = false;
+    showingRota = false;
+    const tabs = document.querySelectorAll('.tab-btn');
+    if(enable) {
+      tabs.forEach(btn => btn.classList.remove('active'));
+      if(despesaTab) despesaTab.classList.add('active');
+      if(concluidoTab) concluidoTab.classList.remove('active');
+      if(receitaTab) receitaTab.classList.remove('active');
+      if(clientesTab) clientesTab.classList.remove('active');
+      if(rotaTab) rotaTab.classList.remove('active');
+      if(viewAllBtn) viewAllBtn.style.background = "var(--accent)";
+      if(tasksContainer) tasksContainer.style.display = "none";
+      if(receitaContainer) receitaContainer.style.display = "block";
+      if(clientesContainer) clientesContainer.style.display = "none";
+      if(rotaContainer) rotaContainer.style.display = "none";
+      if(actionsRow) actionsRow.style.display = "flex";
+      renderDespesas();
+    } else {
+      if(despesaTab) despesaTab.classList.remove('active');
       if(tasksContainer) tasksContainer.style.display = "flex";
       if(receitaContainer) receitaContainer.style.display = "none";
       if(clientesContainer) clientesContainer.style.display = "none";
@@ -3263,7 +3670,7 @@
   const searchInputDom = document.getElementById("searchInput");
   searchInputDom.addEventListener("input", (e) => {
     searchQuery = e.target.value;
-    if(!showingReceita && !showingClientes && !showingRota) renderTasks();
+    if(!showingReceita && !showingClientes && !showingRota && !showingDespesa) renderTasks();
   });
 
   const themeToggle = document.getElementById("themeToggle");
@@ -3283,6 +3690,7 @@
     if(showingReceita) renderReceita();
     if(showingClientes) renderClientes();
     if(showingRota) renderRota();
+    if(showingDespesa) renderDespesas();
   }
   const savedTheme = localStorage.getItem('theme') || 'light';
   applyTheme(savedTheme);
