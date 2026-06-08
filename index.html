@@ -44,6 +44,7 @@
       --cliente-bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
       --rota-bg: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
       --despesa-bg: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      --vendrapida-bg: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
       
       --foto-bg: #fef9e3;
       --foto-border: #fbbf24;
@@ -74,6 +75,7 @@
       --cliente-bg: linear-gradient(135deg, #0d6d64 0%, #2b9e5c 100%);
       --rota-bg: linear-gradient(135deg, #9b4d96 0%, #c4455a 100%);
       --despesa-bg: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+      --vendrapida-bg: linear-gradient(135deg, #d97706 0%, #c2410c 100%);
       
       --foto-bg: #422800;
       --foto-border: #fbbf24;
@@ -242,7 +244,6 @@
       transform: scale(1.02);
     }
 
-    /* NOVO BOTÃO E CAMPO DE BUSCA POR PRODUTO */
     .product-search-bar {
       display: flex;
       gap: 0.5rem;
@@ -305,6 +306,52 @@
     .btn-clear-search:hover {
       background: #dc2626;
       transform: scale(1.02);
+    }
+
+    /* NOVA ABA VENDA RÁPIDA */
+    .vendrapida-bar {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .vendrapida-input {
+      border: none;
+      background: transparent;
+      padding: 0.4rem 0.5rem;
+      outline: none;
+      color: var(--text-primary);
+      width: 100px;
+      text-align: right;
+    }
+
+    .vendrapida-input::placeholder {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+
+    .btn-vendrapida {
+      background: var(--vendrapida-bg);
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2rem;
+      color: white;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .btn-vendrapida:hover {
+      transform: scale(1.02);
+      opacity: 0.9;
     }
 
     .theme-toggle {
@@ -1168,6 +1215,7 @@
       .status-filter-bar { margin-top: 0.5rem; }
       .payment-filter-bar { margin-top: 0.5rem; }
       .product-search-bar { margin-top: 0.5rem; }
+      .vendrapida-bar { margin-top: 0.5rem; }
     }
   </style>
 </head>
@@ -1206,7 +1254,6 @@
       </button>
     </div>
     
-    <!-- NOVO CAMPO DE BUSCA POR PRODUTO (CANECA + FOTO) -->
     <div class="product-search-bar">
       <input type="text" id="productSearchInput" class="product-search-input" placeholder="🔍 Buscar produto...">
       <button class="btn-product-search" id="searchProductBtn">
@@ -1214,6 +1261,14 @@
       </button>
       <button class="btn-clear-search" id="clearProductSearchBtn">
         <i class="fas fa-times"></i> Limpar
+      </button>
+    </div>
+    
+    <!-- NOVA ABA VENDA RÁPIDA -->
+    <div class="vendrapida-bar">
+      <input type="text" id="vendaRapidaValor" class="vendrapida-input" placeholder="R$ 0,00">
+      <button class="btn-vendrapida" id="vendaRapidaBtn">
+        <i class="fas fa-bolt"></i> +1 Venda
       </button>
     </div>
     
@@ -1409,7 +1464,7 @@
   let despesas = [];
   let currentWeek = 1;
   let searchQuery = "";
-  let productSearchQuery = ""; // NOVO: busca por produto
+  let productSearchQuery = "";
   let nextId = 100;
   let nextDespesaId = 1;
   let viewAllMode = false;
@@ -1487,8 +1542,6 @@
     return 'normal';
   }
 
-  // FUNÇÃO MELHORADA: Exclui APENAS os concluídos da aba CONCLUÍDOS
-  // NÃO ALTERA os valores na aba RECEITA
   function excluirTodosConcluidos() {
     const concluidos = tasks.filter(t => t.concluido === true);
     
@@ -1499,12 +1552,9 @@
     
     if(confirm(`ATENÇÃO! Esta ação irá excluir permanentemente ${concluidos.length} pedido(s) concluído(s).\n\n✅ Os valores financeiros na aba RECEITA permanecerão INALTERADOS!\n\nDeseja continuar?`)) {
       
-      // REMOVER APENAS OS PEDIDOS CONCLUÍDOS DA LISTA PRINCIPAL
-      // NÃO remove do histórico de receita para manter os valores
       const novosTasks = tasks.filter(t => t.concluido !== true);
       tasks = novosTasks;
       
-      // Reordenar as semanas após exclusão
       renomearSemanasPorPosicao();
       reordenarPorDataEntrega();
       atualizarOrdemRota();
@@ -1518,6 +1568,49 @@
       
       alert(`✅ ${concluidos.length} pedido(s) concluído(s) removido(s) com sucesso!\n\n📊 Os valores financeiros na aba RECEITA permanecem inalterados!`);
     }
+  }
+
+  // NOVA FUNÇÃO: VENDA RÁPIDA
+  function adicionarVendaRapida() {
+    const valorInput = document.getElementById("vendaRapidaValor");
+    let valorStr = valorInput.value.trim();
+    
+    if(!valorStr) {
+      alert("Digite o valor da venda rápida!");
+      return;
+    }
+    
+    // Converter o valor (aceita formato brasileiro: 10,50 ou 10.50)
+    let valorNumerico = converterParaNumero(valorStr);
+    
+    if(valorNumerico <= 0) {
+      alert("Digite um valor válido maior que zero!");
+      return;
+    }
+    
+    // Criar um ID único para esta venda rápida
+    const vendaId = nextId++;
+    const dataHoje = new Date().toISOString().split('T')[0];
+    
+    // Adicionar ao histórico de receita
+    historicoReceita.push({
+      id: vendaId,
+      nome: "Venda Rápida",
+      valor: valorStr,
+      dataPagamento: dataHoje,
+      descricao: `Venda rápida no valor de R$ ${valorStr}`
+    });
+    saveHistoricoReceita();
+    
+    // Limpar o campo
+    valorInput.value = "";
+    
+    // Atualizar a visualização se estiver na aba Receita
+    if(showingReceita) {
+      renderReceita();
+    }
+    
+    alert(`✅ Venda rápida de R$ ${valorNumerico.toLocaleString('pt-BR', {minimumFractionDigits: 2})} adicionada com sucesso!`);
   }
 
   function gerarPDFRota() {
@@ -3337,7 +3430,6 @@
 
   window.aplicarFiltroReceita = aplicarFiltroReceita;
 
-  // FUNÇÃO RENDER TASKS MODIFICADA - COM SUPORTE A BUSCA POR PRODUTO
   function renderTasks() {
     let filtered = [];
     
@@ -3365,17 +3457,14 @@
       filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
     }
     
-    // APLICAR FILTRO DE STATUS DO PEDIDO
     if(currentStatusFilter !== "todos") {
       filtered = filtered.filter(t => t.status === currentStatusFilter);
     }
     
-    // APLICAR FILTRO DE PAGAMENTO
     if(currentPaymentFilter !== "todos-pagamento") {
       filtered = filtered.filter(t => t.pagamento === currentPaymentFilter);
     }
     
-    // NOVO: APLICAR FILTRO DE BUSCA POR PRODUTO (CANECA + FOTO)
     if(productSearchQuery.trim() !== "") {
       const q = productSearchQuery.trim().toLowerCase();
       filtered = filtered.filter(t => {
@@ -3539,7 +3628,6 @@
     renderTasks();
   }
   
-  // NOVAS FUNÇÕES PARA BUSCA POR PRODUTO
   function searchByProduct() {
     const input = document.getElementById("productSearchInput");
     productSearchQuery = input.value;
@@ -3999,11 +4087,16 @@
   document.getElementById("filterAguardandoPagamentoBtn")?.addEventListener("click", () => setPaymentFilter("aguardando"));
   document.getElementById("filterPagoBtn")?.addEventListener("click", () => setPaymentFilter("pago"));
   
-  // NOVOS EVENTOS PARA BUSCA POR PRODUTO
   document.getElementById("searchProductBtn")?.addEventListener("click", searchByProduct);
   document.getElementById("clearProductSearchBtn")?.addEventListener("click", clearProductSearch);
   document.getElementById("productSearchInput")?.addEventListener("keypress", (e) => {
     if(e.key === "Enter") searchByProduct();
+  });
+  
+  // NOVO EVENTO PARA VENDA RÁPIDA
+  document.getElementById("vendaRapidaBtn")?.addEventListener("click", adicionarVendaRapida);
+  document.getElementById("vendaRapidaValor")?.addEventListener("keypress", (e) => {
+    if(e.key === "Enter") adicionarVendaRapida();
   });
 
   const themeToggle = document.getElementById("themeToggle");
