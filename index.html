@@ -145,7 +145,6 @@
       gap: 6px;
     }
 
-    /* NOVO MOSTRADOR DE PEDIDOS */
     .pedidos-counter {
       display: flex;
       gap: 0.8rem;
@@ -248,7 +247,6 @@
       position: relative;
     }
 
-    /* badge de contagem nos botões de filtro */
     .filter-status-btn .filter-count {
       background: rgba(0,0,0,0.15);
       padding: 0.1rem 0.4rem;
@@ -1323,7 +1321,6 @@
       <div class="dn-tarefas"><i class="fas fa-calendar-day"></i> DN Tarefas Diárias</div>
     </div>
     
-    <!-- NOVO MOSTRADOR DE PEDIDOS -->
     <div class="pedidos-counter" id="pedidosCounter">
       <div class="counter-item total">
         <i class="fas fa-chart-simple"></i>
@@ -1669,9 +1666,7 @@
     return 'normal';
   }
 
-  // FUNÇÃO PARA ATUALIZAR OS CONTADORES DE PEDIDOS
   function atualizarContadores() {
-    // Pedidos NÃO concluídos
     const pedidosAtivos = tasks.filter(t => !t.concluido);
     
     const totalAtivos = pedidosAtivos.length;
@@ -1679,13 +1674,11 @@
     const producao = pedidosAtivos.filter(t => t.status === "producao").length;
     const retirada = pedidosAtivos.filter(t => t.status === "retirada").length;
     
-    // Atualizar mostrador no cabeçalho
     document.getElementById("totalPedidosCount").innerText = totalAtivos;
     document.getElementById("aguardandoCount").innerText = aguardando;
     document.getElementById("producaoCount").innerText = producao;
     document.getElementById("retiradaCount").innerText = retirada;
     
-    // Atualizar badges nos botões de filtro
     document.getElementById("filterTodosCount").innerText = totalAtivos;
     document.getElementById("filterAguardandoCount").innerText = aguardando;
     document.getElementById("filterProducaoCount").innerText = producao;
@@ -1722,7 +1715,6 @@
       saveToLocal();
       atualizarAbasSemanas();
       
-      // Atualizar contadores após exclusão
       atualizarContadores();
       
       renderTasks();
@@ -2215,7 +2207,6 @@
     reordenarPorDataEntrega();
     atualizarOrdemRota();
     
-    // Atualizar contadores após carregar dados
     atualizarContadores();
   }
 
@@ -2905,203 +2896,239 @@
     }
   };
 
+  // FUNÇÃO MELHORADA PARA GERAR PDF COM OS VALORES DA RECEITA
   async function gerarPDFComOpcoes(tipo, ano, mes, dataInicio, dataFim) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     let y = 20;
     
+    // Função auxiliar para obter valores da receita
+    function getValoresReceita(dataInicioObj, dataFimObj) {
+      let projecaoFiltrada = [];
+      let pagosFiltrados = [];
+      let despesasFiltradas = [...despesas];
+      
+      projecaoFiltrada = tasks.filter(t => !t.concluido).map(t => ({
+        id: t.id,
+        nome: t.nome,
+        valor: converterParaNumero(t.valor),
+        dataPagamento: t.dataEntrega || t.dataLancamento,
+        descricao: t.descricao,
+        status_pagamento: t.pagamento
+      }));
+      
+      const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
+      concluidosNaoPagos.forEach(t => {
+        projecaoFiltrada.push({
+          id: t.id,
+          nome: t.nome,
+          valor: converterParaNumero(t.valor),
+          dataPagamento: t.dataConclusao || t.dataLancamento,
+          descricao: t.descricao,
+          status_pagamento: t.pagamento
+        });
+      });
+      
+      pagosFiltrados = [...historicoReceita].map(r => ({
+        ...r,
+        valor: converterParaNumero(r.valor)
+      }));
+      
+      if(dataInicioObj && dataFimObj) {
+        projecaoFiltrada = projecaoFiltrada.filter(r => {
+          const data = new Date(r.dataPagamento);
+          return data >= dataInicioObj && data <= dataFimObj;
+        });
+        pagosFiltrados = pagosFiltrados.filter(r => {
+          const data = new Date(r.dataPagamento);
+          return data >= dataInicioObj && data <= dataFimObj;
+        });
+        despesasFiltradas = despesasFiltradas.filter(d => {
+          const data = new Date(d.data);
+          return data >= dataInicioObj && data <= dataFimObj;
+        });
+      }
+      
+      const totalProjecao = projecaoFiltrada.reduce((sum, r) => sum + r.valor, 0);
+      const totalRecebido = pagosFiltrados.reduce((sum, r) => sum + r.valor, 0);
+      const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
+      const totalFaturamento = totalProjecao;
+      const lucroLiquido = totalRecebido - totalDespesas;
+      const percentualLucro = totalRecebido > 0 ? (lucroLiquido / totalRecebido) * 100 : 0;
+      
+      return {
+        totalProjecao,
+        totalRecebido,
+        totalDespesas,
+        totalFaturamento,
+        lucroLiquido,
+        percentualLucro
+      };
+    }
+    
     if(tipo === 'mensal') {
       const nomeMes = new Date(ano, mes-1, 1).toLocaleString('pt-BR', { month: 'long' });
-      doc.setFontSize(20);
-      doc.text(`Relatório Mensal - ${nomeMes}/${ano}`, 105, y, { align: 'center' });
-      y += 15;
-      
       const inicio = new Date(ano, mes-1, 1);
       const fim = new Date(ano, mes, 0);
       
-      const pedidosFiltrados = tasks.filter(t => {
-        const data = new Date(t.dataLancamento);
-        return data >= inicio && data <= fim;
-      });
+      const valores = getValoresReceita(inicio, fim);
       
-      const despesasFiltradas = despesas.filter(d => {
-        const data = new Date(d.data);
-        return data >= inicio && data <= fim;
-      });
-      
-      const totalPedidos = pedidosFiltrados.length;
-      const totalPagos = pedidosFiltrados.filter(t => t.pagamento === "pago").length;
-      const totalValor = pedidosFiltrados.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
-      const totalPago = pedidosFiltrados.filter(t => t.pagamento === "pago").reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
-      const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
-      const lucro = totalPago - totalDespesas;
+      doc.setFontSize(22);
+      doc.text(`RELATÓRIO DE RECEITAS`, 105, y, { align: 'center' });
+      y += 12;
+      doc.setFontSize(16);
+      doc.text(`${nomeMes.toUpperCase()}/${ano}`, 105, y, { align: 'center' });
+      y += 15;
       
       doc.setFontSize(12);
       doc.text(`Período: ${formatDate(inicio.toISOString().split('T')[0])} a ${formatDate(fim.toISOString().split('T')[0])}`, 20, y);
-      y += 10;
-      doc.text(`Total de Pedidos: ${totalPedidos}`, 20, y);
-      y += 7;
-      doc.text(`Pedidos Pagos: ${totalPagos}`, 20, y);
-      y += 7;
-      doc.text(`Valor Total: R$ ${totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-      y += 7;
-      doc.text(`Valor Recebido: R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-      y += 7;
-      doc.text(`Total Despesas: R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-      y += 7;
-      doc.text(`Lucro Líquido: R$ ${lucro.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-      y += 15;
+      y += 12;
       
       doc.setFontSize(14);
-      doc.text("Lista de Pedidos:", 20, y);
+      doc.text("RESUMO FINANCEIRO", 20, y);
       y += 10;
+      
+      doc.setFontSize(12);
+      doc.text(`1. PROJEÇÃO DE FATURAMENTO: R$ ${valores.totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.text(`2. VALOR RECEBIDO: R$ ${valores.totalRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.text(`3. FATURAMENTO TOTAL: R$ ${valores.totalFaturamento.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.text(`4. TOTAL DE DESPESAS: R$ ${valores.totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.setFontSize(14);
+      doc.text(`5. LUCRO LÍQUIDO: R$ ${valores.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.text(`   (${valores.percentualLucro.toFixed(1)}% sobre o recebido)`, 30, y);
+      y += 15;
+      
+      doc.setFontSize(11);
+      doc.text(`Fórmula: FATURAMENTO - DESPESAS = LUCRO`, 20, y);
+      y += 8;
+      doc.text(`   R$ ${valores.totalFaturamento.toLocaleString('pt-BR', {minimumFractionDigits: 2})} - R$ ${valores.totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})} = R$ ${valores.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 20;
+      
       doc.setFontSize(10);
+      doc.text(`Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`, 20, y);
       
-      pedidosFiltrados.forEach((p, idx) => {
-        if(y > 270) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.text(`${idx + 1}. ${p.nome} - R$ ${formatarValor(p.valor)} - ${p.pagamento === "pago" ? "PAGO" : "PENDENTE"}`, 20, y);
-        y += 6;
-      });
-      
-      doc.save(`relatorio_${nomeMes}_${ano}.pdf`);
+      doc.save(`relatorio_receitas_${nomeMes}_${ano}.pdf`);
       
     } else if(tipo === 'anual') {
-      doc.setFontSize(20);
-      doc.text(`Relatório Anual - ${ano}`, 105, y, { align: 'center' });
+      doc.setFontSize(22);
+      doc.text(`RELATÓRIO DE RECEITAS`, 105, y, { align: 'center' });
+      y += 12;
+      doc.setFontSize(16);
+      doc.text(`ANO ${ano}`, 105, y, { align: 'center' });
       y += 15;
       
       const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-      let totalGeral = 0;
-      let totalPagosGeral = 0;
-      let totalDespesasGeral = 0;
-      const mesesComMovimento = [];
+      let totalAnualProjecao = 0;
+      let totalAnualRecebido = 0;
+      let totalAnualDespesas = 0;
+      
+      doc.setFontSize(12);
+      doc.text("RESUMO MENSAL:", 20, y);
+      y += 10;
       
       for(let i = 0; i < meses.length; i++) {
         const inicio = new Date(ano, i, 1);
         const fim = new Date(ano, i + 1, 0);
+        const valores = getValoresReceita(inicio, fim);
         
-        const pedidosMes = tasks.filter(t => {
-          const data = new Date(t.dataLancamento);
-          return data >= inicio && data <= fim;
-        });
-        
-        const despesasMes = despesas.filter(d => {
-          const data = new Date(d.data);
-          return data >= inicio && data <= fim;
-        });
-        
-        const totalVendas = pedidosMes.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
-        const totalPagos = pedidosMes.filter(t => t.pagamento === "pago").reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
-        const totalDespesas = despesasMes.reduce((sum, d) => sum + d.valor, 0);
-        
-        if(totalVendas > 0 || pedidosMes.length > 0 || totalDespesas > 0) {
-          mesesComMovimento.push({
-            nome: meses[i],
-            totalVendas,
-            totalPagos,
-            totalDespesas,
-            qtdPedidos: pedidosMes.length
-          });
-          totalGeral += totalVendas;
-          totalPagosGeral += totalPagos;
-          totalDespesasGeral += totalDespesas;
+        if(valores.totalProjecao > 0 || valores.totalRecebido > 0 || valores.totalDespesas > 0) {
+          if(y > 250) {
+            doc.addPage();
+            y = 20;
+            doc.setFontSize(12);
+            doc.text("RESUMO MENSAL (continuação):", 20, y);
+            y += 10;
+          }
+          
+          totalAnualProjecao += valores.totalProjecao;
+          totalAnualRecebido += valores.totalRecebido;
+          totalAnualDespesas += valores.totalDespesas;
+          
+          doc.setFontSize(11);
+          doc.text(`${meses[i]}:`, 20, y);
+          doc.text(`Projeção: R$ ${valores.totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 65, y);
+          doc.text(`Recebido: R$ ${valores.totalRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 140, y);
+          doc.text(`Despesas: R$ ${valores.totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 215, y);
+          y += 7;
         }
       }
       
-      if(mesesComMovimento.length === 0) {
-        doc.text("Nenhum movimento registrado neste ano.", 20, y);
-        doc.save(`relatorio_anual_${ano}.pdf`);
-        return;
-      }
-      
-      doc.setFontSize(12);
-      doc.text("Resumo Mensal (apenas meses com movimento):", 20, y);
-      y += 10;
-      doc.setFontSize(10);
-      
-      for(const mes of mesesComMovimento) {
-        if(y > 270) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.text(`${mes.nome}: ${mes.qtdPedidos} pedido(s) - R$ ${mes.totalVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (Recebido: R$ ${mes.totalPagos.toLocaleString('pt-BR', {minimumFractionDigits: 2})}) - Despesas: R$ ${mes.totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-        y += 6;
-      }
+      const lucroAnual = totalAnualRecebido - totalAnualDespesas;
+      const percentualLucroAnual = totalAnualRecebido > 0 ? (lucroAnual / totalAnualRecebido) * 100 : 0;
       
       y += 10;
+      doc.setFontSize(14);
+      doc.text("TOTAL DO ANO", 20, y);
+      y += 10;
       doc.setFontSize(12);
-      doc.text(`-------------------------------------------`, 20, y);
+      doc.text(`Projeção Total: R$ ${totalAnualProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 7;
+      doc.text(`Recebido Total: R$ ${totalAnualRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 7;
+      doc.text(`Despesas Totais: R$ ${totalAnualDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
       y += 7;
       doc.setFontSize(14);
-      doc.text(`TOTAL DO ANO ${ano}: R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      doc.text(`LUCRO LÍQUIDO ANUAL: R$ ${lucroAnual.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
       y += 7;
-      doc.text(`TOTAL RECEBIDO: R$ ${totalPagosGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-      y += 7;
-      doc.text(`TOTAL DESPESAS: R$ ${totalDespesasGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-      y += 7;
-      doc.text(`LUCRO LIQUIDO: R$ ${(totalPagosGeral - totalDespesasGeral).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      doc.setFontSize(11);
+      doc.text(`(${percentualLucroAnual.toFixed(1)}% sobre o recebido)`, 30, y);
+      y += 15;
       
-      doc.save(`relatorio_anual_${ano}.pdf`);
+      doc.setFontSize(10);
+      doc.text(`Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`, 20, y);
+      
+      doc.save(`relatorio_receitas_anual_${ano}.pdf`);
       
     } else if(tipo === 'periodo') {
-      doc.setFontSize(20);
-      doc.text(`Relatorio Personalizado`, 105, y, { align: 'center' });
-      y += 15;
-      
       const dataInicioObj = new Date(dataInicio);
       const dataFimObj = new Date(dataFim);
+      const valores = getValoresReceita(dataInicioObj, dataFimObj);
       
-      const pedidosFiltrados = tasks.filter(t => {
-        const data = new Date(t.dataLancamento);
-        return data >= dataInicioObj && data <= dataFimObj;
-      });
-      
-      const despesasFiltradas = despesas.filter(d => {
-        const data = new Date(d.data);
-        return data >= dataInicioObj && data <= dataFimObj;
-      });
-      
-      const totalPedidos = pedidosFiltrados.length;
-      const totalPagos = pedidosFiltrados.filter(t => t.pagamento === "pago").length;
-      const totalValor = pedidosFiltrados.reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
-      const totalPago = pedidosFiltrados.filter(t => t.pagamento === "pago").reduce((sum, t) => sum + converterParaNumero(t.valor), 0);
-      const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
-      const lucro = totalPago - totalDespesas;
-      
-      doc.setFontSize(12);
-      doc.text(`Periodo: ${formatDate(dataInicio)} a ${formatDate(dataFim)}`, 20, y);
+      doc.setFontSize(22);
+      doc.text(`RELATÓRIO DE RECEITAS`, 105, y, { align: 'center' });
+      y += 12;
+      doc.setFontSize(14);
+      doc.text(`Período Personalizado`, 105, y, { align: 'center' });
       y += 10;
-      doc.text(`Total de Pedidos: ${totalPedidos}`, 20, y);
-      y += 7;
-      doc.text(`Pedidos Pagos: ${totalPagos}`, 20, y);
-      y += 7;
-      doc.text(`Valor Total: R$ ${totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-      y += 7;
-      doc.text(`Valor Recebido: R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-      y += 7;
-      doc.text(`Total Despesas: R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
-      y += 7;
-      doc.text(`Lucro Liquido: R$ ${lucro.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      doc.setFontSize(12);
+      doc.text(`${formatDate(dataInicio)} a ${formatDate(dataFim)}`, 105, y, { align: 'center' });
       y += 15;
       
       doc.setFontSize(14);
-      doc.text("Lista de Pedidos:", 20, y);
+      doc.text("RESUMO FINANCEIRO DO PERÍODO", 20, y);
       y += 10;
+      
+      doc.setFontSize(12);
+      doc.text(`1. PROJEÇÃO DE FATURAMENTO: R$ ${valores.totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.text(`2. VALOR RECEBIDO: R$ ${valores.totalRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.text(`3. FATURAMENTO TOTAL: R$ ${valores.totalFaturamento.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.text(`4. TOTAL DE DESPESAS: R$ ${valores.totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.setFontSize(14);
+      doc.text(`5. LUCRO LÍQUIDO: R$ ${valores.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y);
+      y += 8;
+      doc.setFontSize(11);
+      doc.text(`(${valores.percentualLucro.toFixed(1)}% sobre o recebido)`, 30, y);
+      y += 15;
+      
+      doc.setFontSize(11);
+      doc.text(`Fórmula: FATURAMENTO - DESPESAS = LUCRO`, 20, y);
+      y += 8;
+      doc.text(`   R$ ${valores.totalFaturamento.toLocaleString('pt-BR', {minimumFractionDigits: 2})} - R$ ${valores.totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})} = R$ ${valores.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
+      y += 20;
+      
       doc.setFontSize(10);
+      doc.text(`Relatório gerado em: ${new Date().toLocaleString('pt-BR')}`, 20, y);
       
-      pedidosFiltrados.forEach((p, idx) => {
-        if(y > 270) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.text(`${idx + 1}. ${p.nome} - R$ ${formatarValor(p.valor)} - ${p.pagamento === "pago" ? "PAGO" : "PENDENTE"}`, 20, y);
-        y += 6;
-      });
-      
-      doc.save(`relatorio_${dataInicio}_a_${dataFim}.pdf`);
+      doc.save(`relatorio_receitas_${dataInicio}_a_${dataFim}.pdf`);
     }
   }
 
