@@ -45,6 +45,8 @@
       --rota-bg: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
       --despesa-bg: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
       --vendrapida-bg: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+      --zerar-bg: #ef4444;
+      --zerar-hover: #dc2626;
       
       --foto-bg: #fef9e3;
       --foto-border: #fbbf24;
@@ -76,6 +78,8 @@
       --rota-bg: linear-gradient(135deg, #9b4d96 0%, #c4455a 100%);
       --despesa-bg: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
       --vendrapida-bg: linear-gradient(135deg, #d97706 0%, #c2410c 100%);
+      --zerar-bg: #dc2626;
+      --zerar-hover: #b91c1c;
       
       --foto-bg: #422800;
       --foto-border: #fbbf24;
@@ -141,6 +145,83 @@
       gap: 6px;
     }
 
+    /* NOVO MOSTRADOR DE PEDIDOS */
+    .pedidos-counter {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 0.3rem 1rem;
+      border-radius: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .counter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2rem;
+      background: var(--bg-page);
+    }
+
+    .counter-item.total {
+      background: var(--accent);
+      color: white;
+    }
+
+    .counter-item.aguardando {
+      background: var(--status-aguardando);
+      color: #b45309;
+    }
+
+    .counter-item.producao {
+      background: var(--status-producao);
+      color: white;
+    }
+
+    .counter-item.retirada {
+      background: var(--status-retirada);
+      color: white;
+    }
+
+    .counter-item i {
+      font-size: 0.7rem;
+    }
+
+    .counter-number {
+      font-weight: 800;
+      font-size: 0.9rem;
+      background: rgba(0,0,0,0.1);
+      padding: 0.1rem 0.4rem;
+      border-radius: 1rem;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .btn-zerar {
+      background: var(--zerar-bg);
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 2rem;
+      color: white;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-zerar:hover {
+      background: var(--zerar-hover);
+      transform: scale(1.02);
+    }
+
     .status-filter-bar {
       display: flex;
       gap: 0.5rem;
@@ -164,6 +245,21 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      position: relative;
+    }
+
+    /* badge de contagem nos botões de filtro */
+    .filter-status-btn .filter-count {
+      background: rgba(0,0,0,0.15);
+      padding: 0.1rem 0.4rem;
+      border-radius: 1rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+
+    .filter-status-btn.active .filter-count {
+      background: rgba(255,255,255,0.3);
     }
 
     .filter-status-btn.active {
@@ -308,7 +404,6 @@
       transform: scale(1.02);
     }
 
-    /* NOVA ABA VENDA RÁPIDA */
     .vendrapida-bar {
       display: flex;
       gap: 0.5rem;
@@ -1216,6 +1311,7 @@
       .payment-filter-bar { margin-top: 0.5rem; }
       .product-search-bar { margin-top: 0.5rem; }
       .vendrapida-bar { margin-top: 0.5rem; }
+      .pedidos-counter { margin-top: 0.5rem; }
     }
   </style>
 </head>
@@ -1227,18 +1323,50 @@
       <div class="dn-tarefas"><i class="fas fa-calendar-day"></i> DN Tarefas Diárias</div>
     </div>
     
+    <!-- NOVO MOSTRADOR DE PEDIDOS -->
+    <div class="pedidos-counter" id="pedidosCounter">
+      <div class="counter-item total">
+        <i class="fas fa-chart-simple"></i>
+        <span>Total</span>
+        <span class="counter-number" id="totalPedidosCount">0</span>
+      </div>
+      <div class="counter-item aguardando">
+        <i class="fas fa-clock"></i>
+        <span>Aguardando</span>
+        <span class="counter-number" id="aguardandoCount">0</span>
+      </div>
+      <div class="counter-item producao">
+        <i class="fas fa-cogs"></i>
+        <span>Produção</span>
+        <span class="counter-number" id="producaoCount">0</span>
+      </div>
+      <div class="counter-item retirada">
+        <i class="fas fa-hand-peace"></i>
+        <span>Retirada</span>
+        <span class="counter-number" id="retiradaCount">0</span>
+      </div>
+    </div>
+    
+    <button class="btn-zerar" id="btnZerar">
+      <i class="fas fa-undo-alt"></i> ZERAR
+    </button>
+    
     <div class="status-filter-bar">
       <button class="filter-status-btn active" data-filter="todos" id="filterTodosBtn">
         <i class="fas fa-list"></i> Todos
+        <span class="filter-count" id="filterTodosCount">0</span>
       </button>
       <button class="filter-status-btn" data-filter="aguardando" id="filterAguardandoBtn">
         <i class="fas fa-clock"></i> Aguardando
+        <span class="filter-count" id="filterAguardandoCount">0</span>
       </button>
       <button class="filter-status-btn" data-filter="producao" id="filterProducaoBtn">
         <i class="fas fa-cogs"></i> Produção
+        <span class="filter-count" id="filterProducaoCount">0</span>
       </button>
       <button class="filter-status-btn" data-filter="retirada" id="filterRetiradaBtn">
         <i class="fas fa-hand-peace"></i> Retirada
+        <span class="filter-count" id="filterRetiradaCount">0</span>
       </button>
     </div>
     
@@ -1264,7 +1392,6 @@
       </button>
     </div>
     
-    <!-- NOVA ABA VENDA RÁPIDA -->
     <div class="vendrapida-bar">
       <input type="text" id="vendaRapidaValor" class="vendrapida-input" placeholder="R$ 0,00">
       <button class="btn-vendrapida" id="vendaRapidaBtn">
@@ -1291,7 +1418,7 @@
       <input type="file" id="importFile" accept=".csv">
     </button>
     <button class="btn-pdf" id="gerarPDFBtn"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
-    <button class="btn-excluir-concluidos" id="excluirConcluidosBtn"><i class="fas fa-trash-alt"></i> Excluir Concluídos</button>
+    <button class="btn-excluir-concluidos" id="excluirConcluidosBtn"><i class="fas fa-trash-alt"></i> Excluir Concluídos PAGOS</button>
   </div>
 
   <div id="tasksContainer" class="tasks-horizontal"></div>
@@ -1542,17 +1669,50 @@
     return 'normal';
   }
 
-  function excluirTodosConcluidos() {
-    const concluidos = tasks.filter(t => t.concluido === true);
+  // FUNÇÃO PARA ATUALIZAR OS CONTADORES DE PEDIDOS
+  function atualizarContadores() {
+    // Pedidos NÃO concluídos
+    const pedidosAtivos = tasks.filter(t => !t.concluido);
     
-    if(concluidos.length === 0) {
-      alert("Nenhum pedido concluído para excluir!");
+    const totalAtivos = pedidosAtivos.length;
+    const aguardando = pedidosAtivos.filter(t => t.status === "aguardando").length;
+    const producao = pedidosAtivos.filter(t => t.status === "producao").length;
+    const retirada = pedidosAtivos.filter(t => t.status === "retirada").length;
+    
+    // Atualizar mostrador no cabeçalho
+    document.getElementById("totalPedidosCount").innerText = totalAtivos;
+    document.getElementById("aguardandoCount").innerText = aguardando;
+    document.getElementById("producaoCount").innerText = producao;
+    document.getElementById("retiradaCount").innerText = retirada;
+    
+    // Atualizar badges nos botões de filtro
+    document.getElementById("filterTodosCount").innerText = totalAtivos;
+    document.getElementById("filterAguardandoCount").innerText = aguardando;
+    document.getElementById("filterProducaoCount").innerText = producao;
+    document.getElementById("filterRetiradaCount").innerText = retirada;
+  }
+
+  function excluirTodosConcluidos() {
+    const concluidosPagos = tasks.filter(t => t.concluido === true && t.pagamento === "pago");
+    const concluidosAguardando = tasks.filter(t => t.concluido === true && t.pagamento === "aguardando");
+    
+    if(concluidosPagos.length === 0) {
+      if(concluidosAguardando.length > 0) {
+        alert(`Nenhum pedido concluído com pagamento PAGO para excluir!\n\nHá ${concluidosAguardando.length} pedido(s) concluído(s) com pagamento AGUARDANDO que foram mantidos.`);
+      } else {
+        alert("Nenhum pedido concluído para excluir!");
+      }
       return;
     }
     
-    if(confirm(`ATENÇÃO! Esta ação irá excluir permanentemente ${concluidos.length} pedido(s) concluído(s).\n\n✅ Os valores financeiros na aba RECEITA permanecerão INALTERADOS!\n\nDeseja continuar?`)) {
+    if(confirm(`ATENÇÃO! Esta ação irá excluir permanentemente ${concluidosPagos.length} pedido(s) concluído(s) com pagamento PAGO.\n\n✅ Os pedidos concluídos com pagamento AGUARDANDO (${concluidosAguardando.length}) serão MANTIDOS.\n\n📊 Os valores financeiros na aba RECEITA permanecerão INALTERADOS!\n\nDeseja continuar?`)) {
       
-      const novosTasks = tasks.filter(t => t.concluido !== true);
+      const idsExcluir = concluidosPagos.map(t => t.id);
+      
+      historicoReceita = historicoReceita.filter(r => !idsExcluir.includes(r.id));
+      saveHistoricoReceita();
+      
+      const novosTasks = tasks.filter(t => !(t.concluido === true && t.pagamento === "pago"));
       tasks = novosTasks;
       
       renomearSemanasPorPosicao();
@@ -1561,16 +1721,67 @@
       
       saveToLocal();
       atualizarAbasSemanas();
+      
+      // Atualizar contadores após exclusão
+      atualizarContadores();
+      
       renderTasks();
       
       if(showingReceita) renderReceita();
       if(showingRota) renderRota();
       
-      alert(`✅ ${concluidos.length} pedido(s) concluído(s) removido(s) com sucesso!\n\n📊 Os valores financeiros na aba RECEITA permanecem inalterados!`);
+      alert(`✅ ${concluidosPagos.length} pedido(s) concluído(s) com pagamento PAGO removido(s) com sucesso!\n\n📋 ${concluidosAguardando.length} pedido(s) concluído(s) com pagamento AGUARDANDO foram mantidos.\n\n📊 Os valores financeiros na aba RECEITA permanecem inalterados!`);
     }
   }
 
-  // NOVA FUNÇÃO: VENDA RÁPIDA
+  function zerarFiltros() {
+    searchQuery = "";
+    document.getElementById("searchInput").value = "";
+    
+    productSearchQuery = "";
+    document.getElementById("productSearchInput").value = "";
+    
+    currentStatusFilter = "todos";
+    document.querySelectorAll('.filter-status-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if(btn.dataset.filter === "todos") {
+        btn.classList.add('active');
+      }
+    });
+    
+    currentPaymentFilter = "todos-pagamento";
+    document.querySelectorAll('.filter-payment-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if(btn.dataset.payment === "todos-pagamento") {
+        btn.classList.add('active');
+      }
+    });
+    
+    if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa) {
+      if(viewAllMode) setViewAllMode(false);
+      if(showingConcluido) setConcluidoMode(false);
+      if(showingReceita) setReceitaMode(false);
+      if(showingClientes) setClientesMode(false);
+      if(showingRota) setRotaMode(false);
+      if(showingDespesa) setDespesaMode(false);
+      
+      document.querySelectorAll(".tab-btn[data-week]").forEach(btn => {
+        btn.classList.remove('active');
+        if(parseInt(btn.dataset.week) === currentWeek) {
+          btn.classList.add('active');
+        }
+      });
+    }
+    
+    renderTasks();
+    
+    const btnZerar = document.getElementById("btnZerar");
+    btnZerar.style.transform = "scale(0.95)";
+    setTimeout(() => {
+      btnZerar.style.transform = "";
+    }, 200);
+  }
+
   function adicionarVendaRapida() {
     const valorInput = document.getElementById("vendaRapidaValor");
     let valorStr = valorInput.value.trim();
@@ -1580,7 +1791,6 @@
       return;
     }
     
-    // Converter o valor (aceita formato brasileiro: 10,50 ou 10.50)
     let valorNumerico = converterParaNumero(valorStr);
     
     if(valorNumerico <= 0) {
@@ -1588,11 +1798,9 @@
       return;
     }
     
-    // Criar um ID único para esta venda rápida
     const vendaId = nextId++;
     const dataHoje = new Date().toISOString().split('T')[0];
     
-    // Adicionar ao histórico de receita
     historicoReceita.push({
       id: vendaId,
       nome: "Venda Rápida",
@@ -1602,10 +1810,8 @@
     });
     saveHistoricoReceita();
     
-    // Limpar o campo
     valorInput.value = "";
     
-    // Atualizar a visualização se estiver na aba Receita
     if(showingReceita) {
       renderReceita();
     }
@@ -2008,6 +2214,9 @@
     reorderAllByWeek();
     reordenarPorDataEntrega();
     atualizarOrdemRota();
+    
+    // Atualizar contadores após carregar dados
+    atualizarContadores();
   }
 
   function saveSemanasOrdem() {
@@ -2334,6 +2543,7 @@
       }
       
       atualizarAbasSemanas();
+      atualizarContadores();
       
       if(showingConcluido) {
         renderTasks();
@@ -2367,6 +2577,7 @@
     renomearSemanasPorPosicao();
     reordenarPorDataEntrega();
     atualizarAbasSemanas();
+    atualizarContadores();
     renderTasks();
   }
   
@@ -2405,6 +2616,7 @@
       renomearSemanasPorPosicao();
       reordenarPorDataEntrega();
       atualizarAbasSemanas();
+      atualizarContadores();
       renderTasks();
       if(showingReceita) renderReceita();
       if(showingClientes) renderClientes();
@@ -2425,6 +2637,7 @@
     reordenarPorDataEntrega();
     atualizarOrdemRota();
     atualizarAbasSemanas();
+    atualizarContadores();
     renderTasks();
     if(showingReceita) renderReceita();
     if(showingClientes) renderClientes();
@@ -2463,6 +2676,7 @@
     let newIdx = (idx+1) % statusOrder.length;
     task.status = statusOrder[newIdx];
     saveToLocal();
+    atualizarContadores();
     renderTasks();
   }
 
@@ -2589,6 +2803,7 @@
         atualizarOrdemRota();
         reordenarPorDataEntrega();
         atualizarAbasSemanas();
+        atualizarContadores();
         renderTasks();
         alert(`${novosPedidos.length} pedidos importados com sucesso!`);
       } else {
@@ -3670,6 +3885,7 @@
   const saveDespesaBtn = document.getElementById("saveDespesaBtn");
   const saveBtn = document.getElementById("saveTaskBtn");
   const excluirConcluidosBtn = document.getElementById("excluirConcluidosBtn");
+  const btnZerar = document.getElementById("btnZerar");
   const modalTitle = document.getElementById("modalTitle");
   const editIdField = document.getElementById("editId");
   const nomeField = document.getElementById("nome");
@@ -3857,6 +4073,8 @@
   };
   
   excluirConcluidosBtn.onclick = excluirTodosConcluidos;
+  
+  btnZerar.onclick = zerarFiltros;
   
   saveBtn.onclick = saveTaskFromModal;
   window.onclick = (e) => { 
@@ -4093,7 +4311,6 @@
     if(e.key === "Enter") searchByProduct();
   });
   
-  // NOVO EVENTO PARA VENDA RÁPIDA
   document.getElementById("vendaRapidaBtn")?.addEventListener("click", adicionarVendaRapida);
   document.getElementById("vendaRapidaValor")?.addEventListener("keypress", (e) => {
     if(e.key === "Enter") adicionarVendaRapida();
