@@ -186,6 +186,11 @@
       color: white;
     }
 
+    .counter-item.concluido {
+      background: var(--status-concluido);
+      color: white;
+    }
+
     .counter-item i {
       font-size: 0.7rem;
     }
@@ -1342,6 +1347,11 @@
         <span>Retirada</span>
         <span class="counter-number" id="retiradaCount">0</span>
       </div>
+      <div class="counter-item concluido">
+        <i class="fas fa-check-circle"></i>
+        <span>Concluído</span>
+        <span class="counter-number" id="concluidoCount">0</span>
+      </div>
     </div>
     
     <button class="btn-zerar" id="btnZerar">
@@ -1668,21 +1678,56 @@
 
   function atualizarContadores() {
     const pedidosAtivos = tasks.filter(t => !t.concluido);
+    const pedidosConcluidos = tasks.filter(t => t.concluido === true);
     
     const totalAtivos = pedidosAtivos.length;
     const aguardando = pedidosAtivos.filter(t => t.status === "aguardando").length;
     const producao = pedidosAtivos.filter(t => t.status === "producao").length;
     const retirada = pedidosAtivos.filter(t => t.status === "retirada").length;
+    const concluido = pedidosConcluidos.length;
     
     document.getElementById("totalPedidosCount").innerText = totalAtivos;
     document.getElementById("aguardandoCount").innerText = aguardando;
     document.getElementById("producaoCount").innerText = producao;
     document.getElementById("retiradaCount").innerText = retirada;
+    document.getElementById("concluidoCount").innerText = concluido;
     
     document.getElementById("filterTodosCount").innerText = totalAtivos;
     document.getElementById("filterAguardandoCount").innerText = aguardando;
     document.getElementById("filterProducaoCount").innerText = producao;
     document.getElementById("filterRetiradaCount").innerText = retirada;
+  }
+
+  // FUNÇÃO MODIFICADA: toggleRotaEntrega agora funciona para pedidos concluídos também
+  function toggleRotaEntrega(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if(task) {
+      // Se o pedido está concluído e vamos adicionar à rota, precisamos reverter o status de concluído
+      if(task.concluido && !task.rotaEntrega) {
+        if(confirm("Este pedido está concluído. Ao adicionar à rota de entrega, ele será removido da lista de concluídos. Deseja continuar?")) {
+          task.concluido = false;
+          task.rotaEntrega = true;
+          task.dataConclusao = null;
+          atualizarContadores();
+        } else {
+          return;
+        }
+      } else {
+        task.rotaEntrega = !task.rotaEntrega;
+      }
+      
+      if(task.rotaEntrega) {
+        atualizarOrdemRota();
+      }
+      saveToLocal();
+      
+      // Atualizar abas e contadores
+      atualizarAbasSemanas();
+      atualizarContadores();
+      
+      renderTasks();
+      if(showingRota) renderRota();
+    }
   }
 
   function excluirTodosConcluidos() {
@@ -2489,19 +2534,6 @@
     }
   }
 
-  function toggleRotaEntrega(taskId) {
-    const task = tasks.find(t => t.id === taskId);
-    if(task && !task.concluido) {
-      task.rotaEntrega = !task.rotaEntrega;
-      if(task.rotaEntrega) {
-        atualizarOrdemRota();
-      }
-      saveToLocal();
-      renderTasks();
-      if(showingRota) renderRota();
-    }
-  }
-
   function togglePagamento(taskId) {
     const task = tasks.find(t => t.id === taskId);
     if(task) {
@@ -2896,13 +2928,11 @@
     }
   };
 
-  // FUNÇÃO MELHORADA PARA GERAR PDF COM OS VALORES DA RECEITA
   async function gerarPDFComOpcoes(tipo, ano, mes, dataInicio, dataFim) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     let y = 20;
     
-    // Função auxiliar para obter valores da receita
     function getValoresReceita(dataInicioObj, dataFimObj) {
       let projecaoFiltrada = [];
       let pagosFiltrados = [];
@@ -3672,6 +3702,7 @@
 
   window.aplicarFiltroReceita = aplicarFiltroReceita;
 
+  // FUNÇÃO RENDER TASKS MODIFICADA - Com suporte a busca por cliente em TODAS as abas
   function renderTasks() {
     let filtered = [];
     
@@ -3715,6 +3746,7 @@
       });
     }
     
+    // BUSCA POR NOME DO CLIENTE - Funciona em TODAS as abas (Aguardando, Produção, Retirada, Concluído)
     if(searchQuery.trim() !== "") {
       const q = searchQuery.trim().toLowerCase();
       filtered = filtered.filter(t => t.nome.toLowerCase().includes(q));
@@ -3804,7 +3836,14 @@
               <button class="icon-btn" onclick="window.moveTask(${task.id}, 'down')" title="Mover para baixo" ${viewAllMode || showingConcluido ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-arrow-down"></i></button>
               <button class="icon-btn urgent-btn" onclick="window.toggleUrgent(${task.id})" title="Marcar/Desmarcar Urgente"><i class="fas fa-exclamation-triangle"></i></button>
               <button class="icon-btn rota-btn" onclick="window.toggleRotaEntrega(${task.id})" title="Marcar/Desmarcar Rota de Entrega"><i class="fas fa-truck"></i></button>
-            ` : ''}
+            ` : `
+              <!-- Botão de rota de entrega disponível na aba CONCLUÍDO para adicionar à rota -->
+              ${!task.rotaEntrega ? `
+                <button class="icon-btn rota-btn" onclick="window.toggleRotaEntrega(${task.id})" title="Adicionar à Rota de Entrega (removerá da lista de concluídos)">
+                  <i class="fas fa-truck"></i> Rota
+                </button>
+              ` : ''}
+            `}
             <button class="icon-btn concluir-btn" onclick="window.marcarConcluido(${task.id})" title="Marcar como Concluído" ${task.concluido ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-check-circle"></i></button>
             <button class="icon-btn" onclick="window.editTaskModal(${task.id})"><i class="fas fa-edit"></i></button>
             <button class="icon-btn" onclick="window.deleteTaskConfirm(${task.id})"><i class="fas fa-trash-alt"></i></button>
