@@ -1698,11 +1698,9 @@
     document.getElementById("filterRetiradaCount").innerText = retirada;
   }
 
-  // FUNÇÃO MODIFICADA: toggleRotaEntrega agora funciona para pedidos concluídos também
   function toggleRotaEntrega(taskId) {
     const task = tasks.find(t => t.id === taskId);
     if(task) {
-      // Se o pedido está concluído e vamos adicionar à rota, precisamos reverter o status de concluído
       if(task.concluido && !task.rotaEntrega) {
         if(confirm("Este pedido está concluído. Ao adicionar à rota de entrega, ele será removido da lista de concluídos. Deseja continuar?")) {
           task.concluido = false;
@@ -1721,7 +1719,6 @@
       }
       saveToLocal();
       
-      // Atualizar abas e contadores
       atualizarAbasSemanas();
       atualizarContadores();
       
@@ -1730,6 +1727,7 @@
     }
   }
 
+  // FUNÇÃO MODIFICADA: Mantém os valores na aba RECEITA ao excluir concluídos pagos
   function excluirTodosConcluidos() {
     const concluidosPagos = tasks.filter(t => t.concluido === true && t.pagamento === "pago");
     const concluidosAguardando = tasks.filter(t => t.concluido === true && t.pagamento === "aguardando");
@@ -1745,10 +1743,8 @@
     
     if(confirm(`ATENÇÃO! Esta ação irá excluir permanentemente ${concluidosPagos.length} pedido(s) concluído(s) com pagamento PAGO.\n\n✅ Os pedidos concluídos com pagamento AGUARDANDO (${concluidosAguardando.length}) serão MANTIDOS.\n\n📊 Os valores financeiros na aba RECEITA permanecerão INALTERADOS!\n\nDeseja continuar?`)) {
       
-      const idsExcluir = concluidosPagos.map(t => t.id);
-      
-      historicoReceita = historicoReceita.filter(r => !idsExcluir.includes(r.id));
-      saveHistoricoReceita();
+      // NÃO REMOVER DO HISTÓRICO DE RECEITA - Manter os valores na aba RECEITA
+      // Os registros de receita permanecem no historicoReceita
       
       const novosTasks = tasks.filter(t => !(t.concluido === true && t.pagamento === "pago"));
       tasks = novosTasks;
@@ -1767,7 +1763,7 @@
       if(showingReceita) renderReceita();
       if(showingRota) renderRota();
       
-      alert(`✅ ${concluidosPagos.length} pedido(s) concluído(s) com pagamento PAGO removido(s) com sucesso!\n\n📋 ${concluidosAguardando.length} pedido(s) concluído(s) com pagamento AGUARDANDO foram mantidos.\n\n📊 Os valores financeiros na aba RECEITA permanecem inalterados!`);
+      alert(`✅ ${concluidosPagos.length} pedido(s) concluído(s) com pagamento PAGO removido(s) com sucesso!\n\n📋 ${concluidosAguardando.length} pedido(s) concluído(s) com pagamento AGUARDANDO foram mantidos.\n\n📊 Os valores financeiros na aba RECEITA permanecem INALTERADOS!`);
     }
   }
 
@@ -3702,7 +3698,6 @@
 
   window.aplicarFiltroReceita = aplicarFiltroReceita;
 
-  // FUNÇÃO RENDER TASKS MODIFICADA - Com suporte a busca por cliente em TODAS as abas
   function renderTasks() {
     let filtered = [];
     
@@ -3746,7 +3741,6 @@
       });
     }
     
-    // BUSCA POR NOME DO CLIENTE - Funciona em TODAS as abas (Aguardando, Produção, Retirada, Concluído)
     if(searchQuery.trim() !== "") {
       const q = searchQuery.trim().toLowerCase();
       filtered = filtered.filter(t => t.nome.toLowerCase().includes(q));
@@ -3837,7 +3831,6 @@
               <button class="icon-btn urgent-btn" onclick="window.toggleUrgent(${task.id})" title="Marcar/Desmarcar Urgente"><i class="fas fa-exclamation-triangle"></i></button>
               <button class="icon-btn rota-btn" onclick="window.toggleRotaEntrega(${task.id})" title="Marcar/Desmarcar Rota de Entrega"><i class="fas fa-truck"></i></button>
             ` : `
-              <!-- Botão de rota de entrega disponível na aba CONCLUÍDO para adicionar à rota -->
               ${!task.rotaEntrega ? `
                 <button class="icon-btn rota-btn" onclick="window.toggleRotaEntrega(${task.id})" title="Adicionar à Rota de Entrega (removerá da lista de concluídos)">
                   <i class="fas fa-truck"></i> Rota
