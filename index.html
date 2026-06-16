@@ -1294,7 +1294,6 @@
       color: white;
     }
 
-    /* Estilo para o campo de busca com sugestões na aba clientes */
     .cliente-search-wrapper {
       position: relative;
       flex: 1;
@@ -2246,12 +2245,12 @@
     } else {
       historicoReceita = [];
       tasks.forEach(task => {
-        if(task.pagamento === "pago") {
+        if(task.pagamento === "pago" && task.concluido === true) {
           historicoReceita.push({
             id: task.id,
             nome: task.nome,
             valor: task.valor,
-            dataPagamento: task.dataLancamento,
+            dataPagamento: task.dataConclusao || task.dataLancamento,
             descricao: task.descricao
           });
         }
@@ -2482,16 +2481,19 @@
   }
 
   function registrarReceita(task) {
-    const existe = historicoReceita.some(h => h.id === task.id);
-    if(!existe && task.pagamento === "pago") {
-      historicoReceita.push({
-        id: task.id,
-        nome: task.nome,
-        valor: task.valor,
-        dataPagamento: task.dataLancamento,
-        descricao: task.descricao
-      });
-      saveHistoricoReceita();
+    // Só registra se for pago E concluído
+    if(task.pagamento === "pago" && task.concluido === true) {
+      const existe = historicoReceita.some(h => h.id === task.id);
+      if(!existe) {
+        historicoReceita.push({
+          id: task.id,
+          nome: task.nome,
+          valor: task.valor,
+          dataPagamento: task.dataConclusao || task.dataLancamento,
+          descricao: task.descricao
+        });
+        saveHistoricoReceita();
+      }
     }
   }
 
@@ -2575,7 +2577,8 @@
       const eraPago = task.pagamento === "pago";
       task.pagamento = task.pagamento === "aguardando" ? "pago" : "aguardando";
       
-      if(task.pagamento === "pago" && !eraPago) {
+      // Se mudou para pago E está concluído, registra na receita
+      if(task.pagamento === "pago" && task.concluido === true) {
         registrarReceita(task);
       } else if(task.pagamento === "aguardando" && eraPago) {
         removerReceita(task.id);
@@ -2594,11 +2597,13 @@
       task.concluido = true;
       task.dataConclusao = new Date().toISOString().split('T')[0];
       task.rotaEntrega = false;
-      saveToLocal();
       
+      // Se estiver pago, registra na receita
       if(task.pagamento === "pago") {
         registrarReceita(task);
       }
+      
+      saveToLocal();
       
       atualizarAbasSemanas();
       atualizarContadores();
@@ -2624,9 +2629,8 @@
     
     atualizarOuAdicionarCliente(task.nome, task.telefone, task.dataLancamento, task.valor);
     
-    if(task.pagamento === "pago") {
-      registrarReceita(task);
-    }
+    // Só registra na receita se for pago E concluído (mas novo pedido não está concluído)
+    // Então não registra agora
     
     if(task.rotaEntrega) {
       atualizarOrdemRota();
@@ -2644,6 +2648,7 @@
     if(index !== -1) {
       const oldTask = tasks[index];
       const eraPago = oldTask.pagamento === "pago";
+      const eraConcluido = oldTask.concluido === true;
       
       if(oldTask.nome !== updated.nome) {
         removerPedidoDoCliente(oldTask.nome, oldTask.valor);
@@ -2661,7 +2666,8 @@
       updated.dataConclusao = oldTask.dataConclusao;
       tasks[index] = updated;
       
-      if(updated.pagamento === "pago" && !eraPago) {
+      // Verifica se deve registrar ou remover da receita
+      if(updated.pagamento === "pago" && updated.concluido === true) {
         registrarReceita(updated);
       } else if(updated.pagamento === "aguardando" && eraPago) {
         removerReceita(updated.id);
@@ -2686,7 +2692,7 @@
     const task = tasks.find(t => t.id === id);
     if(task) {
       removerPedidoDoCliente(task.nome, task.valor);
-      if(task.pagamento === "pago") {
+      if(task.pagamento === "pago" && task.concluido === true) {
         removerReceita(id);
       }
     }
@@ -2855,7 +2861,7 @@
         novosPedidos.forEach(p => {
           tasks.push(p);
           atualizarOuAdicionarCliente(p.nome, p.telefone, p.dataLancamento, p.valor);
-          if(p.pagamento === "pago") registrarReceita(p);
+          if(p.pagamento === "pago" && p.concluido === true) registrarReceita(p);
         });
         renomearSemanasPorPosicao();
         atualizarOrdemRota();
@@ -2973,15 +2979,21 @@
       let pagosFiltrados = [];
       let despesasFiltradas = [...despesas];
       
-      projecaoFiltrada = tasks.filter(t => !t.concluido).map(t => ({
-        id: t.id,
-        nome: t.nome,
-        valor: converterParaNumero(t.valor),
-        dataPagamento: t.dataEntrega || t.dataLancamento,
-        descricao: t.descricao,
-        status_pagamento: t.pagamento
-      }));
+      // PROJEÇÃO: pedidos em andamento (qualquer status, qualquer pagamento)
+      // + pedidos concluídos com pagamento AGUARDANDO
+      const pedidosEmAndamento = tasks.filter(t => !t.concluido);
+      pedidosEmAndamento.forEach(t => {
+        projecaoFiltrada.push({
+          id: t.id,
+          nome: t.nome,
+          valor: converterParaNumero(t.valor),
+          dataPagamento: t.dataEntrega || t.dataLancamento,
+          descricao: t.descricao,
+          status_pagamento: t.pagamento
+        });
+      });
       
+      // Pedidos concluídos com pagamento AGUARDANDO também entram na projeção
       const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
       concluidosNaoPagos.forEach(t => {
         projecaoFiltrada.push({
@@ -2994,6 +3006,7 @@
         });
       });
       
+      // RECEBIDO: apenas pedidos concluídos e pagos + vendas rápidas
       pagosFiltrados = [...historicoReceita].map(r => ({
         ...r,
         valor: converterParaNumero(r.valor)
@@ -3237,7 +3250,6 @@
     atualizarVisibilidade();
   }
 
-  // FUNÇÃO RENDER CLIENTES MODIFICADA - Com busca automática com sugestões
   function renderClientes() {
     const searchCliente = document.getElementById("searchCliente")?.value || "";
     let clientesFiltrados = [...clientesCadastrados];
@@ -3307,7 +3319,6 @@
       const searchInput = document.getElementById("searchCliente");
       const suggestionsDiv = document.getElementById("clienteSuggestions");
       
-      // Função para mostrar sugestões de clientes
       function showClienteSuggestions() {
         const valor = searchInput.value.toLowerCase().trim();
         
@@ -3334,13 +3345,11 @@
         
         suggestionsDiv.style.display = "block";
         
-        // Adicionar eventos de clique nas sugestões
         document.querySelectorAll('.cliente-suggestion-item').forEach(el => {
           el.addEventListener("click", () => {
             const nome = el.dataset.nome;
             searchInput.value = nome;
             suggestionsDiv.style.display = "none";
-            // Aplicar o filtro automaticamente
             const clientesFiltradosNova = clientesCadastrados.filter(c => 
               c.nome.toLowerCase().includes(nome.toLowerCase())
             );
@@ -3387,12 +3396,10 @@
       }
       
       if(searchInput) {
-        // Evento de input para mostrar sugestões
         searchInput.addEventListener("input", function(e) {
           showClienteSuggestions();
         });
         
-        // Evento de keypress para buscar ao pressionar Enter
         searchInput.addEventListener("keypress", function(e) {
           if(e.key === "Enter") {
             suggestionsDiv.style.display = "none";
@@ -3400,7 +3407,6 @@
           }
         });
         
-        // Fechar sugestões ao clicar fora
         document.addEventListener("click", function(e) {
           if(!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
             suggestionsDiv.style.display = "none";
@@ -3408,13 +3414,11 @@
         });
       }
       
-      // Botão filtrar
       document.getElementById("btnFiltrarCliente")?.addEventListener("click", () => {
         suggestionsDiv.style.display = "none";
         renderClientesComFiltro(searchInput.value);
       });
       
-      // Botão limpar busca
       document.getElementById("btnLimparBuscaCliente")?.addEventListener("click", () => {
         if(searchInput) {
           searchInput.value = "";
@@ -3450,15 +3454,20 @@
     let pagosFiltrados = [];
     let despesasFiltradas = [...despesas];
     
-    projecaoFiltrada = tasks.filter(t => !t.concluido).map(t => ({
-      id: t.id,
-      nome: t.nome,
-      valor: converterParaNumero(t.valor),
-      dataPagamento: t.dataEntrega || t.dataLancamento,
-      descricao: t.descricao,
-      status_pagamento: t.pagamento
-    }));
+    // PROJEÇÃO: todos os pedidos em andamento (qualquer pagamento)
+    const pedidosEmAndamento = tasks.filter(t => !t.concluido);
+    pedidosEmAndamento.forEach(t => {
+      projecaoFiltrada.push({
+        id: t.id,
+        nome: t.nome,
+        valor: converterParaNumero(t.valor),
+        dataPagamento: t.dataEntrega || t.dataLancamento,
+        descricao: t.descricao,
+        status_pagamento: t.pagamento
+      });
+    });
     
+    // Pedidos concluídos com pagamento AGUARDANDO também entram na projeção
     const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
     concluidosNaoPagos.forEach(t => {
       projecaoFiltrada.push({
@@ -3471,6 +3480,7 @@
       });
     });
     
+    // RECEBIDO: apenas pedidos concluídos e pagos + vendas rápidas
     pagosFiltrados = [...historicoReceita].map(r => ({
       ...r,
       valor: converterParaNumero(r.valor)
@@ -3571,10 +3581,12 @@
           <div class="card-receita-mini">
             <h4><i class="fas fa-chart-line"></i> PROJEÇÃO</h4>
             <div class="valor valor-projecao">R$ ${totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            <small style="font-size:0.6rem;color:var(--text-secondary);">Pedidos em andamento + concluídos não pagos</small>
           </div>
           <div class="card-receita-mini">
             <h4><i class="fas fa-check-circle"></i> RECEBIDO</h4>
             <div class="valor valor-pago">R$ ${totalPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            <small style="font-size:0.6rem;color:var(--text-secondary);">Pedidos concluídos e pagos</small>
           </div>
           <div class="card-receita-mini">
             <h4><i class="fas fa-chart-pie"></i> FATURAMENTO</h4>
@@ -3587,6 +3599,7 @@
           <div class="card-receita-mini">
             <h4><i class="fas fa-chart-line"></i> LUCRO</h4>
             <div class="valor valor-lucro">R$ ${lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            <small style="font-size:0.6rem;color:var(--text-secondary);">Recebido - Despesas</small>
           </div>
         </div>
         
