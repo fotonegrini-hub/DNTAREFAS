@@ -575,6 +575,26 @@
       border-color: var(--accent);
     }
 
+    .btn-excluir-semana {
+      background: #ef4444;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+      color: white;
+    }
+
+    .btn-excluir-semana:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
     .btn-add-semana {
       background: var(--accent);
       color: white;
@@ -1984,6 +2004,62 @@
     renderTasks();
   }
 
+  function excluirSemana(index) {
+    if(semanasOrdenadas.length <= 1) {
+      alert("Não é possível excluir a última semana. Adicione uma nova semana primeiro.");
+      return;
+    }
+    
+    const semanaExcluir = semanasOrdenadas[index];
+    const nomeSemana = getSemanaNome(semanaExcluir);
+    const pedidosNaSemana = tasks.filter(t => t.semana === semanaExcluir && !t.concluido);
+    
+    let mensagem = `⚠️ ATENÇÃO! Você está prestes a excluir a ${nomeSemana}.\n\n`;
+    if(pedidosNaSemana.length > 0) {
+      mensagem += `📋 Esta semana contém ${pedidosNaSemana.length} pedido(s) em andamento.\n\n`;
+      mensagem += `Os pedidos serão REALOCADOS para a semana anterior (${getSemanaNome(semanasOrdenadas[index-1] || semanasOrdenadas[index+1])}).\n\n`;
+    } else {
+      mensagem += `📋 Esta semana está vazia (sem pedidos em andamento).\n\n`;
+    }
+    mensagem += `Deseja continuar?`;
+    
+    if(!confirm(mensagem)) return;
+    
+    const semanaDestino = index > 0 ? semanasOrdenadas[index-1] : semanasOrdenadas[index+1];
+    
+    // Realocar pedidos da semana excluída
+    tasks.forEach(task => {
+      if(task.semana === semanaExcluir && !task.concluido) {
+        task.semana = semanaDestino;
+      }
+    });
+    
+    // Remover a semana da lista
+    semanasOrdenadas.splice(index, 1);
+    
+    // Renomear as semanas
+    renomearSemanasPorPosicao();
+    
+    // Reordenar pedidos por data de entrega
+    reordenarPorDataEntrega();
+    
+    saveToLocal();
+    saveSemanasOrdem();
+    
+    // Atualizar a semana atual se necessário
+    if(currentWeek === semanaExcluir) {
+      currentWeek = semanaDestino;
+    } else if(currentWeek > semanaExcluir) {
+      currentWeek = currentWeek - 1;
+    }
+    
+    atualizarAbasSemanas();
+    atualizarContadores();
+    renderTasks();
+    
+    alert(`✅ ${nomeSemana} excluída com sucesso!\n📦 ${pedidosNaSemana.length} pedido(s) realocado(s) para ${getSemanaNome(semanaDestino)}.`);
+  }
+
   function adicionarSemana() {
     const novaSemana = semanasOrdenadas.length + 1;
     semanasOrdenadas.push(novaSemana);
@@ -2056,6 +2132,9 @@
           </button>
           <button class="btn-mover-semana" onclick="window.moverSemana(${idx}, 'right')" ${idx === semanasOrdenadas.length - 1 ? 'disabled' : ''} title="Mover para direita">
             <i class="fas fa-chevron-right"></i>
+          </button>
+          <button class="btn-excluir-semana" onclick="window.excluirSemana(${idx})" title="Excluir esta semana" ${semanasOrdenadas.length <= 1 ? 'disabled style="opacity:0.3;"' : ''}>
+            <i class="fas fa-times"></i>
           </button>
         </div>
       `;
@@ -2196,6 +2275,7 @@
   }
 
   window.moverSemana = moverSemana;
+  window.excluirSemana = excluirSemana;
 
   function loadData() {
     const stored = localStorage.getItem("flowtasks_app");
@@ -2481,7 +2561,6 @@
   }
 
   function registrarReceita(task) {
-    // Só registra se for pago E concluído
     if(task.pagamento === "pago" && task.concluido === true) {
       const existe = historicoReceita.some(h => h.id === task.id);
       if(!existe) {
@@ -2577,7 +2656,6 @@
       const eraPago = task.pagamento === "pago";
       task.pagamento = task.pagamento === "aguardando" ? "pago" : "aguardando";
       
-      // Se mudou para pago E está concluído, registra na receita
       if(task.pagamento === "pago" && task.concluido === true) {
         registrarReceita(task);
       } else if(task.pagamento === "aguardando" && eraPago) {
@@ -2598,7 +2676,6 @@
       task.dataConclusao = new Date().toISOString().split('T')[0];
       task.rotaEntrega = false;
       
-      // Se estiver pago, registra na receita
       if(task.pagamento === "pago") {
         registrarReceita(task);
       }
@@ -2628,9 +2705,6 @@
     tasks.push(task);
     
     atualizarOuAdicionarCliente(task.nome, task.telefone, task.dataLancamento, task.valor);
-    
-    // Só registra na receita se for pago E concluído (mas novo pedido não está concluído)
-    // Então não registra agora
     
     if(task.rotaEntrega) {
       atualizarOrdemRota();
@@ -2666,7 +2740,6 @@
       updated.dataConclusao = oldTask.dataConclusao;
       tasks[index] = updated;
       
-      // Verifica se deve registrar ou remover da receita
       if(updated.pagamento === "pago" && updated.concluido === true) {
         registrarReceita(updated);
       } else if(updated.pagamento === "aguardando" && eraPago) {
@@ -2979,8 +3052,6 @@
       let pagosFiltrados = [];
       let despesasFiltradas = [...despesas];
       
-      // PROJEÇÃO: pedidos em andamento (qualquer status, qualquer pagamento)
-      // + pedidos concluídos com pagamento AGUARDANDO
       const pedidosEmAndamento = tasks.filter(t => !t.concluido);
       pedidosEmAndamento.forEach(t => {
         projecaoFiltrada.push({
@@ -2993,7 +3064,6 @@
         });
       });
       
-      // Pedidos concluídos com pagamento AGUARDANDO também entram na projeção
       const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
       concluidosNaoPagos.forEach(t => {
         projecaoFiltrada.push({
@@ -3006,7 +3076,6 @@
         });
       });
       
-      // RECEBIDO: apenas pedidos concluídos e pagos + vendas rápidas
       pagosFiltrados = [...historicoReceita].map(r => ({
         ...r,
         valor: converterParaNumero(r.valor)
@@ -3454,7 +3523,6 @@
     let pagosFiltrados = [];
     let despesasFiltradas = [...despesas];
     
-    // PROJEÇÃO: todos os pedidos em andamento (qualquer pagamento)
     const pedidosEmAndamento = tasks.filter(t => !t.concluido);
     pedidosEmAndamento.forEach(t => {
       projecaoFiltrada.push({
@@ -3467,7 +3535,6 @@
       });
     });
     
-    // Pedidos concluídos com pagamento AGUARDANDO também entram na projeção
     const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
     concluidosNaoPagos.forEach(t => {
       projecaoFiltrada.push({
@@ -3480,7 +3547,6 @@
       });
     });
     
-    // RECEBIDO: apenas pedidos concluídos e pagos + vendas rápidas
     pagosFiltrados = [...historicoReceita].map(r => ({
       ...r,
       valor: converterParaNumero(r.valor)
