@@ -395,6 +395,7 @@
     .tab-btn.clientes-btn { background: var(--cliente-bg); color: white; }
     .tab-btn.despesa-btn { background: var(--despesa-bg); color: white; }
     .tab-btn.status-agrupado-btn { background: linear-gradient(135deg, #f59e0b 0%, #8b5cf6 50%, #10b981 100%); color: white; }
+    .tab-btn.vendrapida-btn { background: var(--vendrapida-bg); color: white; }
 
     .btn-mover-semana {
       background: var(--bg-page);
@@ -715,15 +716,15 @@
     .tipo-badge.foto { background: #fbbf24; color: #78350f; }
     .tipo-badge.caneca { background: #a855f7; color: white; }
 
-    /* ===== RECEITA / ROTA / CLIENTES ===== */
-    .receita-container, .clientes-container, .rota-container {
+    /* ===== RECEITA / ROTA / CLIENTES / VENDA RÁPIDA ===== */
+    .receita-container, .clientes-container, .rota-container, .vendrapida-container {
       background: var(--card-bg);
       border-radius: 1.5rem;
       padding: 1.5rem;
       border: 1px solid var(--border);
     }
 
-    .receita-header, .clientes-header, .rota-header {
+    .receita-header, .clientes-header, .rota-header, .vendrapida-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -942,6 +943,99 @@
       font-size: 0.85rem;
     }
 
+    /* ===== VENDA RÁPIDA ===== */
+    .vendrapida-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-end;
+      background: var(--bg-page);
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .vendrapida-form .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      flex: 1;
+      min-width: 150px;
+    }
+    .vendrapida-form .form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .vendrapida-form .form-group input {
+      padding: 0.6rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      width: 100%;
+    }
+    .vendrapida-form .form-group input:focus {
+      outline: 2px solid var(--accent);
+      border-color: transparent;
+    }
+    .btn-vendrapida-add {
+      background: var(--vendrapida-bg);
+      color: white;
+      border: none;
+      padding: 0.6rem 2rem;
+      border-radius: 1rem;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+    }
+    .btn-vendrapida-add:hover { transform: scale(1.03); opacity: 0.9; }
+
+    .vendrapida-historico {
+      margin-top: 1rem;
+    }
+    .vendrapida-historico table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .vendrapida-historico th {
+      text-align: left;
+      padding: 0.6rem 0.8rem;
+      background: var(--bg-page);
+      border-bottom: 2px solid var(--border);
+      font-weight: 600;
+    }
+    .vendrapida-historico td {
+      padding: 0.6rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .vendrapida-historico tr:hover td { background: var(--bg-page); }
+    .vendrapida-total {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--success);
+      text-align: right;
+      padding: 1rem 0;
+    }
+    .btn-remover-venda {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px 8px;
+      border-radius: 0.5rem;
+      transition: 0.2s;
+    }
+    .btn-remover-venda:hover { background: var(--danger); color: white; }
+
     /* ===== TOAST NOTIFICATION ===== */
     .toast-container {
       position: fixed;
@@ -990,6 +1084,10 @@
       .semana-tabs { justify-content: center; }
       .actions-row { flex-direction: column; align-items: stretch; }
       .search-box { min-width: unset; }
+      .vendrapida-form { flex-direction: column; }
+      .vendrapida-form .form-group { min-width: unset; }
+      .vendrapida-historico table { font-size: 0.7rem; }
+      .vendrapida-historico th, .vendrapida-historico td { padding: 0.3rem 0.4rem; }
     }
   </style>
 </head>
@@ -1062,6 +1160,7 @@
   <div id="rotaContainer" style="display: none;"></div>
   <div id="receitaContainer" style="display: none;"></div>
   <div id="clientesContainer" style="display: none;"></div>
+  <div id="vendrapidaContainer" style="display: none;"></div>
 
   <!-- ===== TOAST CONTAINER ===== -->
   <div class="toast-container" id="toastContainer"></div>
@@ -1218,11 +1317,13 @@
   let historicoReceita = [];
   let clientesCadastrados = [];
   let despesas = [];
+  let vendasRapidas = [];
   let currentWeek = 1;
   let searchQuery = "";
   let productSearchQuery = "";
   let nextId = 100;
   let nextDespesaId = 1;
+  let nextVendaRapidaId = 1;
   let viewAllMode = false;
   let showingConcluido = false;
   let showingReceita = false;
@@ -1230,6 +1331,7 @@
   let showingRota = false;
   let showingDespesa = false;
   let showingStatusAgrupado = false;
+  let showingVendaRapida = false;
   let receitaChart = null;
   let pizzaChart = null;
   let lucroChart = null;
@@ -1579,6 +1681,55 @@
     saveDespesas();
   }
 
+  // ---- VENDA RÁPIDA ----
+  function loadVendasRapidas() {
+    const stored = localStorage.getItem("flowtasks_vendas_rapidas");
+    if(stored) {
+      vendasRapidas = JSON.parse(stored);
+      if(vendasRapidas.length) nextVendaRapidaId = Math.max(...vendasRapidas.map(v => v.id), 0) + 1;
+    } else { vendasRapidas = []; nextVendaRapidaId = 1; }
+  }
+
+  function saveVendasRapidas() { localStorage.setItem("flowtasks_vendas_rapidas", JSON.stringify(vendasRapidas)); }
+
+  function adicionarVendaRapida(descricao, valor) {
+    if(!valor || valor <= 0) return false;
+    const data = new Date().toISOString().split('T')[0];
+    const venda = {
+      id: nextVendaRapidaId++,
+      descricao: descricao || 'Venda Rápida',
+      valor: valor,
+      data: data
+    };
+    vendasRapidas.push(venda);
+    saveVendasRapidas();
+    
+    // Adiciona automaticamente ao histórico de receita
+    historicoReceita.push({
+      id: 'vr_' + venda.id,
+      nome: 'Venda Rápida',
+      valor: formatarValor(valor),
+      dataPagamento: data,
+      descricao: descricao || 'Venda Rápida'
+    });
+    saveHistoricoReceita();
+    
+    return true;
+  }
+
+  function removerVendaRapida(id) {
+    const venda = vendasRapidas.find(v => v.id === id);
+    if(venda) {
+      // Remove do histórico de receita
+      historicoReceita = historicoReceita.filter(h => h.id !== 'vr_' + id);
+      saveHistoricoReceita();
+      vendasRapidas = vendasRapidas.filter(v => v.id !== id);
+      saveVendasRapidas();
+      return true;
+    }
+    return false;
+  }
+
   // ---- ORDENAÇÃO ----
   function reordenarPorDataEntrega() {
     for(let semana of semanasOrdenadas) {
@@ -1768,7 +1919,7 @@
 
   function abrirModalPosicao(taskId, taskNome) {
     const task = tasks.find(t => t.id === taskId);
-    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado) {
+    if(task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida) {
       const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido);
       document.getElementById("pedidoNome").innerHTML = taskNome;
       document.getElementById("maxPosicao").innerHTML = weekTasks.length;
@@ -1777,7 +1928,7 @@
       document.getElementById("posicaoModal").style.display = "flex";
     } else if(task && task.concluido) {
       showToast('Pedidos concluídos não podem ter posição alterada', 'warning');
-    } else if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado) {
+    } else if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado || showingVendaRapida) {
       showToast('Alterar posição disponível apenas na visualização por semana', 'info');
     }
   }
@@ -1932,7 +2083,7 @@
       b.classList.remove('active');
       if(b.dataset.payment === "todos-pagamento") b.classList.add('active');
     });
-    if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado) {
+    if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado || showingVendaRapida) {
       if(viewAllMode) setViewAllMode(false);
       if(showingConcluido) setConcluidoMode(false);
       if(showingReceita) setReceitaMode(false);
@@ -1940,6 +2091,7 @@
       if(showingRota) setRotaMode(false);
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      if(showingVendaRapida) setVendaRapidaMode(false);
       document.querySelectorAll(".tab-btn[data-week]").forEach(btn => {
         btn.classList.remove('active');
         if(parseInt(btn.dataset.week) === currentWeek) btn.classList.add('active');
@@ -1957,10 +2109,9 @@
     else if(showingReceita) { renderReceita(); return; }
     else if(showingClientes) { renderClientes(); return; }
     else if(showingDespesa) { renderDespesas(); return; }
+    else if(showingVendaRapida) { renderVendaRapida(); return; }
     else if(showingStatusAgrupado) {
-      // Status agrupado: mostra todos os pedidos ativos (aguardando, produção, retirada)
       filtered = tasks.filter(t => !t.concluido);
-      // Ordenar por status e depois por ordem
       const statusOrder = { aguardando: 0, producao: 1, retirada: 2 };
       filtered.sort((a,b) => {
         if(statusOrder[a.status] !== statusOrder[b.status]) return statusOrder[a.status] - statusOrder[b.status];
@@ -1980,7 +2131,6 @@
       filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
     }
     
-    // Aplicar filtros de status e pagamento
     if(currentStatusFilter !== "todos") {
       filtered = filtered.filter(t => t.status === currentStatusFilter);
     }
@@ -2093,7 +2243,7 @@
     document.querySelectorAll('.task-card').forEach(card => {
       card.setAttribute('draggable', 'true');
       card.addEventListener('dragstart', (e) => {
-        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado) {
+        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado || showingVendaRapida) {
           e.preventDefault(); return false;
         }
         draggedTaskId = parseInt(card.dataset.id);
@@ -2251,8 +2401,19 @@
       despesasFiltradas = despesasFiltradas.filter(d => { const dt = new Date(d.data); return dt >= inicioAno && dt <= fimAno; });
     }
     
+    // Inclui vendas rápidas no recebido
+    const vendasRapidasFiltradas = vendasRapidas.filter(v => {
+      if(dataInicio && dataFim) {
+        const d = new Date(v.data);
+        const inicio = new Date(dataInicio), fim = new Date(dataFim); fim.setHours(23,59,59);
+        return d >= inicio && d <= fim;
+      }
+      return true;
+    });
+    
     const totalProjecao = projecaoFiltrada.reduce((s, r) => s + r.valor, 0);
-    const totalPago = pagosFiltrados.reduce((s, r) => s + r.valor, 0);
+    const totalVendasRapidas = vendasRapidasFiltradas.reduce((s, v) => s + v.valor, 0);
+    const totalPago = pagosFiltrados.reduce((s, r) => s + r.valor, 0) + totalVendasRapidas;
     const totalDespesas = despesasFiltradas.reduce((s, d) => s + d.valor, 0);
     const lucroLiquido = totalPago - totalDespesas;
     const percentualLucro = totalPago > 0 ? (lucroLiquido / totalPago) * 100 : 0;
@@ -2260,6 +2421,7 @@
     
     const mesesPagos = {};
     pagosFiltrados.forEach(r => { const d = new Date(r.dataPagamento); const key = `${d.getMonth()+1}/${d.getFullYear()}`; mesesPagos[key] = (mesesPagos[key]||0) + r.valor; });
+    vendasRapidasFiltradas.forEach(v => { const d = new Date(v.data); const key = `${d.getMonth()+1}/${d.getFullYear()}`; mesesPagos[key] = (mesesPagos[key]||0) + v.valor; });
     const mesesDespesas = {};
     despesasFiltradas.forEach(d => { const dt = new Date(d.data); const key = `${dt.getMonth()+1}/${dt.getFullYear()}`; mesesDespesas[key] = (mesesDespesas[key]||0) + d.valor; });
     
@@ -2267,8 +2429,8 @@
       <div class="receita-container">
         <div class="cards-receita-horizontal">
           <div class="card-receita-mini"><h4>📈 PROJEÇÃO</h4><div class="valor valor-projecao">R$ ${totalProjecao.toLocaleString('pt-BR', {min:2})}</div><small>Em andamento</small></div>
-          <div class="card-receita-mini"><h4>✅ RECEBIDO</h4><div class="valor valor-pago">R$ ${totalPago.toLocaleString('pt-BR', {min:2})}</div><small>Concluídos pagos</small></div>
-          <div class="card-receita-mini"><h4>📊 FATURAMENTO</h4><div class="valor">R$ ${totalProjecao.toLocaleString('pt-BR', {min:2})}</div></div>
+          <div class="card-receita-mini"><h4>✅ RECEBIDO</h4><div class="valor valor-pago">R$ ${totalPago.toLocaleString('pt-BR', {min:2})}</div><small>Inclui vendas rápidas</small></div>
+          <div class="card-receita-mini"><h4>📊 FATURAMENTO</h4><div class="valor">R$ ${(totalProjecao + totalVendasRapidas).toLocaleString('pt-BR', {min:2})}</div></div>
           <div class="card-receita-mini"><h4>📉 DESPESAS</h4><div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {min:2})}</div></div>
           <div class="card-receita-mini"><h4>💰 LUCRO</h4><div class="valor valor-lucro">R$ ${lucroLiquido.toLocaleString('pt-BR', {min:2})}</div><small>${percentualLucro.toFixed(1)}% margem</small></div>
         </div>
@@ -2324,8 +2486,8 @@
         pizzaChart = new Chart(pizzaCtx, {
           type: 'pie',
           data: {
-            labels: [`Recebido (R$ ${totalPago.toFixed(2)})`, `A Receber (R$ ${(totalProjecao - totalPago).toFixed(2)})`],
-            datasets: [{ data: [totalPago, Math.max(0, totalProjecao - totalPago)], backgroundColor: ['#10b981', '#f59e0b'] }]
+            labels: [`Recebido (R$ ${totalPago.toFixed(2)})`, `A Receber (R$ ${(totalProjecao - totalPago + totalVendasRapidas).toFixed(2)})`],
+            datasets: [{ data: [totalPago, Math.max(0, totalProjecao - totalPago + totalVendasRapidas)], backgroundColor: ['#10b981', '#f59e0b'] }]
           },
           options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
         });
@@ -2545,6 +2707,121 @@
     }
   };
 
+  // ---- RENDER VENDA RÁPIDA ----
+  function renderVendaRapida() {
+    const totalVendas = vendasRapidas.reduce((s, v) => s + v.valor, 0);
+    
+    const html = `
+      <div class="vendrapida-container">
+        <div class="vendrapida-header">
+          <div class="cards-receita-horizontal">
+            <div class="card-receita-mini" style="background:var(--vendrapida-bg);color:white;">
+              <h4 style="color:white;">⚡ TOTAL VENDAS</h4>
+              <div class="valor" style="color:white;">R$ ${totalVendas.toLocaleString('pt-BR', {min:2})}</div>
+              <small style="color:rgba(255,255,255,0.8);">${vendasRapidas.length} venda(s)</small>
+            </div>
+            <div class="card-receita-mini">
+              <h4>✅ ADICIONADO AO RECEBIDO</h4>
+              <div class="valor valor-pago">Automático</div>
+              <small>Valor já contabilizado na receita</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="vendrapida-form">
+          <div class="form-group">
+            <label><i class="fas fa-tag"></i> Descrição (opcional)</label>
+            <input type="text" id="vendaDescricao" placeholder="Ex: Venda de camiseta">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-dollar-sign"></i> Valor *</label>
+            <input type="text" id="vendaValor" placeholder="0,00">
+          </div>
+          <button class="btn-vendrapida-add" id="btnAddVendaRapida">
+            <i class="fas fa-bolt"></i> ADICIONAR VENDA
+          </button>
+        </div>
+        
+        <div class="vendrapida-historico">
+          <h3 style="margin-bottom:1rem;"><i class="fas fa-history"></i> Histórico de Vendas Rápidas</h3>
+          ${vendasRapidas.length === 0 ? '<div style="text-align:center;padding:2rem;background:var(--bg-page);border-radius:1rem;">Nenhuma venda rápida registrada ainda.</div>' : `
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Descrição</th>
+                  <th>Valor</th>
+                  <th>Data</th>
+                  <th style="text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${vendasRapidas.sort((a,b) => b.id - a.id).map(v => `
+                  <tr>
+                    <td>${v.id}</td>
+                    <td>${escapeHtml(v.descricao || 'Venda Rápida')}</td>
+                    <td style="font-weight:600;color:var(--success);">R$ ${v.valor.toLocaleString('pt-BR', {min:2})}</td>
+                    <td>${formatDate(v.data)}</td>
+                    <td style="text-align:center;">
+                      <button class="btn-remover-venda" onclick="window.removerVendaRapidaConfirm(${v.id})" title="Remover venda">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </td>
+                  </tr>
+                `).join('')}
+                <tr style="font-weight:700;border-top:2px solid var(--border);">
+                  <td colspan="2" style="text-align:right;">TOTAL:</td>
+                  <td style="color:var(--success);">R$ ${totalVendas.toLocaleString('pt-BR', {min:2})}</td>
+                  <td colspan="2"></td>
+                </tr>
+              </tbody>
+            </table>
+          `}
+        </div>
+      </div>
+    `;
+    
+    const container = document.getElementById("vendrapidaContainer");
+    if(container) {
+      container.innerHTML = html;
+      
+      document.getElementById("btnAddVendaRapida")?.addEventListener("click", function() {
+        const descricao = document.getElementById("vendaDescricao").value.trim();
+        const valorStr = document.getElementById("vendaValor").value.trim();
+        const valorNum = converterParaNumero(valorStr);
+        
+        if(!valorStr || valorNum <= 0) {
+          showToast('Digite um valor válido maior que zero!', 'error');
+          return;
+        }
+        
+        if(adicionarVendaRapida(descricao, valorNum)) {
+          document.getElementById("vendaDescricao").value = "";
+          document.getElementById("vendaValor").value = "";
+          showToast(`✅ Venda rápida de R$ ${valorNum.toLocaleString('pt-BR', {min:2})} adicionada!`, 'success');
+          renderVendaRapida();
+          if(showingReceita) renderReceita();
+        }
+      });
+      
+      document.getElementById("vendaValor")?.addEventListener("keypress", function(e) {
+        if(e.key === "Enter") {
+          document.getElementById("btnAddVendaRapida").click();
+        }
+      });
+    }
+  }
+
+  window.removerVendaRapidaConfirm = (id) => {
+    if(confirm("Remover esta venda rápida permanentemente?\n\nIsso também removerá o valor do histórico de receita.")) {
+      if(removerVendaRapida(id)) {
+        showToast('🗑️ Venda removida!', 'error');
+        renderVendaRapida();
+        if(showingReceita) renderReceita();
+      }
+    }
+  };
+
   // ---- FILTROS ----
   function setStatusFilter(filter) {
     currentStatusFilter = filter;
@@ -2582,6 +2859,7 @@
     viewAllMode = enable;
     showingConcluido = false; showingReceita = false; showingClientes = false;
     showingRota = false; showingDespesa = false; showingStatusAgrupado = false;
+    showingVendaRapida = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('viewAllBtn')?.style.setProperty('background', 'var(--accent-hover)');
@@ -2593,6 +2871,7 @@
     document.getElementById("receitaContainer").style.display = "none";
     document.getElementById("clientesContainer").style.display = "none";
     document.getElementById("rotaContainer").style.display = "none";
+    document.getElementById("vendrapidaContainer").style.display = "none";
     document.getElementById("actionsRow").style.display = "flex";
     renderTasks();
   }
@@ -2601,6 +2880,7 @@
     showingConcluido = enable;
     viewAllMode = false; showingReceita = false; showingClientes = false;
     showingRota = false; showingDespesa = false; showingStatusAgrupado = false;
+    showingVendaRapida = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('concluidoTab')?.classList.add('active');
@@ -2611,6 +2891,7 @@
     document.getElementById("receitaContainer").style.display = "none";
     document.getElementById("clientesContainer").style.display = "none";
     document.getElementById("rotaContainer").style.display = "none";
+    document.getElementById("vendrapidaContainer").style.display = "none";
     document.getElementById("actionsRow").style.display = "flex";
     renderTasks();
   }
@@ -2619,6 +2900,7 @@
     showingReceita = enable;
     viewAllMode = false; showingConcluido = false; showingClientes = false;
     showingRota = false; showingDespesa = false; showingStatusAgrupado = false;
+    showingVendaRapida = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('receitaTab')?.classList.add('active');
@@ -2626,6 +2908,7 @@
       document.getElementById("receitaContainer").style.display = "block";
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
       renderReceita();
     } else {
       document.getElementById('receitaTab')?.classList.remove('active');
@@ -2633,6 +2916,7 @@
       document.getElementById("receitaContainer").style.display = "none";
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
     }
     document.getElementById("actionsRow").style.display = "flex";
   }
@@ -2641,6 +2925,7 @@
     showingClientes = enable;
     viewAllMode = false; showingConcluido = false; showingReceita = false;
     showingRota = false; showingDespesa = false; showingStatusAgrupado = false;
+    showingVendaRapida = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('clientesTab')?.classList.add('active');
@@ -2648,6 +2933,7 @@
       document.getElementById("receitaContainer").style.display = "none";
       document.getElementById("clientesContainer").style.display = "block";
       document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
       renderClientes();
     } else {
       document.getElementById('clientesTab')?.classList.remove('active');
@@ -2655,6 +2941,7 @@
       document.getElementById("receitaContainer").style.display = "none";
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
     }
     document.getElementById("actionsRow").style.display = "flex";
   }
@@ -2663,6 +2950,7 @@
     showingRota = enable;
     viewAllMode = false; showingConcluido = false; showingReceita = false;
     showingClientes = false; showingDespesa = false; showingStatusAgrupado = false;
+    showingVendaRapida = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('rotaTab')?.classList.add('active');
@@ -2670,6 +2958,7 @@
       document.getElementById("receitaContainer").style.display = "none";
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "block";
+      document.getElementById("vendrapidaContainer").style.display = "none";
       renderRota();
     } else {
       document.getElementById('rotaTab')?.classList.remove('active');
@@ -2677,6 +2966,7 @@
       document.getElementById("receitaContainer").style.display = "none";
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
     }
     document.getElementById("actionsRow").style.display = "flex";
   }
@@ -2685,6 +2975,7 @@
     showingDespesa = enable;
     viewAllMode = false; showingConcluido = false; showingReceita = false;
     showingClientes = false; showingRota = false; showingStatusAgrupado = false;
+    showingVendaRapida = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('despesaTab')?.classList.add('active');
@@ -2692,6 +2983,7 @@
       document.getElementById("receitaContainer").style.display = "block";
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
       renderDespesas();
     } else {
       document.getElementById('despesaTab')?.classList.remove('active');
@@ -2699,15 +2991,16 @@
       document.getElementById("receitaContainer").style.display = "none";
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
     }
     document.getElementById("actionsRow").style.display = "flex";
   }
 
-  // NOVO: Modo Status Agrupado (Aguardando + Produção + Retirada)
   function setStatusAgrupadoMode(enable) {
     showingStatusAgrupado = enable;
     viewAllMode = false; showingConcluido = false; showingReceita = false;
     showingClientes = false; showingRota = false; showingDespesa = false;
+    showingVendaRapida = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('statusAgrupadoTab')?.classList.add('active');
@@ -2715,6 +3008,7 @@
       document.getElementById("receitaContainer").style.display = "none";
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
     } else {
       document.getElementById('statusAgrupadoTab')?.classList.remove('active');
     }
@@ -2722,12 +3016,38 @@
     renderTasks();
   }
 
+  // NOVO: Modo Venda Rápida
+  function setVendaRapidaMode(enable) {
+    showingVendaRapida = enable;
+    viewAllMode = false; showingConcluido = false; showingReceita = false;
+    showingClientes = false; showingRota = false; showingDespesa = false;
+    showingStatusAgrupado = false;
+    if(enable) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('vendrapidaTab')?.classList.add('active');
+      document.getElementById("tasksContainer").style.display = "none";
+      document.getElementById("receitaContainer").style.display = "none";
+      document.getElementById("clientesContainer").style.display = "none";
+      document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "block";
+      renderVendaRapida();
+    } else {
+      document.getElementById('vendrapidaTab')?.classList.remove('active');
+      document.getElementById("tasksContainer").style.display = "flex";
+      document.getElementById("receitaContainer").style.display = "none";
+      document.getElementById("clientesContainer").style.display = "none";
+      document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
+    }
+    document.getElementById("actionsRow").style.display = "flex";
+  }
+
   // ---- ATUALIZAR ABAS SEMANAS ----
   function atualizarAbasSemanas() {
     const tabContainer = document.getElementById("tabContainer");
     let html = '';
     semanasOrdenadas.forEach((semana, idx) => {
-      const isActive = (!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && currentWeek === semana);
+      const isActive = (!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida && currentWeek === semana);
       html += `
         <div class="tab-wrapper">
           <button class="tab-btn ${isActive ? 'active' : ''}" data-week="${semana}" data-week-num="${semana}">📅 ${getSemanaNome(semana)}</button>
@@ -2742,6 +3062,7 @@
       <button class="tab-btn status-agrupado-btn" id="statusAgrupadoTab" ${showingStatusAgrupado ? 'active' : ''}><i class="fas fa-layer-group"></i> Aguard+Prod+Ret</button>
       <button class="tab-btn concluido-btn" id="concluidoTab" ${showingConcluido ? 'active' : ''}>✅ Concluído</button>
       <button class="tab-btn rota-btn" id="rotaTab" ${showingRota ? 'active' : ''}>🚚 ROTA</button>
+      <button class="tab-btn vendrapida-btn" id="vendrapidaTab" ${showingVendaRapida ? 'active' : ''}>⚡ VENDA RÁPIDA</button>
       <button class="tab-btn receita-btn" id="receitaTab" ${showingReceita ? 'active' : ''}>💰 RECEITA</button>
       <button class="tab-btn clientes-btn" id="clientesTab" ${showingClientes ? 'active' : ''}>👥 CLIENTES</button>
       <button class="tab-btn despesa-btn" id="despesaTab" ${showingDespesa ? 'active' : ''}>📉 DESPESAS</button>
@@ -2758,28 +3079,31 @@
         if(showingRota) setRotaMode(false);
         if(showingDespesa) setDespesaMode(false);
         if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+        if(showingVendaRapida) setVendaRapidaMode(false);
         document.querySelectorAll(".tab-btn[data-week]").forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentWeek = parseInt(btn.dataset.week);
         viewAllMode = false; showingConcluido = false; showingReceita = false;
-        showingClientes = false; showingRota = false; showingDespesa = false; showingStatusAgrupado = false;
+        showingClientes = false; showingRota = false; showingDespesa = false; 
+        showingStatusAgrupado = false; showingVendaRapida = false;
         document.getElementById("tasksContainer").style.display = "flex";
         document.getElementById("receitaContainer").style.display = "none";
         document.getElementById("clientesContainer").style.display = "none";
         document.getElementById("rotaContainer").style.display = "none";
+        document.getElementById("vendrapidaContainer").style.display = "none";
         document.getElementById("actionsRow").style.display = "flex";
         renderTasks();
       });
       btn.addEventListener('dragover', (e) => {
         e.preventDefault();
-        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado) btn.classList.add('drag-over');
+        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida) btn.classList.add('drag-over');
       });
       btn.addEventListener('dragleave', () => btn.classList.remove('drag-over'));
       btn.addEventListener('drop', (e) => {
         e.preventDefault();
         btn.classList.remove('drag-over');
         const targetWeek = parseInt(btn.dataset.week);
-        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado) {
+        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida) {
           moveTaskToWeek(draggedTaskId, targetWeek);
           draggedTaskId = null;
         }
@@ -2796,6 +3120,7 @@
       if(showingClientes) setClientesMode(false);
       if(showingRota) setRotaMode(false);
       if(showingDespesa) setDespesaMode(false);
+      if(showingVendaRapida) setVendaRapidaMode(false);
       setStatusAgrupadoMode(true);
     });
     document.getElementById("concluidoTab")?.addEventListener("click", () => {
@@ -2805,7 +3130,18 @@
       if(showingRota) setRotaMode(false);
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      if(showingVendaRapida) setVendaRapidaMode(false);
       setConcluidoMode(true);
+    });
+    document.getElementById("vendrapidaTab")?.addEventListener("click", () => {
+      if(viewAllMode) setViewAllMode(false);
+      if(showingConcluido) setConcluidoMode(false);
+      if(showingReceita) setReceitaMode(false);
+      if(showingClientes) setClientesMode(false);
+      if(showingRota) setRotaMode(false);
+      if(showingDespesa) setDespesaMode(false);
+      if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      setVendaRapidaMode(true);
     });
     document.getElementById("receitaTab")?.addEventListener("click", () => {
       if(viewAllMode) setViewAllMode(false);
@@ -2814,6 +3150,7 @@
       if(showingRota) setRotaMode(false);
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      if(showingVendaRapida) setVendaRapidaMode(false);
       setReceitaMode(true);
     });
     document.getElementById("clientesTab")?.addEventListener("click", () => {
@@ -2823,6 +3160,7 @@
       if(showingRota) setRotaMode(false);
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      if(showingVendaRapida) setVendaRapidaMode(false);
       setClientesMode(true);
     });
     document.getElementById("rotaTab")?.addEventListener("click", () => {
@@ -2832,6 +3170,7 @@
       if(showingClientes) setClientesMode(false);
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      if(showingVendaRapida) setVendaRapidaMode(false);
       setRotaMode(true);
     });
     document.getElementById("despesaTab")?.addEventListener("click", () => {
@@ -2841,6 +3180,7 @@
       if(showingClientes) setClientesMode(false);
       if(showingRota) setRotaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      if(showingVendaRapida) setVendaRapidaMode(false);
       setDespesaMode(true);
     });
     document.getElementById("viewAllBtn")?.addEventListener("click", () => {
@@ -2850,6 +3190,7 @@
       if(showingRota) setRotaMode(false);
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      if(showingVendaRapida) setVendaRapidaMode(false);
       setViewAllMode(true);
     });
   }
@@ -2906,6 +3247,7 @@
     }
     
     loadDespesas();
+    loadVendasRapidas();
     
     const storedHistorico = localStorage.getItem("flowtasks_historico_receita");
     if(storedHistorico) {
@@ -2920,6 +3262,16 @@
             descricao: task.descricao
           });
         }
+      });
+      // Adiciona vendas rápidas existentes
+      vendasRapidas.forEach(v => {
+        historicoReceita.push({
+          id: 'vr_' + v.id,
+          nome: 'Venda Rápida',
+          valor: formatarValor(v.valor),
+          dataPagamento: v.data,
+          descricao: v.descricao || 'Venda Rápida'
+        });
       });
       saveHistoricoReceita();
     }
@@ -3051,7 +3403,7 @@
         showToast(`✅ Pedido de ${nome} atualizado!`, 'success');
       }
     } else {
-      const semanaParaAdicionar = (viewAllMode || showingConcluido || showingStatusAgrupado) ? (semanasOrdenadas[0] || 1) : currentWeek;
+      const semanaParaAdicionar = (viewAllMode || showingConcluido || showingStatusAgrupado || showingVendaRapida) ? (semanasOrdenadas[0] || 1) : currentWeek;
       const newTask = {
         id: 0, semana: semanaParaAdicionar, nome, telefone, descricao,
         dataEntrega, valor, status, pagamento, urgente, rotaEntrega,
@@ -3190,16 +3542,25 @@
         projecao.push({ id: t.id, nome: t.nome, valor: converterParaNumero(t.valor), dataPagamento: t.dataConclusao || t.dataLancamento, descricao: t.descricao, status_pagamento: t.pagamento });
       });
       pagos = [...historicoReceita].map(r => ({ ...r, valor: converterParaNumero(r.valor) }));
+      // Inclui vendas rápidas
+      const vendasFiltradas = vendasRapidas.filter(v => {
+        if(inicio && fim) {
+          const d = new Date(v.data);
+          return d >= inicio && d <= fim;
+        }
+        return true;
+      });
       if(inicio && fim) {
         projecao = projecao.filter(r => { const d = new Date(r.dataPagamento); return d >= inicio && d <= fim; });
         pagos = pagos.filter(r => { const d = new Date(r.dataPagamento); return d >= inicio && d <= fim; });
         despesasFiltradas = despesasFiltradas.filter(d => { const dt = new Date(d.data); return dt >= inicio && dt <= fim; });
+        // Vendas rápidas já estão no histórico de receita
       }
       const totalProjecao = projecao.reduce((s, r) => s + r.valor, 0);
       const totalRecebido = pagos.reduce((s, r) => s + r.valor, 0);
       const totalDespesas = despesasFiltradas.reduce((s, d) => s + d.valor, 0);
       const lucroLiquido = totalRecebido - totalDespesas;
-      return { totalProjecao, totalRecebido, totalDespesas, totalFaturamento: totalProjecao, lucroLiquido, percentualLucro: totalRecebido > 0 ? (lucroLiquido/totalRecebido)*100 : 0 };
+      return { totalProjecao, totalRecebido, totalDespesas, totalFaturamento: totalProjecao + totalRecebido, lucroLiquido, percentualLucro: totalRecebido > 0 ? (lucroLiquido/totalRecebido)*100 : 0 };
     }
     
     if(tipo === 'mensal') {
@@ -3278,7 +3639,7 @@
   const searchInputDom = document.getElementById("searchInput");
   searchInputDom.addEventListener("input", (e) => {
     searchQuery = e.target.value;
-    if(!showingReceita && !showingClientes && !showingRota && !showingDespesa) renderTasks();
+    if(!showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingVendaRapida) renderTasks();
   });
 
   document.getElementById("filterTodosBtn")?.addEventListener("click", () => setStatusFilter("todos"));
@@ -3314,6 +3675,7 @@
     if(showingClientes) renderClientes();
     if(showingRota) renderRota();
     if(showingDespesa) renderDespesas();
+    if(showingVendaRapida) renderVendaRapida();
   }
   const savedTheme = localStorage.getItem('theme') || 'light';
   applyTheme(savedTheme);
