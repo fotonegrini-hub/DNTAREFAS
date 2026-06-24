@@ -2448,13 +2448,9 @@
     
     const totalProjecaoAguardando = projecaoAguardando.reduce((s, r) => s + r.valor, 0);
     const totalProjecaoPago = projecaoPago.reduce((s, r) => s + r.valor, 0);
-    const totalProjecao = totalProjecaoAguardando + totalProjecaoPago;
     
     const totalVendasRapidas = vendasRapidasFiltradas.reduce((s, v) => s + v.valor, 0);
     const totalRecebido = pagosFiltrados.reduce((s, r) => s + r.valor, 0) + totalVendasRapidas;
-    
-    // TOTAL = Projeção (todos os não concluídos) + Recebido
-    const totalGeral = totalProjecao + totalRecebido;
     
     const totalDespesas = despesasFiltradas.reduce((s, d) => s + d.valor, 0);
     const lucroLiquido = totalRecebido - totalDespesas;
@@ -2467,6 +2463,9 @@
     const mesesDespesas = {};
     despesasFiltradas.forEach(d => { const dt = new Date(d.data); const key = `${dt.getMonth()+1}/${dt.getFullYear()}`; mesesDespesas[key] = (mesesDespesas[key]||0) + d.valor; });
     
+    // TOTAL = Projeção (aguardando) + Recebido
+    const totalGeral = totalProjecaoAguardando + totalRecebido;
+    
     const html = `
       <div class="receita-container">
         <div class="cards-receita-horizontal">
@@ -2476,24 +2475,14 @@
             <small>${projecaoAguardando.length} pedidos</small>
           </div>
           <div class="card-receita-mini">
-            <h4>📈 PROJEÇÃO (Pago)</h4>
-            <div class="valor valor-projecao">R$ ${totalProjecaoPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-            <small>${projecaoPago.length} pedidos</small>
-          </div>
-          <div class="card-receita-mini">
-            <h4>📈 PROJEÇÃO TOTAL</h4>
-            <div class="valor valor-projecao">R$ ${totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-            <small>${projecaoFiltrada.length} pedidos</small>
-          </div>
-          <div class="card-receita-mini">
             <h4>✅ RECEBIDO</h4>
             <div class="valor valor-pago">R$ ${totalRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
             <small>Inclui vendas rápidas</small>
           </div>
           <div class="card-receita-mini destaque-total">
-            <h4>💰 TOTAL (Projeção + Recebido)</h4>
+            <h4>💰 TOTAL (Aguardando + Recebido)</h4>
             <div class="valor valor-total">R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-            <small style="color:rgba(255,255,255,0.8);">${projecaoFiltrada.length + pagosFiltrados.length + vendasRapidasFiltradas.length} itens</small>
+            <small style="color:rgba(255,255,255,0.8);">${projecaoAguardando.length + pagosFiltrados.length + vendasRapidasFiltradas.length} itens</small>
           </div>
         </div>
         
@@ -2554,13 +2543,12 @@
           type: 'pie',
           data: {
             labels: [
-              `Projeção Aguardando (R$ ${totalProjecaoAguardando.toFixed(2)})`,
-              `Projeção Pago (R$ ${totalProjecaoPago.toFixed(2)})`,
+              `Aguardando (R$ ${totalProjecaoAguardando.toFixed(2)})`,
               `Recebido (R$ ${totalRecebido.toFixed(2)})`
             ],
             datasets: [{ 
-              data: [totalProjecaoAguardando, totalProjecaoPago, totalRecebido], 
-              backgroundColor: ['#f59e0b', '#8b5cf6', '#10b981'] 
+              data: [totalProjecaoAguardando, totalRecebido], 
+              backgroundColor: ['#f59e0b', '#10b981'] 
             }]
           },
           options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
@@ -3628,11 +3616,13 @@
         pagos = pagos.filter(r => { const d = new Date(r.dataPagamento); return d >= inicio && d <= fim; });
         despesasFiltradas = despesasFiltradas.filter(d => { const dt = new Date(d.data); return dt >= inicio && dt <= fim; });
       }
-      const totalProjecao = projecao.reduce((s, r) => s + r.valor, 0);
+      // Separa aguardando e pago na projeção
+      const projecaoAguardando = projecao.filter(r => r.status_pagamento === "aguardando");
+      const totalProjecaoAguardando = projecaoAguardando.reduce((s, r) => s + r.valor, 0);
       const totalRecebido = pagos.reduce((s, r) => s + r.valor, 0);
       const totalDespesas = despesasFiltradas.reduce((s, d) => s + d.valor, 0);
       const lucroLiquido = totalRecebido - totalDespesas;
-      return { totalProjecao, totalRecebido, totalDespesas, totalFaturamento: totalProjecao + totalRecebido, lucroLiquido, percentualLucro: totalRecebido > 0 ? (lucroLiquido/totalRecebido)*100 : 0 };
+      return { totalProjecaoAguardando, totalRecebido, totalDespesas, totalFaturamento: totalProjecaoAguardando + totalRecebido, lucroLiquido, percentualLucro: totalRecebido > 0 ? (lucroLiquido/totalRecebido)*100 : 0 };
     }
     
     if(tipo === 'mensal') {
@@ -3644,9 +3634,9 @@
       doc.setFontSize(12); doc.text(`Período: ${formatDate(inicio.toISOString().split('T')[0])} a ${formatDate(fim.toISOString().split('T')[0])}`, 20, y); y += 12;
       doc.setFontSize(14); doc.text("RESUMO FINANCEIRO", 20, y); y += 10;
       doc.setFontSize(12);
-      doc.text(`1. PROJEÇÃO: R$ ${v.totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
+      doc.text(`1. AGUARDANDO PAGTO: R$ ${v.totalProjecaoAguardando.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
       doc.text(`2. RECEBIDO: R$ ${v.totalRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
-      doc.text(`3. FATURAMENTO: R$ ${v.totalFaturamento.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
+      doc.text(`3. TOTAL: R$ ${v.totalFaturamento.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
       doc.text(`4. DESPESAS: R$ ${v.totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
       doc.setFontSize(14); doc.text(`5. LUCRO LÍQUIDO: R$ ${v.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
       doc.setFontSize(11); doc.text(`(${v.percentualLucro.toFixed(1)}% sobre o recebido)`, 30, y);
@@ -3656,17 +3646,17 @@
       doc.setFontSize(22); doc.text("RELATÓRIO ANUAL", 105, y, { align: 'center' }); y += 12;
       doc.setFontSize(16); doc.text(`ANO ${ano}`, 105, y, { align: 'center' }); y += 15;
       const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-      let totalAnualProjecao = 0, totalAnualRecebido = 0, totalAnualDespesas = 0;
+      let totalAnualAguardando = 0, totalAnualRecebido = 0, totalAnualDespesas = 0;
       doc.setFontSize(12); doc.text("RESUMO MENSAL:", 20, y); y += 10;
       for(let i = 0; i < meses.length; i++) {
         const inicio = new Date(ano, i, 1), fim = new Date(ano, i+1, 0);
         const v = getValoresReceita(inicio, fim);
-        if(v.totalProjecao > 0 || v.totalRecebido > 0 || v.totalDespesas > 0) {
+        if(v.totalProjecaoAguardando > 0 || v.totalRecebido > 0 || v.totalDespesas > 0) {
           if(y > 250) { doc.addPage(); y = 20; doc.setFontSize(12); doc.text("RESUMO MENSAL (cont.):", 20, y); y += 10; }
-          totalAnualProjecao += v.totalProjecao; totalAnualRecebido += v.totalRecebido; totalAnualDespesas += v.totalDespesas;
+          totalAnualAguardando += v.totalProjecaoAguardando; totalAnualRecebido += v.totalRecebido; totalAnualDespesas += v.totalDespesas;
           doc.setFontSize(11);
           doc.text(`${meses[i]}:`, 20, y);
-          doc.text(`Proj: R$ ${v.totalProjecao.toFixed(2)}`, 65, y);
+          doc.text(`Aguard: R$ ${v.totalProjecaoAguardando.toFixed(2)}`, 65, y);
           doc.text(`Rec: R$ ${v.totalRecebido.toFixed(2)}`, 140, y);
           doc.text(`Desp: R$ ${v.totalDespesas.toFixed(2)}`, 215, y);
           y += 7;
@@ -3676,7 +3666,7 @@
       const pctLucro = totalAnualRecebido > 0 ? (lucroAnual/totalAnualRecebido)*100 : 0;
       y += 10; doc.setFontSize(14); doc.text("TOTAL DO ANO", 20, y); y += 10;
       doc.setFontSize(12);
-      doc.text(`Projeção: R$ ${totalAnualProjecao.toFixed(2)}`, 25, y); y += 7;
+      doc.text(`Aguardando: R$ ${totalAnualAguardando.toFixed(2)}`, 25, y); y += 7;
       doc.text(`Recebido: R$ ${totalAnualRecebido.toFixed(2)}`, 25, y); y += 7;
       doc.text(`Despesas: R$ ${totalAnualDespesas.toFixed(2)}`, 25, y); y += 7;
       doc.setFontSize(14); doc.text(`LUCRO ANUAL: R$ ${lucroAnual.toFixed(2)}`, 25, y); y += 7;
@@ -3690,9 +3680,9 @@
       doc.setFontSize(14); doc.text(`${formatDate(dataInicio)} a ${formatDate(dataFim)}`, 105, y, { align: 'center' }); y += 15;
       doc.setFontSize(14); doc.text("RESUMO FINANCEIRO", 20, y); y += 10;
       doc.setFontSize(12);
-      doc.text(`1. PROJEÇÃO: R$ ${v.totalProjecao.toFixed(2)}`, 25, y); y += 8;
+      doc.text(`1. AGUARDANDO: R$ ${v.totalProjecaoAguardando.toFixed(2)}`, 25, y); y += 8;
       doc.text(`2. RECEBIDO: R$ ${v.totalRecebido.toFixed(2)}`, 25, y); y += 8;
-      doc.text(`3. FATURAMENTO: R$ ${v.totalFaturamento.toFixed(2)}`, 25, y); y += 8;
+      doc.text(`3. TOTAL: R$ ${v.totalFaturamento.toFixed(2)}`, 25, y); y += 8;
       doc.text(`4. DESPESAS: R$ ${v.totalDespesas.toFixed(2)}`, 25, y); y += 8;
       doc.setFontSize(14); doc.text(`5. LUCRO: R$ ${v.lucroLiquido.toFixed(2)}`, 25, y); y += 8;
       doc.setFontSize(11); doc.text(`(${v.percentualLucro.toFixed(1)}% sobre o recebido)`, 30, y);
