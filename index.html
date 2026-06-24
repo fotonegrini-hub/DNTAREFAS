@@ -58,6 +58,8 @@
       --warning: #f59e0b;
       --danger: #ef4444;
       --info: #3b82f6;
+      --projecao-aguardando-bg: #fef3c7;
+      --projecao-aguardando-border: #f59e0b;
     }
 
     body.dark {
@@ -90,6 +92,8 @@
       --caneca-bg: #2e1065;
       --caneca-border: #a855f7;
       --caneca-urgent-bg: #3b0764;
+      --projecao-aguardando-bg: #451a00;
+      --projecao-aguardando-border: #f59e0b;
     }
 
     body {
@@ -758,6 +762,20 @@
     .card-receita-mini .valor-pago { color: #10b981; }
     .card-receita-mini .valor-despesa { color: #ef4444; }
     .card-receita-mini .valor-lucro { color: #8b5cf6; }
+    .card-receita-mini .valor-total { color: var(--accent); }
+    .card-receita-mini .valor-aguardando { color: #f59e0b; }
+
+    .card-receita-mini.destaque-aguardando {
+      background: var(--projecao-aguardando-bg);
+      border: 2px solid var(--projecao-aguardando-border);
+    }
+    .card-receita-mini.destaque-total {
+      background: var(--accent);
+      color: white;
+      border: 2px solid var(--accent);
+    }
+    .card-receita-mini.destaque-total h4 { color: rgba(255,255,255,0.85); }
+    .card-receita-mini.destaque-total .valor { color: white; }
 
     .chart-row {
       display: grid;
@@ -2358,22 +2376,35 @@
     let pagosFiltrados = [];
     let despesasFiltradas = [...despesas];
     
+    // Pega todos os pedidos em andamento (não concluídos)
     const pedidosEmAndamento = tasks.filter(t => !t.concluido);
     pedidosEmAndamento.forEach(t => {
       projecaoFiltrada.push({
-        id: t.id, nome: t.nome, valor: converterParaNumero(t.valor),
+        id: t.id, 
+        nome: t.nome, 
+        valor: converterParaNumero(t.valor),
         dataPagamento: t.dataEntrega || t.dataLancamento,
-        descricao: t.descricao, status_pagamento: t.pagamento
+        descricao: t.descricao, 
+        status_pagamento: t.pagamento,
+        status_pedido: t.status
       });
     });
+    
+    // Pega concluídos não pagos (ainda aguardando pagamento)
     const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
     concluidosNaoPagos.forEach(t => {
       projecaoFiltrada.push({
-        id: t.id, nome: t.nome, valor: converterParaNumero(t.valor),
+        id: t.id, 
+        nome: t.nome, 
+        valor: converterParaNumero(t.valor),
         dataPagamento: t.dataConclusao || t.dataLancamento,
-        descricao: t.descricao, status_pagamento: t.pagamento
+        descricao: t.descricao, 
+        status_pagamento: t.pagamento,
+        status_pedido: 'concluido_aguardando'
       });
     });
+    
+    // Paga receita - apenas pedidos pagos (histórico)
     pagosFiltrados = [...historicoReceita].map(r => ({ ...r, valor: converterParaNumero(r.valor) }));
     
     if(dataInicio && dataFim) {
@@ -2411,13 +2442,24 @@
       return true;
     });
     
-    const totalProjecao = projecaoFiltrada.reduce((s, r) => s + r.valor, 0);
+    // Separa projeção por status de pagamento
+    const projecaoAguardando = projecaoFiltrada.filter(r => r.status_pagamento === "aguardando");
+    const projecaoPago = projecaoFiltrada.filter(r => r.status_pagamento === "pago");
+    
+    const totalProjecaoAguardando = projecaoAguardando.reduce((s, r) => s + r.valor, 0);
+    const totalProjecaoPago = projecaoPago.reduce((s, r) => s + r.valor, 0);
+    const totalProjecao = totalProjecaoAguardando + totalProjecaoPago;
+    
     const totalVendasRapidas = vendasRapidasFiltradas.reduce((s, v) => s + v.valor, 0);
-    const totalPago = pagosFiltrados.reduce((s, r) => s + r.valor, 0) + totalVendasRapidas;
+    const totalRecebido = pagosFiltrados.reduce((s, r) => s + r.valor, 0) + totalVendasRapidas;
+    
+    // TOTAL = Projeção (todos os não concluídos) + Recebido
+    const totalGeral = totalProjecao + totalRecebido;
+    
     const totalDespesas = despesasFiltradas.reduce((s, d) => s + d.valor, 0);
-    const lucroLiquido = totalPago - totalDespesas;
-    const percentualLucro = totalPago > 0 ? (lucroLiquido / totalPago) * 100 : 0;
-    const percentualDespesa = totalPago > 0 ? (totalDespesas / totalPago) * 100 : 0;
+    const lucroLiquido = totalRecebido - totalDespesas;
+    const percentualLucro = totalRecebido > 0 ? (lucroLiquido / totalRecebido) * 100 : 0;
+    const percentualDespesa = totalRecebido > 0 ? (totalDespesas / totalRecebido) * 100 : 0;
     
     const mesesPagos = {};
     pagosFiltrados.forEach(r => { const d = new Date(r.dataPagamento); const key = `${d.getMonth()+1}/${d.getFullYear()}`; mesesPagos[key] = (mesesPagos[key]||0) + r.valor; });
@@ -2428,11 +2470,36 @@
     const html = `
       <div class="receita-container">
         <div class="cards-receita-horizontal">
-          <div class="card-receita-mini"><h4>📈 PROJEÇÃO</h4><div class="valor valor-projecao">R$ ${totalProjecao.toLocaleString('pt-BR', {min:2})}</div><small>Em andamento</small></div>
-          <div class="card-receita-mini"><h4>✅ RECEBIDO</h4><div class="valor valor-pago">R$ ${totalPago.toLocaleString('pt-BR', {min:2})}</div><small>Inclui vendas rápidas</small></div>
-          <div class="card-receita-mini"><h4>📊 FATURAMENTO</h4><div class="valor">R$ ${(totalProjecao + totalVendasRapidas).toLocaleString('pt-BR', {min:2})}</div></div>
-          <div class="card-receita-mini"><h4>📉 DESPESAS</h4><div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {min:2})}</div></div>
-          <div class="card-receita-mini"><h4>💰 LUCRO</h4><div class="valor valor-lucro">R$ ${lucroLiquido.toLocaleString('pt-BR', {min:2})}</div><small>${percentualLucro.toFixed(1)}% margem</small></div>
+          <div class="card-receita-mini destaque-aguardando">
+            <h4>⏳ AGUARDANDO PAGTO</h4>
+            <div class="valor valor-aguardando">R$ ${totalProjecaoAguardando.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            <small>${projecaoAguardando.length} pedidos</small>
+          </div>
+          <div class="card-receita-mini">
+            <h4>📈 PROJEÇÃO (Pago)</h4>
+            <div class="valor valor-projecao">R$ ${totalProjecaoPago.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            <small>${projecaoPago.length} pedidos</small>
+          </div>
+          <div class="card-receita-mini">
+            <h4>📈 PROJEÇÃO TOTAL</h4>
+            <div class="valor valor-projecao">R$ ${totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            <small>${projecaoFiltrada.length} pedidos</small>
+          </div>
+          <div class="card-receita-mini">
+            <h4>✅ RECEBIDO</h4>
+            <div class="valor valor-pago">R$ ${totalRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            <small>Inclui vendas rápidas</small>
+          </div>
+          <div class="card-receita-mini destaque-total">
+            <h4>💰 TOTAL (Projeção + Recebido)</h4>
+            <div class="valor valor-total">R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            <small style="color:rgba(255,255,255,0.8);">${projecaoFiltrada.length + pagosFiltrados.length + vendasRapidasFiltradas.length} itens</small>
+          </div>
+        </div>
+        
+        <div class="cards-receita-horizontal" style="margin-top:-0.5rem;">
+          <div class="card-receita-mini"><h4>📉 DESPESAS</h4><div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div></div>
+          <div class="card-receita-mini"><h4>💰 LUCRO</h4><div class="valor valor-lucro">R$ ${lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><small>${percentualLucro.toFixed(1)}% margem</small></div>
         </div>
         
         <div class="filtros-receita">
@@ -2486,8 +2553,15 @@
         pizzaChart = new Chart(pizzaCtx, {
           type: 'pie',
           data: {
-            labels: [`Recebido (R$ ${totalPago.toFixed(2)})`, `A Receber (R$ ${(totalProjecao - totalPago + totalVendasRapidas).toFixed(2)})`],
-            datasets: [{ data: [totalPago, Math.max(0, totalProjecao - totalPago + totalVendasRapidas)], backgroundColor: ['#10b981', '#f59e0b'] }]
+            labels: [
+              `Projeção Aguardando (R$ ${totalProjecaoAguardando.toFixed(2)})`,
+              `Projeção Pago (R$ ${totalProjecaoPago.toFixed(2)})`,
+              `Recebido (R$ ${totalRecebido.toFixed(2)})`
+            ],
+            datasets: [{ 
+              data: [totalProjecaoAguardando, totalProjecaoPago, totalRecebido], 
+              backgroundColor: ['#f59e0b', '#8b5cf6', '#10b981'] 
+            }]
           },
           options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
         });
@@ -2578,7 +2652,7 @@
                   <br><small><i class="fas fa-calendar"></i> Último: ${formatDate(c.ultimoPedido)}</small>
                 </div>
                 <div style="text-align:right;">
-                  <div style="color:#10b981;font-weight:bold;">R$ ${c.totalGasto.toLocaleString('pt-BR', {min:2})}</div>
+                  <div style="color:#10b981;font-weight:bold;">R$ ${c.totalGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                   <small>Total gasto</small>
                   <div><button class="icon-btn" onclick="window.filtrarPedidosCliente('${escapeHtml(c.nome)}')" title="Ver pedidos"><i class="fas fa-search"></i></button></div>
                 </div>
@@ -2633,7 +2707,7 @@
                   <br><small><i class="fas fa-calendar"></i> Último: ${formatDate(c.ultimoPedido)}</small>
                 </div>
                 <div style="text-align:right;">
-                  <div style="color:#10b981;font-weight:bold;">R$ ${c.totalGasto.toLocaleString('pt-BR', {min:2})}</div>
+                  <div style="color:#10b981;font-weight:bold;">R$ ${c.totalGasto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                   <small>Total gasto</small>
                   <div><button class="icon-btn" onclick="window.filtrarPedidosCliente('${escapeHtml(c.nome)}')"><i class="fas fa-search"></i></button></div>
                 </div>
@@ -2669,7 +2743,7 @@
       <div class="receita-container">
         <div class="receita-header">
           <div class="cards-receita-horizontal">
-            <div class="card-receita-mini"><h4>📉 TOTAL DESPESAS</h4><div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {min:2})}</div></div>
+            <div class="card-receita-mini"><h4>📉 TOTAL DESPESAS</h4><div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div></div>
             <div class="card-receita-mini"><h4>📋 QUANTIDADE</h4><div class="valor">${despesas.length}</div></div>
           </div>
           <button class="btn-add-despesa" id="openAddDespesaBtn"><i class="fas fa-plus"></i> Nova Despesa</button>
@@ -2680,7 +2754,7 @@
               <div class="despesa-item">
                 <div><strong>${escapeHtml(d.descricao)}</strong><br><small><i class="fas fa-calendar"></i> ${formatDate(d.data)}</small></div>
                 <div style="text-align:right;">
-                  <div style="color:#ef4444;font-weight:bold;">R$ ${d.valor.toLocaleString('pt-BR', {min:2})}</div>
+                  <div style="color:#ef4444;font-weight:bold;">R$ ${d.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                   <button class="icon-btn" onclick="window.removerDespesaConfirm(${d.id})" style="color:#ef4444;"><i class="fas fa-trash-alt"></i></button>
                 </div>
               </div>
@@ -2717,7 +2791,7 @@
           <div class="cards-receita-horizontal">
             <div class="card-receita-mini" style="background:var(--vendrapida-bg);color:white;">
               <h4 style="color:white;">⚡ TOTAL VENDAS</h4>
-              <div class="valor" style="color:white;">R$ ${totalVendas.toLocaleString('pt-BR', {min:2})}</div>
+              <div class="valor" style="color:white;">R$ ${totalVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
               <small style="color:rgba(255,255,255,0.8);">${vendasRapidas.length} venda(s)</small>
             </div>
             <div class="card-receita-mini">
@@ -2760,7 +2834,7 @@
                   <tr>
                     <td>${v.id}</td>
                     <td>${escapeHtml(v.descricao || 'Venda Rápida')}</td>
-                    <td style="font-weight:600;color:var(--success);">R$ ${v.valor.toLocaleString('pt-BR', {min:2})}</td>
+                    <td style="font-weight:600;color:var(--success);">R$ ${v.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                     <td>${formatDate(v.data)}</td>
                     <td style="text-align:center;">
                       <button class="btn-remover-venda" onclick="window.removerVendaRapidaConfirm(${v.id})" title="Remover venda">
@@ -2771,7 +2845,7 @@
                 `).join('')}
                 <tr style="font-weight:700;border-top:2px solid var(--border);">
                   <td colspan="2" style="text-align:right;">TOTAL:</td>
-                  <td style="color:var(--success);">R$ ${totalVendas.toLocaleString('pt-BR', {min:2})}</td>
+                  <td style="color:var(--success);">R$ ${totalVendas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                   <td colspan="2"></td>
                 </tr>
               </tbody>
@@ -2798,7 +2872,7 @@
         if(adicionarVendaRapida(descricao, valorNum)) {
           document.getElementById("vendaDescricao").value = "";
           document.getElementById("vendaValor").value = "";
-          showToast(`✅ Venda rápida de R$ ${valorNum.toLocaleString('pt-BR', {min:2})} adicionada!`, 'success');
+          showToast(`✅ Venda rápida de R$ ${valorNum.toLocaleString('pt-BR', {minimumFractionDigits: 2})} adicionada!`, 'success');
           renderVendaRapida();
           if(showingReceita) renderReceita();
         }
@@ -3542,7 +3616,6 @@
         projecao.push({ id: t.id, nome: t.nome, valor: converterParaNumero(t.valor), dataPagamento: t.dataConclusao || t.dataLancamento, descricao: t.descricao, status_pagamento: t.pagamento });
       });
       pagos = [...historicoReceita].map(r => ({ ...r, valor: converterParaNumero(r.valor) }));
-      // Inclui vendas rápidas
       const vendasFiltradas = vendasRapidas.filter(v => {
         if(inicio && fim) {
           const d = new Date(v.data);
@@ -3554,7 +3627,6 @@
         projecao = projecao.filter(r => { const d = new Date(r.dataPagamento); return d >= inicio && d <= fim; });
         pagos = pagos.filter(r => { const d = new Date(r.dataPagamento); return d >= inicio && d <= fim; });
         despesasFiltradas = despesasFiltradas.filter(d => { const dt = new Date(d.data); return dt >= inicio && dt <= fim; });
-        // Vendas rápidas já estão no histórico de receita
       }
       const totalProjecao = projecao.reduce((s, r) => s + r.valor, 0);
       const totalRecebido = pagos.reduce((s, r) => s + r.valor, 0);
@@ -3572,11 +3644,11 @@
       doc.setFontSize(12); doc.text(`Período: ${formatDate(inicio.toISOString().split('T')[0])} a ${formatDate(fim.toISOString().split('T')[0])}`, 20, y); y += 12;
       doc.setFontSize(14); doc.text("RESUMO FINANCEIRO", 20, y); y += 10;
       doc.setFontSize(12);
-      doc.text(`1. PROJEÇÃO: R$ ${v.totalProjecao.toLocaleString('pt-BR', {min:2})}`, 25, y); y += 8;
-      doc.text(`2. RECEBIDO: R$ ${v.totalRecebido.toLocaleString('pt-BR', {min:2})}`, 25, y); y += 8;
-      doc.text(`3. FATURAMENTO: R$ ${v.totalFaturamento.toLocaleString('pt-BR', {min:2})}`, 25, y); y += 8;
-      doc.text(`4. DESPESAS: R$ ${v.totalDespesas.toLocaleString('pt-BR', {min:2})}`, 25, y); y += 8;
-      doc.setFontSize(14); doc.text(`5. LUCRO LÍQUIDO: R$ ${v.lucroLiquido.toLocaleString('pt-BR', {min:2})}`, 25, y); y += 8;
+      doc.text(`1. PROJEÇÃO: R$ ${v.totalProjecao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
+      doc.text(`2. RECEBIDO: R$ ${v.totalRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
+      doc.text(`3. FATURAMENTO: R$ ${v.totalFaturamento.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
+      doc.text(`4. DESPESAS: R$ ${v.totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
+      doc.setFontSize(14); doc.text(`5. LUCRO LÍQUIDO: R$ ${v.lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 25, y); y += 8;
       doc.setFontSize(11); doc.text(`(${v.percentualLucro.toFixed(1)}% sobre o recebido)`, 30, y);
       doc.save(`relatorio_${nomeMes}_${ano}.pdf`);
       showToast('📄 PDF gerado com sucesso!', 'success');
