@@ -35,6 +35,7 @@
             --status-producao: #8b5cf6;
             --status-retirada: #10b981;
             --status-concluido: #22c55e;
+            --status-entregue: #0ea5e9;
             --urgent-bg: #fee2e2;
             --urgent-border: #ef4444;
             --pagamento-aguardando: #f59e0b;
@@ -46,6 +47,8 @@
             --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
             --concluido-bg: #f0fdf4;
             --concluido-border: #22c55e;
+            --entregue-bg: #ecfdf5;
+            --entregue-border: #0ea5e9;
             --receita-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --cliente-bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             --rota-bg: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -68,6 +71,11 @@
             --meta-color: #8b5cf6;
             --drag-over-bg: #dbeafe;
             --drag-over-border: #3b82f6;
+            --caixa-positivo: #10b981;
+            --caixa-negativo: #ef4444;
+            --caixa-destaque: #8b5cf6;
+            --saldo-card-bg: #1e293b;
+            --saldo-card-text: #f1f5f9;
         }
 
         body.dark {
@@ -87,6 +95,8 @@
             --rota-entrega-border: #60a5fa;
             --concluido-bg: #064e3b;
             --concluido-border: #22c55e;
+            --entregue-bg: #0c4a6e;
+            --entregue-border: #0ea5e9;
             --receita-bg: linear-gradient(135deg, #4c51bf 0%, #5b3a8c 100%);
             --cliente-bg: linear-gradient(135deg, #0d6d64 0%, #2b9e5c 100%);
             --rota-bg: linear-gradient(135deg, #9b4d96 0%, #c4455a 100%);
@@ -105,6 +115,11 @@
             --meta-color: #a78bfa;
             --drag-over-bg: #1e3a5f;
             --drag-over-border: #60a5fa;
+            --caixa-positivo: #34d399;
+            --caixa-negativo: #f87171;
+            --caixa-destaque: #a78bfa;
+            --saldo-card-bg: #0f172a;
+            --saldo-card-text: #f1f5f9;
         }
 
         body {
@@ -201,6 +216,10 @@
         }
         .counter-item.retirada {
             background: var(--status-retirada);
+            color: white;
+        }
+        .counter-item.entregue {
+            background: var(--status-entregue);
             color: white;
         }
         .counter-item.concluido {
@@ -398,6 +417,10 @@
         }
         .filter-btn[data-filter="retirada"].active {
             background: var(--status-retirada);
+            color: white;
+        }
+        .filter-btn[data-filter="entregue"].active {
+            background: var(--status-entregue);
             color: white;
         }
         .filter-btn[data-filter="concluido"].active {
@@ -735,6 +758,11 @@
             background: var(--concluido-bg);
             border: 1px solid var(--concluido-border);
         }
+        .task-card.entregue {
+            opacity: 0.85;
+            background: var(--entregue-bg);
+            border: 1px solid var(--entregue-border);
+        }
 
         .task-number {
             font-weight: 800;
@@ -839,6 +867,10 @@
             background: #22c55e;
             color: white;
         }
+        .status-entregue {
+            background: #0ea5e9;
+            color: white;
+        }
 
         .task-actions {
             display: flex;
@@ -872,6 +904,9 @@
         }
         .concluir-btn {
             color: #22c55e;
+        }
+        .entregar-btn {
+            color: #0ea5e9;
         }
         .map-btn {
             color: #ea4335;
@@ -1100,6 +1135,15 @@
         .card-receita-mini .valor-aguardando {
             color: #f59e0b;
         }
+        .card-receita-mini .valor-saldo {
+            color: var(--caixa-destaque);
+        }
+        .card-receita-mini .valor-positivo {
+            color: var(--caixa-positivo);
+        }
+        .card-receita-mini .valor-negativo {
+            color: var(--caixa-negativo);
+        }
 
         .card-receita-mini.destaque-aguardando {
             background: var(--projecao-aguardando-bg);
@@ -1115,6 +1159,73 @@
         }
         .card-receita-mini.destaque-total .valor {
             color: white;
+        }
+        .card-receita-mini.destaque-saldo {
+            background: var(--saldo-card-bg);
+            border: 2px solid var(--caixa-destaque);
+            color: var(--saldo-card-text);
+        }
+        .card-receita-mini.destaque-saldo h4 {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .card-receita-mini.destaque-saldo .valor {
+            color: white;
+        }
+
+        /* ===== FLUXO DE CAIXA DIÁRIO ===== */
+        .fluxo-caixa-container {
+            background: var(--bg-page);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .fluxo-caixa-container h4 {
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+        .fluxo-caixa-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.5rem;
+        }
+        .dia-caixa-item {
+            background: var(--card-bg);
+            border-radius: 0.8rem;
+            padding: 0.5rem 0.8rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            min-width: 110px;
+        }
+        .dia-caixa-item .dia-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .dia-caixa-item .dia-valor {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-top: 0.15rem;
+        }
+        .dia-caixa-item .dia-valor.positivo {
+            color: var(--caixa-positivo);
+        }
+        .dia-caixa-item .dia-valor.negativo {
+            color: var(--caixa-negativo);
+        }
+        .dia-caixa-item .dia-detalhes {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+        .dia-caixa-item.dia-hoje {
+            border: 2px solid var(--accent);
+            background: var(--rota-entrega-bg);
+        }
+        .dia-caixa-item.dia-futuro {
+            opacity: 0.6;
         }
 
         /* ===== DASHBOARD ===== */
@@ -1741,6 +1852,9 @@
             .shortcuts-hint {
                 display: none;
             }
+            .fluxo-caixa-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
         }
 
         /* ===== PRINT ===== */
@@ -1828,6 +1942,7 @@
                 <div class="counter-item aguardando"><i class="fas fa-clock"></i> Aguardando <span class="counter-number" id="aguardandoCount">0</span></div>
                 <div class="counter-item producao"><i class="fas fa-cogs"></i> Produção <span class="counter-number" id="producaoCount">0</span></div>
                 <div class="counter-item retirada"><i class="fas fa-hand-peace"></i> Retirada <span class="counter-number" id="retiradaCount">0</span></div>
+                <div class="counter-item entregue"><i class="fas fa-check-double"></i> Entregue <span class="counter-number" id="entregueCount">0</span></div>
                 <div class="counter-item concluido"><i class="fas fa-check-circle"></i> Concluído <span class="counter-number" id="concluidoCount">0</span></div>
             </div>
 
@@ -1838,6 +1953,7 @@
                 <button class="filter-btn" data-filter="aguardando" id="filterAguardandoBtn"><i class="fas fa-clock"></i> Aguardando <span class="filter-count" id="filterAguardandoCount">0</span></button>
                 <button class="filter-btn" data-filter="producao" id="filterProducaoBtn"><i class="fas fa-cogs"></i> Produção <span class="filter-count" id="filterProducaoCount">0</span></button>
                 <button class="filter-btn" data-filter="retirada" id="filterRetiradaBtn"><i class="fas fa-hand-peace"></i> Retirada <span class="filter-count" id="filterRetiradaCount">0</span></button>
+                <button class="filter-btn" data-filter="entregue" id="filterEntregueBtn"><i class="fas fa-check-double"></i> Entregue <span class="filter-count" id="filterEntregueCount">0</span></button>
                 <button class="filter-btn" data-filter="concluido" id="filterConcluidoBtn"><i class="fas fa-check-circle"></i> Concluído <span class="filter-count" id="filterConcluidoCount">0</span></button>
             </div>
 
@@ -1929,6 +2045,7 @@
                 <option value="aguardando">🟠 Aguardando</option>
                 <option value="producao">🟣 Produção</option>
                 <option value="retirada">🟢 Retirada</option>
+                <option value="entregue">🔵 Entregue</option>
             </select>
             <label>Status de Pagamento</label>
             <select id="pagamentoSelect">
@@ -2068,7 +2185,7 @@
 
     <script>
         // ============================================================
-        //  FLOWTASKS - VERSÃO COMPLETA
+        //  FLOWTASKS - VERSÃO COMPLETA COM STATUS ENTREGUE E FLUXO DE CAIXA DIÁRIO
         //  - Tecla ESC: volta à página principal com filtros zerados
         //  - Data do Pedido e Previsão de Entrega separados
         //  - Todas as funcionalidades existentes mantidas
@@ -2098,6 +2215,7 @@
         let receitaChart = null;
         let pizzaChart = null;
         let lucroChart = null;
+        let fluxoCaixaChart = null;
         let draggedTaskId = null;
         let currentStatusFilter = "todos";
         let currentPaymentFilter = "todos-pagamento";
@@ -2424,24 +2542,29 @@
 
         // ---- CONTADORES ----
         function atualizarContadores() {
-            const pedidosAtivos = tasks.filter(t => !t.concluido);
+            const pedidosAtivos = tasks.filter(t => !t.concluido && t.status !== 'entregue');
+            const pedidosEntregues = tasks.filter(t => t.status === 'entregue' && !t.concluido);
             const pedidosConcluidos = tasks.filter(t => t.concluido === true);
-            const totalAtivos = pedidosAtivos.length;
+            const totalAtivos = pedidosAtivos.length + pedidosEntregues.length;
             const aguardando = pedidosAtivos.filter(t => t.status === "aguardando").length;
             const producao = pedidosAtivos.filter(t => t.status === "producao").length;
             const retirada = pedidosAtivos.filter(t => t.status === "retirada").length;
+            const entregue = pedidosEntregues.length;
             const concluido = pedidosConcluidos.length;
 
             document.getElementById("totalPedidosCount").innerText = totalAtivos;
             document.getElementById("aguardandoCount").innerText = aguardando;
             document.getElementById("producaoCount").innerText = producao;
             document.getElementById("retiradaCount").innerText = retirada;
+            document.getElementById("entregueCount").innerText = entregue;
             document.getElementById("concluidoCount").innerText = concluido;
 
-            document.getElementById("filterTodosCount").innerText = totalAtivos + concluido;
+            const todosCount = totalAtivos + concluido;
+            document.getElementById("filterTodosCount").innerText = todosCount;
             document.getElementById("filterAguardandoCount").innerText = aguardando;
             document.getElementById("filterProducaoCount").innerText = producao;
             document.getElementById("filterRetiradaCount").innerText = retirada;
+            document.getElementById("filterEntregueCount").innerText = entregue;
             document.getElementById("filterConcluidoCount").innerText = concluido;
         }
 
@@ -2856,7 +2979,7 @@
         // ---- ORDENAÇÃO ----
         function reordenarPorDataEntrega() {
             for (let semana of semanasOrdenadas) {
-                let weekTasks = tasks.filter(t => t.semana === semana && !t.concluido);
+                let weekTasks = tasks.filter(t => t.semana === semana && !t.concluido && t.status !== 'entregue');
                 let urgentes = weekTasks.filter(t => t.urgente);
                 let normais = weekTasks.filter(t => !t.urgente);
                 normais.sort((a, b) => {
@@ -3000,7 +3123,7 @@
 
         function toggleUrgent(taskId) {
             const task = tasks.find(t => t.id === taskId);
-            if (task && !task.concluido) {
+            if (task && !task.concluido && task.status !== 'entregue') {
                 task.urgente = !task.urgente;
                 logAlteracao(taskId, 'Urgente', !task.urgente, task.urgente);
                 reordenarPorDataEntrega();
@@ -3013,10 +3136,11 @@
 
         function marcarConcluido(taskId) {
             const task = tasks.find(t => t.id === taskId);
-            if (task && !task.concluido) {
+            if (task && !task.concluido && task.status !== 'entregue') {
                 task.concluido = true;
                 task.dataConclusao = new Date().toISOString().split('T')[0];
                 task.rotaEntrega = false;
+                task.urgente = false;
                 if (task.pagamento === "pago") registrarReceita(task);
                 logAlteracao(taskId, 'Concluído', 'Não', 'Sim');
                 saveToLocal();
@@ -3026,12 +3150,35 @@
                 else if (showingRota) renderRota();
                 else renderTasks();
                 showToast(`✅ Pedido de ${task.nome} concluído!`, 'success');
+            } else if (task && task.status === 'entregue') {
+                showToast('Este pedido já foi entregue. Marque como concluído para finalizar.', 'info');
+            }
+        }
+
+        function marcarEntregue(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task && !task.concluido && task.status !== 'entregue') {
+                task.status = 'entregue';
+                task.dataConclusao = new Date().toISOString().split('T')[0];
+                task.rotaEntrega = false;
+                task.urgente = false;
+                if (task.pagamento === "pago") registrarReceita(task);
+                logAlteracao(taskId, 'Status', task.status, 'entregue');
+                logAlteracao(taskId, 'Entregue', 'Não', 'Sim');
+                saveToLocal();
+                atualizarAbasSemanas();
+                atualizarContadores();
+                renderTasks();
+                if (showingRota) renderRota();
+                showToast(`📦 Pedido de ${task.nome} marcado como ENTREGUE!`, 'success');
+            } else if (task && task.status === 'entregue') {
+                showToast('Este pedido já está marcado como entregue.', 'info');
             }
         }
 
         function cycleStatus(taskId) {
             const task = tasks.find(t => t.id === taskId);
-            if (!task || task.concluido) return;
+            if (!task || task.concluido || task.status === 'entregue') return;
             const order = ['aguardando', 'producao', 'retirada'];
             let idx = order.indexOf(task.status);
             const newStatus = order[(idx + 1) % order.length];
@@ -3044,9 +3191,9 @@
 
         function ajustarPosicao(taskId, novaPosicao) {
             const task = tasks.find(t => t.id === taskId);
-            if (!task || task.concluido) return false;
-            let weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido).sort((a, b) => (a.ordem || 0) - (b
-                .ordem || 0));
+            if (!task || task.concluido || task.status === 'entregue') return false;
+            let weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido && t.status !== 'entregue')
+                .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
             if (novaPosicao < 1 || novaPosicao > weekTasks.length) {
                 showToast(`Posição inválida! Escolha entre 1 e ${weekTasks.length}`, 'error');
                 return false;
@@ -3065,9 +3212,9 @@
 
         function moveTask(taskId, direction) {
             const task = tasks.find(t => t.id === taskId);
-            if (!task || task.concluido) return;
-            let weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido).sort((a, b) => (a.ordem || 0) - (b
-                .ordem || 0));
+            if (!task || task.concluido || task.status === 'entregue') return;
+            let weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido && t.status !== 'entregue')
+                .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
             const currentIndex = weekTasks.findIndex(t => t.id === taskId);
             if (direction === 'up' && currentIndex > 0) {
                 const temp = weekTasks[currentIndex].ordem;
@@ -3086,18 +3233,19 @@
 
         function abrirModalPosicao(taskId, taskNome) {
             const task = tasks.find(t => t.id === taskId);
-            if (task && !task.concluido && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes &&
-                !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida) {
-                const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido);
+            if (task && !task.concluido && task.status !== 'entregue' && !viewAllMode && !showingConcluido &&
+                !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado &&
+                !showingVendaRapida && !showingDashboard) {
+                const weekTasks = tasks.filter(t => t.semana === task.semana && !t.concluido && t.status !== 'entregue');
                 document.getElementById("pedidoNome").innerHTML = taskNome;
                 document.getElementById("maxPosicao").innerHTML = weekTasks.length;
                 document.getElementById("posicaoEditId").value = taskId;
                 document.getElementById("novaPosicao").value = "";
                 document.getElementById("posicaoModal").style.display = "flex";
-            } else if (task && task.concluido) {
-                showToast('Pedidos concluídos não podem ter posição alterada', 'warning');
+            } else if (task && (task.concluido || task.status === 'entregue')) {
+                showToast('Pedidos concluídos ou entregues não podem ter posição alterada', 'warning');
             } else if (viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota ||
-                showingDespesa || showingStatusAgrupado || showingVendaRapida) {
+                showingDespesa || showingStatusAgrupado || showingVendaRapida || showingDashboard) {
                 showToast('Alterar posição disponível apenas na visualização por semana', 'info');
             }
         }
@@ -3115,6 +3263,9 @@
             if (task.concluido) {
                 msg =
                     `Olá ${task.nome}, seu pedido *${task.descricao}* foi *CONCLUÍDO* com sucesso! ✅%0A💰 Valor: R$ ${task.valor}%0A💵 ${pagamentoText}%0A🎉 Agradecemos pela preferência!`;
+            } else if (task.status === 'entregue') {
+                msg =
+                    `Olá ${task.nome}, seu pedido *${task.descricao}* foi *ENTREGUE*! 🎉%0A💰 Valor: R$ ${task.valor}%0A💵 ${pagamentoText}%0A✅ Muito obrigado pela preferência!`;
             } else if (task.rotaEntrega) {
                 msg =
                     `Olá ${task.nome}, seu pedido *${task.descricao}* está em rota de entrega! 🚚%0A💰 Valor: R$ ${task.valor}%0A💵 ${pagamentoText}%0A✅ Seu pedido será entregue hoje!`;
@@ -3313,7 +3464,6 @@
                 if (b.dataset.payment === "todos-pagamento") b.classList.add('active');
             });
 
-            // Voltar para a visualização padrão (semana atual)
             if (viewAllMode) setViewAllMode(false);
             if (showingConcluido) setConcluidoMode(false);
             if (showingReceita) setReceitaMode(false);
@@ -3329,7 +3479,6 @@
                 if (parseInt(btn.dataset.week) === currentWeek) btn.classList.add('active');
             });
 
-            // Fechar qualquer modal aberto
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
 
             document.getElementById("tasksContainer").style.display = "flex";
@@ -3351,7 +3500,7 @@
                 showingClientes) { renderClientes(); return; } else if (showingDespesa) { renderDespesas(); return; } else if (
                 showingVendaRapida) { renderVendaRapida(); return; } else if (showingDashboard) { renderDashboard(); return; } else if (
                 showingStatusAgrupado) {
-                filtered = tasks.filter(t => !t.concluido);
+                filtered = tasks.filter(t => !t.concluido && t.status !== 'entregue');
                 const statusOrder = { aguardando: 0, producao: 1, retirada: 2 };
                 filtered.sort((a, b) => {
                     if (statusOrder[a.status] !== statusOrder[b.status]) return statusOrder[a.status] - statusOrder[b
@@ -3363,13 +3512,13 @@
                 filtered.sort((a, b) => (b.dataConclusao || '').localeCompare(a.dataConclusao || ''));
             } else if (viewAllMode) {
                 for (let semana of semanasOrdenadas) {
-                    const weekTasks = tasks.filter(t => t.semana === semana && !t.concluido).sort((a, b) => (a.ordem || 0) - (
-                        b.ordem || 0));
+                    const weekTasks = tasks.filter(t => t.semana === semana && !t.concluido && t.status !== 'entregue')
+                        .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
                     filtered.push(...weekTasks);
                 }
             } else {
-                filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido).sort((a, b) => (a.ordem || 0) - (b
-                    .ordem || 0));
+                filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido && t.status !== 'entregue')
+                    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
             }
 
             if (currentStatusFilter !== "todos") {
@@ -3419,7 +3568,8 @@
 
                 const statusClass = `status-${task.status}`;
                 const statusText = task.status === 'aguardando' ? '🟡 Aguardando' : (task.status === 'producao' ?
-                    '🟣 Produção' : (task.status === 'retirada' ? '🟢 Retirada' : '✅ Concluído'));
+                    '🟣 Produção' : (task.status === 'retirada' ? '🟢 Retirada' : (task.status === 'entregue' ?
+                        '🔵 Entregue' : '✅ Concluído')));
 
                 let numero;
                 if (showingConcluido) numero = index + 1;
@@ -3428,14 +3578,16 @@
                     const idxInWeek = tasksInSameWeek.findIndex(t => t.id === task.id);
                     numero = idxInWeek + 1;
                 } else {
-                    const weekFiltered = tasks.filter(t => t.semana === currentWeek && !t.concluido);
+                    const weekFiltered = tasks.filter(t => t.semana === currentWeek && !t.concluido && t.status !==
+                        'entregue');
                     const idxInWeek = weekFiltered.findIndex(t => t.id === task.id);
                     numero = idxInWeek + 1;
                 }
 
-                const urgentClass = task.urgente && !task.concluido ? 'urgente' : '';
-                const rotaClass = task.rotaEntrega && !task.concluido ? 'rota-entrega' : '';
+                const urgentClass = task.urgente && !task.concluido && task.status !== 'entregue' ? 'urgente' : '';
+                const rotaClass = task.rotaEntrega && !task.concluido && task.status !== 'entregue' ? 'rota-entrega' : '';
                 const concluidoClass = task.concluido ? 'concluido' : '';
+                const entregueClass = task.status === 'entregue' ? 'entregue' : '';
                 const tipoPedido = getTipoPedido(task.descricao);
                 let tipoClass = '',
                     tipoBadge = '';
@@ -3444,22 +3596,24 @@
                     tipoPedido === 'caneca') { tipoClass = 'tipo-caneca';
                     tipoBadge = '<span class="tipo-badge caneca"><i class="fas fa-mug-hot"></i> CANECA</span>'; }
 
-                const urgentBadge = task.urgente && !task.concluido ?
+                const urgentBadge = task.urgente && !task.concluido && task.status !== 'entregue' ?
                     '<span class="urgent-chip"><i class="fas fa-exclamation-circle"></i> URGENTE</span>' : '';
-                const rotaBadge = task.rotaEntrega && !task.concluido ?
+                const rotaBadge = task.rotaEntrega && !task.concluido && task.status !== 'entregue' ?
                     '<span class="rota-chip"><i class="fas fa-truck"></i> Rota</span>' : '';
                 const pagamentoClass = task.pagamento === "pago" ? "payment-pago" : "payment-aguardando";
                 const pagamentoText = task.pagamento === "pago" ? "✅ Pago" : "⏳ Aguardando";
                 const concluidoBadge = task.concluido ?
                     '<span class="urgent-chip" style="background:#22c55e;"><i class="fas fa-check-circle"></i> CONCLUÍDO</span>' :
                     '';
+                const entregueBadge = task.status === 'entregue' && !task.concluido ?
+                    '<span class="urgent-chip" style="background:#0ea5e9;"><i class="fas fa-check-double"></i> ENTREGUE</span>' :
+                    '';
                 const dataEntregaFormatada = task.dataEntrega ? formatDate(task.dataEntrega) : 'Sem data';
                 const dataPedidoFormatada = task.dataPedido ? formatDate(task.dataPedido) : formatDate(task
                 .dataLancamento);
 
-                // Determinar se a data de entrega está atrasada
                 let dataEntregaClass = '';
-                if (task.dataEntrega && !task.concluido) {
+                if (task.dataEntrega && !task.concluido && task.status !== 'entregue') {
                     if (task.dataEntrega === hoje) dataEntregaClass = 'hoje';
                     else if (task.dataEntrega < hoje) dataEntregaClass = 'atrasado';
                 }
@@ -3467,10 +3621,11 @@
                 const tagsHtml = (task.tags || []).map(tag =>
                     `<span class="tag-item" style="font-size:0.6rem;">${escapeHtml(tag)}</span>`).join('');
 
-                const dragDisabled = viewAllMode || showingConcluido || showingStatusAgrupado;
+                const dragDisabled = viewAllMode || showingConcluido || showingStatusAgrupado ||
+                    task.status === 'entregue' || task.concluido;
 
                 html += `
-                        <div class="task-card ${urgentClass} ${rotaClass} ${concluidoClass} ${tipoClass}" 
+                        <div class="task-card ${urgentClass} ${rotaClass} ${concluidoClass} ${entregueClass} ${tipoClass}" 
                              data-id="${task.id}" 
                              draggable="${!dragDisabled}"
                              data-semana="${task.semana}"
@@ -3492,21 +3647,23 @@
                                 </span>
                                 <span class="info-chip"><i class="fas fa-dollar-sign"></i> R$ ${escapeHtml(task.valor)}</span>
                                 <span class="payment-status ${pagamentoClass}" onclick="window.togglePagamento(${task.id})">${pagamentoText}</span>
-                                ${tipoBadge} ${urgentBadge} ${rotaBadge} ${concluidoBadge}
+                                ${tipoBadge} ${urgentBadge} ${rotaBadge} ${concluidoBadge} ${entregueBadge}
                                 ${tagsHtml}
                                 ${(task.observacoes) ? `<span class="info-chip" title="Observações"><i class="fas fa-sticky-note"></i></span>` : ''}
                                 ${(task.fotos && task.fotos.length > 0) ? `<span class="info-chip" title="${task.fotos.length} foto(s)"><i class="fas fa-image"></i> ${task.fotos.length}</span>` : ''}
                             </div>
-                            ${!task.concluido ? `<div class="task-status ${statusClass}" onclick="window.cycleStatus(${task.id})">${statusText}</div>` : ''}
+                            ${!task.concluido && task.status !== 'entregue' ? `<div class="task-status ${statusClass}" onclick="window.cycleStatus(${task.id})">${statusText}</div>` : 
+                             task.status === 'entregue' ? `<div class="task-status status-entregue">🔵 Entregue</div>` : ''}
                             <div class="task-actions">
-                                ${!task.concluido ? `
+                                ${!task.concluido && task.status !== 'entregue' ? `
                                     <button class="icon-btn" onclick="window.moveTask(${task.id}, 'up')" title="Mover para cima" ${dragDisabled ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-arrow-up"></i></button>
                                     <button class="icon-btn" onclick="window.moveTask(${task.id}, 'down')" title="Mover para baixo" ${dragDisabled ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-arrow-down"></i></button>
                                     <button class="icon-btn urgent-btn" onclick="window.toggleUrgent(${task.id})" title="Marcar/Desmarcar Urgente"><i class="fas fa-exclamation-triangle"></i></button>
                                     <button class="icon-btn rota-btn" onclick="window.toggleRotaEntrega(${task.id})" title="Rota de Entrega"><i class="fas fa-truck"></i></button>
-                                ` : `
-                                    ${!task.rotaEntrega ? `<button class="icon-btn rota-btn" onclick="window.toggleRotaEntrega(${task.id})" title="Adicionar à Rota"><i class="fas fa-truck"></i> Rota</button>` : ''}
-                                `}
+                                ` : ``}
+                                ${task.concluido ? '' : task.status !== 'entregue' ? `
+                                    <button class="icon-btn entregar-btn" onclick="window.marcarEntregue(${task.id})" title="Marcar como Entregue" ${task.concluido ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-check-double"></i></button>
+                                ` : ''}
                                 <button class="icon-btn concluir-btn" onclick="window.marcarConcluido(${task.id})" title="Concluir" ${task.concluido ? 'disabled style="opacity:0.3;"' : ''}><i class="fas fa-check-circle"></i></button>
                                 <button class="icon-btn" onclick="window.editTaskModal(${task.id})"><i class="fas fa-edit"></i></button>
                                 <button class="icon-btn" onclick="window.deleteTaskConfirm(${task.id})"><i class="fas fa-trash-alt"></i></button>
@@ -3575,14 +3732,16 @@
                     if (fromId && toId && fromId !== toId) {
                         const fromTask = tasks.find(t => t.id === fromId);
                         const toTask = tasks.find(t => t.id === toId);
-                        if (fromTask && toTask && !fromTask.concluido && !toTask.concluido) {
+                        if (fromTask && toTask && !fromTask.concluido && !toTask.concluido &&
+                            fromTask.status !== 'entregue' && toTask.status !== 'entregue') {
                             const fromWeek = fromTask.semana;
                             const toWeek = toTask.semana;
                             if (fromWeek !== toWeek) {
                                 moveTaskToWeek(fromId, toWeek);
                                 showToast(`📦 Pedido movido para ${getSemanaNome(toWeek)}`, 'success');
                             } else {
-                                const weekTasks = tasks.filter(t => t.semana === fromWeek && !t.concluido)
+                                const weekTasks = tasks.filter(t => t.semana === fromWeek && !t.concluido &&
+                                        t.status !== 'entregue')
                                     .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
                                 const fromIdx = weekTasks.findIndex(t => t.id === fromId);
                                 const toIdx = weekTasks.findIndex(t => t.id === toId);
@@ -3603,7 +3762,7 @@
 
         // ---- RENDER ROTA ----
         function renderRota() {
-            let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+            let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido && t.status !== 'entregue');
             pedidosRota.sort((a, b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
             const totalRota = pedidosRota.length;
             const valorTotal = pedidosRota.reduce((s, t) => s + converterParaNumero(t.valor), 0);
@@ -3646,6 +3805,7 @@
                                             <button class="move-rota-btn" onclick="window.moverOrdemRota(${t.id}, 'up')" ${idx===0?'disabled':''}><i class="fas fa-arrow-up"></i></button>
                                             <button class="move-rota-btn" onclick="window.moverOrdemRota(${t.id}, 'down')" ${idx===pedidosRota.length-1?'disabled':''}><i class="fas fa-arrow-down"></i></button>
                                             <button class="icon-btn map-btn" onclick="window.abrirEnderecoRota(${t.id})" title="Endereço no Maps"><i class="fas fa-map-pin"></i></button>
+                                            <button class="icon-btn entregar-btn" onclick="window.marcarEntregue(${t.id})" title="Marcar como Entregue"><i class="fas fa-check-double"></i></button>
                                             <button class="icon-btn whatsapp-btn" onclick="window.sendWhatsAppById(${t.id})"><i class="fab fa-whatsapp"></i></button>
                                             <button class="icon-btn concluir-btn" onclick="window.marcarConcluido(${t.id})"><i class="fas fa-check-circle"></i></button>
                                             <button class="icon-btn" onclick="window.toggleRotaEntrega(${t.id})" title="Remover da rota"><i class="fas fa-truck"></i></button>
@@ -3716,7 +3876,7 @@
 
         // ---- GERAR PDF ROTA ----
         function gerarPDFRota() {
-            let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
+            let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido && t.status !== 'entregue');
             pedidosRota.sort((a, b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
             if (pedidosRota.length === 0) { showToast('Nenhum pedido na rota de entrega!', 'warning'); return; }
 
@@ -3753,6 +3913,121 @@
             showToast('📄 PDF da rota gerado!', 'success');
         }
 
+        // ---- FLUXO DE CAIXA DIÁRIO ----
+        function calcularFluxoCaixaDiario(inicio, fim) {
+            const dias = [];
+            const hoje = new Date();
+            const dataAtual = new Date(inicio);
+            const dataFim = new Date(fim);
+            dataFim.setHours(23, 59, 59);
+
+            let saldoAcumulado = 0;
+
+            // Coletar todas as entradas (recebimentos e vendas rápidas) por dia
+            const entradasPorDia = {};
+            const pagosFiltrados = [...historicoReceita].map(r => ({ ...r, valor: converterParaNumero(r.valor) }));
+            const vendasFiltradas = vendasRapidas.map(v => ({ ...v, valor: v.valor }));
+
+            [...pagosFiltrados, ...vendasFiltradas].forEach(item => {
+                const data = item.dataPagamento || item.data;
+                if (data) {
+                    const d = new Date(data);
+                    if (d >= inicio && d <= dataFim) {
+                        const key = data;
+                        entradasPorDia[key] = (entradasPorDia[key] || 0) + item.valor;
+                    }
+                }
+            });
+
+            // Coletar todas as saídas (despesas) por dia
+            const saidasPorDia = {};
+            despesas.forEach(d => {
+                if (d.data) {
+                    const dt = new Date(d.data);
+                    if (dt >= inicio && dt <= dataFim) {
+                        const key = d.data;
+                        saidasPorDia[key] = (saidasPorDia[key] || 0) + d.valor;
+                    }
+                }
+            });
+
+            // Construir a lista de dias
+            while (dataAtual <= dataFim) {
+                const key = dataAtual.toISOString().split('T')[0];
+                const entrada = entradasPorDia[key] || 0;
+                const saida = saidasPorDia[key] || 0;
+                const saldoDia = entrada - saida;
+                saldoAcumulado += saldoDia;
+
+                const isHoje = key === hoje.toISOString().split('T')[0];
+                const isFuturo = dataAtual > hoje;
+
+                dias.push({
+                    data: key,
+                    entrada: entrada,
+                    saida: saida,
+                    saldoDia: saldoDia,
+                    saldoAcumulado: saldoAcumulado,
+                    isHoje: isHoje,
+                    isFuturo: isFuturo,
+                    diaSemana: dataAtual.toLocaleDateString('pt-BR', { weekday: 'short' }),
+                    diaMes: dataAtual.getDate()
+                });
+
+                dataAtual.setDate(dataAtual.getDate() + 1);
+            }
+
+            return dias;
+        }
+
+        function renderFluxoCaixa(inicio, fim) {
+            const container = document.getElementById('fluxoCaixaContainer');
+            if (!container) return;
+
+            const dias = calcularFluxoCaixaDiario(inicio, fim);
+            const ultimoSaldo = dias.length > 0 ? dias[dias.length - 1].saldoAcumulado : 0;
+            const totalEntradas = dias.reduce((s, d) => s + d.entrada, 0);
+            const totalSaidas = dias.reduce((s, d) => s + d.saida, 0);
+
+            let html = `
+                    <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;align-items:center;">
+                        <div class="card-receita-mini" style="min-width:120px;flex:0;">
+                            <h4>📈 TOTAL ENTRADAS</h4>
+                            <div class="valor valor-positivo">R$ ${totalEntradas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        </div>
+                        <div class="card-receita-mini" style="min-width:120px;flex:0;">
+                            <h4>📉 TOTAL SAÍDAS</h4>
+                            <div class="valor valor-negativo">R$ ${totalSaidas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        </div>
+                        <div class="card-receita-mini destaque-saldo" style="min-width:120px;flex:0;">
+                            <h4>💰 SALDO FINAL</h4>
+                            <div class="valor ${ultimoSaldo >= 0 ? 'valor-positivo' : 'valor-negativo'}">R$ ${ultimoSaldo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        </div>
+                    </div>
+                    <div class="fluxo-caixa-grid">
+                `;
+
+            dias.forEach(d => {
+                const diaClass = d.isHoje ? 'dia-hoje' : (d.isFuturo ? 'dia-futuro' : '');
+                const saldoClass = d.saldoDia >= 0 ? 'positivo' : 'negativo';
+                const saldoFormatado = d.saldoDia >= 0 ?
+                    `+R$ ${d.saldoDia.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` :
+                    `-R$ ${Math.abs(d.saldoDia).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+                html += `
+                        <div class="dia-caixa-item ${diaClass}">
+                            <div class="dia-label">${d.diaSemana} ${d.diaMes}</div>
+                            <div class="dia-valor ${saldoClass}">${saldoFormatado}</div>
+                            <div class="dia-detalhes">Ent: R$ ${d.entrada.toFixed(2)} | Sai: R$ ${d.saida.toFixed(2)}</div>
+                            <div class="dia-detalhes" style="font-weight:600;color:var(--text-primary);">Saldo: R$ ${d.saldoAcumulado.toFixed(2)}</div>
+                        </div>
+                    `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
         // ---- RENDER RECEITA ----
         function renderReceita() {
             const dataInicio = document.getElementById("dataInicio")?.value;
@@ -3763,7 +4038,7 @@
             let pagosFiltrados = [];
             let despesasFiltradas = [...despesas];
 
-            const pedidosEmAndamento = tasks.filter(t => !t.concluido);
+            const pedidosEmAndamento = tasks.filter(t => !t.concluido && t.status !== 'entregue');
             pedidosEmAndamento.forEach(t => {
                 projecaoFiltrada.push({
                     id: t.id,
@@ -3875,6 +4150,31 @@
 
             const progressoMeta = Math.min((totalRecebido / metaMensal) * 100, 100);
 
+            // Definir período para o fluxo de caixa
+            let fluxoInicio, fluxoFim;
+            if (dataInicio && dataFim) {
+                fluxoInicio = new Date(dataInicio);
+                fluxoFim = new Date(dataFim);
+            } else if (tipoFiltro === "semana") {
+                const hoje = new Date();
+                fluxoInicio = new Date(hoje);
+                fluxoInicio.setDate(hoje.getDate() - hoje.getDay());
+                fluxoFim = new Date(hoje);
+                fluxoFim.setDate(hoje.getDate() + (6 - hoje.getDay()));
+            } else if (tipoFiltro === "mes") {
+                const hoje = new Date();
+                fluxoInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                fluxoFim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+            } else if (tipoFiltro === "ano") {
+                const hoje = new Date();
+                fluxoInicio = new Date(hoje.getFullYear(), 0, 1);
+                fluxoFim = new Date(hoje.getFullYear(), 11, 31);
+            } else {
+                const hoje = new Date();
+                fluxoInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                fluxoFim = new Date(hoje);
+            }
+
             const html = `
                     <div class="receita-container">
                         <div class="cards-receita-horizontal">
@@ -3935,6 +4235,11 @@
                             <button class="btn-add-despesa" id="openAddDespesaBtnReceita"><i class="fas fa-plus"></i> Nova Despesa</button>
                         </div>
 
+                        <!-- Fluxo de Caixa Diário -->
+                        <div class="fluxo-caixa-container" id="fluxoCaixaContainer">
+                            <!-- Preenchido pelo JavaScript -->
+                        </div>
+
                         <div class="chart-row">
                             <div class="chart-box"><h4>Projeção vs Recebido</h4><canvas id="pizzaChart"></canvas></div>
                             <div class="chart-box"><h4>Evolução Mensal</h4><canvas id="receitaChart"></canvas></div>
@@ -3949,6 +4254,9 @@
             const container = document.getElementById("receitaContainer");
             if (container) {
                 container.innerHTML = html;
+
+                // Renderizar fluxo de caixa
+                renderFluxoCaixa(fluxoInicio, fluxoFim);
 
                 const tipoSelect = document.getElementById("tipoFiltro");
                 const periodoPersonalizado = document.getElementById("periodoPersonalizado");
@@ -4329,10 +4637,11 @@
         // ---- RENDER DASHBOARD ----
         function renderDashboard() {
             const totalPedidos = tasks.length;
-            const ativos = tasks.filter(t => !t.concluido).length;
+            const ativos = tasks.filter(t => !t.concluido && t.status !== 'entregue').length;
+            const entregues = tasks.filter(t => t.status === 'entregue' && !t.concluido).length;
             const concluidos = tasks.filter(t => t.concluido).length;
-            const urgentes = tasks.filter(t => t.urgente && !t.concluido).length;
-            const emRota = tasks.filter(t => t.rotaEntrega && !t.concluido).length;
+            const urgentes = tasks.filter(t => t.urgente && !t.concluido && t.status !== 'entregue').length;
+            const emRota = tasks.filter(t => t.rotaEntrega && !t.concluido && t.status !== 'entregue').length;
 
             const hoje = new Date().toISOString().split('T')[0];
             const pedidosHoje = tasks.filter(t => t.dataLancamento === hoje).length;
@@ -4364,7 +4673,7 @@
                             <div class="card-kpi">
                                 <h3>📦 Total de Pedidos</h3>
                                 <div class="valor">${totalPedidos}</div>
-                                <div class="sub">${ativos} ativos • ${concluidos} concluídos</div>
+                                <div class="sub">${ativos} ativos • ${entregues} entregues • ${concluidos} concluídos</div>
                             </div>
                             <div class="card-kpi">
                                 <h3>🚨 Urgentes</h3>
@@ -4410,15 +4719,18 @@
                         aguardando: tasks.filter(t => t.status === 'aguardando' && !t.concluido).length,
                         producao: tasks.filter(t => t.status === 'producao' && !t.concluido).length,
                         retirada: tasks.filter(t => t.status === 'retirada' && !t.concluido).length,
+                        entregue: tasks.filter(t => t.status === 'entregue' && !t.concluido).length,
                         concluido: tasks.filter(t => t.concluido).length
                     };
                     new Chart(statusCtx, {
                         type: 'doughnut',
                         data: {
-                            labels: ['Aguardando', 'Produção', 'Retirada', 'Concluído'],
+                            labels: ['Aguardando', 'Produção', 'Retirada', 'Entregue', 'Concluído'],
                             datasets: [{ data: [statusCounts.aguardando, statusCounts.producao, statusCounts
-                                    .retirada, statusCounts.concluido
-                                ], backgroundColor: ['#f59e0b', '#8b5cf6', '#10b981', '#22c55e'] }]
+                                    .retirada, statusCounts.entregue, statusCounts.concluido
+                                ], backgroundColor: ['#f59e0b', '#8b5cf6', '#10b981', '#0ea5e9',
+                                    '#22c55e'
+                                ] }]
                         },
                         options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
                     });
@@ -4953,6 +5265,7 @@
         window.toggleUrgent = toggleUrgent;
         window.toggleRotaEntrega = toggleRotaEntrega;
         window.marcarConcluido = marcarConcluido;
+        window.marcarEntregue = marcarEntregue;
         window.cycleStatus = cycleStatus;
         window.moveTask = moveTask;
         window.sendWhatsAppById = (id) => { const t = tasks.find(t => t.id === id); if (t) sendWhatsApp(t); };
@@ -5223,6 +5536,11 @@
                     task.observacoes = observacoes;
                     task.tags = [...currentTags];
                     if (currentFotos.length > 0) task.fotos = [...currentFotos];
+                    // Se o status for entregue, remove urgência e rota
+                    if (task.status === 'entregue') {
+                        task.urgente = false;
+                        task.rotaEntrega = false;
+                    }
                     saveToLocal();
                     renderTasks();
                     if (showingReceita) renderReceita();
@@ -5244,8 +5562,8 @@
                     valor,
                     status,
                     pagamento,
-                    urgente,
-                    rotaEntrega,
+                    urgente: status === 'entregue' ? false : urgente,
+                    rotaEntrega: status === 'entregue' ? false : rotaEntrega,
                     concluido: false,
                     ordem: 0,
                     rotaOrdem: 0,
@@ -5365,9 +5683,7 @@
 
         // ---- KEYBOARD SHORTCUTS ----
         document.addEventListener('keydown', (e) => {
-            // Tecla ESC: Voltar à página principal com filtros zerados
             if (e.key === 'Escape') {
-                // Verificar se tem algum modal aberto
                 const modalsAbertos = document.querySelectorAll('.modal');
                 let temModalAberto = false;
                 modalsAbertos.forEach(m => {
@@ -5377,7 +5693,6 @@
                     }
                 });
 
-                // Se não tinha modal aberto, voltar à página principal
                 if (!temModalAberto) {
                     zerarFiltros();
                 }
@@ -5486,7 +5801,7 @@
                 let projecao = [],
                     pagos = [],
                     despesasFiltradas = [...despesas];
-                const emAndamento = tasks.filter(t => !t.concluido);
+                const emAndamento = tasks.filter(t => !t.concluido && t.status !== 'entregue');
                 emAndamento.forEach(t => {
                     projecao.push({ id: t.id, nome: t.nome, valor: converterParaNumero(t.valor),
                         dataPagamento: t.dataEntrega || t.dataLancamento, descricao: t.descricao,
@@ -5584,7 +5899,7 @@
                     pedidosMes.forEach((p, i) => {
                         if (y > 270) { doc.addPage();
                             y = 20; }
-                        const status = p.concluido ? '✅' : '⏳';
+                        const status = p.concluido ? '✅' : (p.status === 'entregue' ? '📦' : '⏳');
                         const pagamento = p.pagamento === 'pago' ? 'PAGO' : 'PEND';
                         doc.text(
                             `${i+1}. ${p.nome} - R$ ${converterParaNumero(p.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})} ${status} ${pagamento}`,
@@ -5702,7 +6017,7 @@
                     pedidosPeriodo.forEach((p, i) => {
                         if (y > 270) { doc.addPage();
                             y = 20; }
-                        const status = p.concluido ? '✅' : '⏳';
+                        const status = p.concluido ? '✅' : (p.status === 'entregue' ? '📦' : '⏳');
                         const pagamento = p.pagamento === 'pago' ? 'PAGO' : 'PEND';
                         doc.text(
                             `${i+1}. ${p.nome} - R$ ${converterParaNumero(p.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})} ${status} ${pagamento}`,
@@ -5731,6 +6046,7 @@
         document.getElementById("filterAguardandoBtn")?.addEventListener("click", () => setStatusFilter("aguardando"));
         document.getElementById("filterProducaoBtn")?.addEventListener("click", () => setStatusFilter("producao"));
         document.getElementById("filterRetiradaBtn")?.addEventListener("click", () => setStatusFilter("retirada"));
+        document.getElementById("filterEntregueBtn")?.addEventListener("click", () => setStatusFilter("entregue"));
         document.getElementById("filterConcluidoBtn")?.addEventListener("click", () => setStatusFilter("concluido"));
 
         document.getElementById("filterTodosPagamentoBtn")?.addEventListener("click", () => setPaymentFilter(
