@@ -1,5 +1,3 @@
-[file name]: index.html
-[file content begin]
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -11,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
+    /* ===== ESTILOS EXISTENTES (mantidos) ===== */
     * {
       margin: 0;
       padding: 0;
@@ -62,6 +61,7 @@
       --info: #3b82f6;
       --projecao-aguardando-bg: #fef3c7;
       --projecao-aguardando-border: #f59e0b;
+      --meta-color: #8b5cf6;
     }
 
     body.dark {
@@ -96,6 +96,7 @@
       --caneca-urgent-bg: #3b0764;
       --projecao-aguardando-bg: #451a00;
       --projecao-aguardando-border: #f59e0b;
+      --meta-color: #a78bfa;
     }
 
     body {
@@ -229,7 +230,7 @@
     }
     .btn-add:hover { background: var(--accent-hover); transform: scale(1.03); }
 
-    .btn-export, .btn-import, .btn-pdf, .btn-pdf-rota {
+    .btn-export, .btn-import, .btn-pdf, .btn-pdf-rota, .btn-excel {
       color: white;
       border: none;
       border-radius: 2rem;
@@ -247,7 +248,11 @@
     .btn-import input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
     .btn-pdf { background: #ef4444; }
     .btn-pdf-rota { background: #f5576c; }
-    .btn-export:hover, .btn-import:hover, .btn-pdf:hover, .btn-pdf-rota:hover { transform: scale(1.03); opacity: 0.9; }
+    .btn-excel { background: #217346; }
+    .btn-export:hover, .btn-import:hover, .btn-pdf:hover, .btn-pdf-rota:hover, .btn-excel:hover {
+      transform: scale(1.03);
+      opacity: 0.9;
+    }
 
     .btn-excluir-concluidos {
       background: #ef4444;
@@ -264,6 +269,22 @@
       transition: 0.2s;
     }
     .btn-excluir-concluidos:hover { background: #dc2626; transform: scale(1.03); }
+
+    .btn-restaurar {
+      background: #f59e0b;
+      color: white;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      transition: 0.2s;
+    }
+    .btn-restaurar:hover { background: #d97706; transform: scale(1.03); }
 
     /* ===== FILTER BARS ===== */
     .filter-bar {
@@ -417,6 +438,7 @@
     .tab-btn.despesa-btn { background: var(--despesa-bg); color: white; }
     .tab-btn.status-agrupado-btn { background: linear-gradient(135deg, #f59e0b 0%, #8b5cf6 50%, #10b981 100%); color: white; }
     .tab-btn.vendrapida-btn { background: var(--vendrapida-bg); color: white; }
+    .tab-btn.dashboard-btn { background: var(--meta-color); color: white; }
 
     .btn-mover-semana {
       background: var(--bg-page);
@@ -738,15 +760,60 @@
     .tipo-badge.foto { background: #fbbf24; color: #78350f; }
     .tipo-badge.caneca { background: #a855f7; color: white; }
 
+    /* ===== TAGS ===== */
+    .tags-input {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      background: var(--bg-page);
+      padding: 0.5rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      margin-bottom: 0.8rem;
+    }
+    .tags-input input {
+      border: none;
+      background: transparent;
+      padding: 0.3rem;
+      outline: none;
+      flex: 1;
+      min-width: 100px;
+      color: var(--text-primary);
+    }
+    .tag-item {
+      background: var(--accent);
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tag-item .remove-tag {
+      cursor: pointer;
+      opacity: 0.7;
+    }
+    .tag-item .remove-tag:hover { opacity: 1; }
+
+    /* ===== PREVIEW FOTOS ===== */
+    .foto-preview {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+    }
+
     /* ===== RECEITA / ROTA / CLIENTES / VENDA RÁPIDA ===== */
-    .receita-container, .clientes-container, .rota-container, .vendrapida-container {
+    .receita-container, .clientes-container, .rota-container, .vendrapida-container, .dashboard-container {
       background: var(--card-bg);
       border-radius: 1.5rem;
       padding: 1.5rem;
       border: 1px solid var(--border);
     }
 
-    .receita-header, .clientes-header, .rota-header, .vendrapida-header {
+    .receita-header, .clientes-header, .rota-header, .vendrapida-header, .dashboard-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -794,6 +861,70 @@
     }
     .card-receita-mini.destaque-total h4 { color: rgba(255,255,255,0.85); }
     .card-receita-mini.destaque-total .valor { color: white; }
+
+    /* ===== DASHBOARD ===== */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-kpi {
+      background: var(--bg-page);
+      border-radius: 1rem;
+      padding: 1.2rem;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .card-kpi h3 {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    .card-kpi .valor {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .card-kpi .sub {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 0.3rem;
+    }
+
+    .meta-progresso {
+      background: var(--bg-page);
+      border-radius: 1rem;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      margin-top: 1rem;
+    }
+    .meta-progresso .barra-container {
+      background: var(--border);
+      border-radius: 1rem;
+      height: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+    .meta-progresso .barra {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--meta-color));
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: white;
+      transition: width 0.5s ease;
+    }
+    .meta-progresso .info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
 
     .chart-row {
       display: grid;
@@ -1114,6 +1245,17 @@
     }
     .btn-remover-venda:hover { background: var(--danger); color: white; }
 
+    /* ===== HISTÓRICO ===== */
+    .historico-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+    .historico-item .data { color: var(--text-secondary); }
+    .historico-item .acao { font-weight: 500; }
+
     /* ===== TOAST NOTIFICATION ===== */
     .toast-container {
       position: fixed;
@@ -1140,6 +1282,34 @@
     .toast.warning { background: #f59e0b; }
     .toast.info { background: #3b82f6; }
     .toast i { margin-right: 8px; }
+
+    /* ===== KEYBOARD SHORTCUTS HINT ===== */
+    .shortcuts-hint {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 0.8rem 1.2rem;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-md);
+      z-index: 100;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .shortcuts-hint:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-lg);
+    }
+    .shortcuts-hint kbd {
+      background: var(--bg-page);
+      padding: 0.1rem 0.4rem;
+      border-radius: 0.3rem;
+      border: 1px solid var(--border);
+      font-family: monospace;
+    }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes slideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
@@ -1168,6 +1338,29 @@
       .vendrapida-historico th, .vendrapida-historico td { padding: 0.3rem 0.4rem; }
       .rota-gmaps { flex-direction: column; }
       .rota-gmaps input { width: 100%; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .shortcuts-hint { display: none; }
+    }
+
+    /* ===== PRINT ===== */
+    @media print {
+      .top-bar, .filter-bar, .search-bar, .task-actions,
+      .btn-export, .btn-import, .btn-pdf, .btn-add, .btn-excel,
+      .btn-excluir-concluidos, .theme-toggle, .btn-restaurar,
+      #actionsRow, .semana-tabs, .shortcuts-hint {
+        display: none !important;
+      }
+      .task-card {
+        break-inside: avoid;
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+      }
+      .task-card:hover {
+        transform: none !important;
+        box-shadow: none !important;
+      }
+      body { background: white !important; }
+      .app-container { padding: 0.5rem; }
     }
   </style>
 </head>
@@ -1180,7 +1373,7 @@
       <i class="fas fa-tasks"></i>
       <div class="dn-tarefas"><i class="fas fa-calendar-day"></i> FlowTasks</div>
     </div>
-    
+
     <div class="pedidos-counter" id="pedidosCounter">
       <div class="counter-item total"><i class="fas fa-chart-simple"></i> Total <span class="counter-number" id="totalPedidosCount">0</span></div>
       <div class="counter-item aguardando"><i class="fas fa-clock"></i> Aguardando <span class="counter-number" id="aguardandoCount">0</span></div>
@@ -1188,9 +1381,9 @@
       <div class="counter-item retirada"><i class="fas fa-hand-peace"></i> Retirada <span class="counter-number" id="retiradaCount">0</span></div>
       <div class="counter-item concluido"><i class="fas fa-check-circle"></i> Concluído <span class="counter-number" id="concluidoCount">0</span></div>
     </div>
-    
+
     <button class="btn-zerar" id="btnZerar"><i class="fas fa-undo-alt"></i> ZERAR</button>
-    
+
     <div class="filter-bar" id="statusFilterBar">
       <button class="filter-btn active" data-filter="todos" id="filterTodosBtn"><i class="fas fa-list"></i> Todos <span class="filter-count" id="filterTodosCount">0</span></button>
       <button class="filter-btn" data-filter="aguardando" id="filterAguardandoBtn"><i class="fas fa-clock"></i> Aguardando <span class="filter-count" id="filterAguardandoCount">0</span></button>
@@ -1198,19 +1391,19 @@
       <button class="filter-btn" data-filter="retirada" id="filterRetiradaBtn"><i class="fas fa-hand-peace"></i> Retirada <span class="filter-count" id="filterRetiradaCount">0</span></button>
       <button class="filter-btn" data-filter="concluido" id="filterConcluidoBtn"><i class="fas fa-check-circle"></i> Concluído <span class="filter-count" id="filterConcluidoCount">0</span></button>
     </div>
-    
+
     <div class="filter-bar" id="paymentFilterBar">
       <button class="filter-btn active" data-payment="todos-pagamento" id="filterTodosPagamentoBtn"><i class="fas fa-credit-card"></i> Todos</button>
       <button class="filter-btn" data-payment="aguardando" id="filterAguardandoPagamentoBtn"><i class="fas fa-hourglass-half"></i> Aguardando</button>
       <button class="filter-btn" data-payment="pago" id="filterPagoBtn"><i class="fas fa-check-circle"></i> Pago</button>
     </div>
-    
+
     <div class="search-bar">
       <input type="text" id="productSearchInput" placeholder="🔍 Buscar produto...">
       <button class="btn-search" id="searchProductBtn"><i class="fas fa-search"></i></button>
       <button class="btn-search" id="clearProductSearchBtn" style="background:#ef4444;"><i class="fas fa-times"></i></button>
     </div>
-    
+
     <div class="theme-toggle" id="themeToggle">
       <i class="fas fa-moon"></i> <span id="themeText">Escuro</span>
     </div>
@@ -1223,15 +1416,17 @@
   <div class="actions-row" id="actionsRow">
     <div class="search-box">
       <i class="fas fa-search"></i>
-      <input type="text" id="searchInput" placeholder="Consultar por nome do cliente...">
+      <input type="text" id="searchInput" placeholder="Consultar por nome do cliente..." title="Ctrl+F para focar">
     </div>
-    <button class="btn-add" id="openAddModalBtn"><i class="fas fa-plus"></i> Novo Pedido</button>
+    <button class="btn-add" id="openAddModalBtn" title="Ctrl+N"><i class="fas fa-plus"></i> Novo Pedido</button>
     <button class="btn-export" id="exportCSVBtn"><i class="fas fa-file-export"></i> Exportar CSV</button>
+    <button class="btn-excel" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Excel</button>
     <button class="btn-import" id="importCSVBtn">
       <i class="fas fa-file-import"></i> Importar CSV
       <input type="file" id="importFile" accept=".csv">
     </button>
     <button class="btn-pdf" id="gerarPDFBtn"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
+    <button class="btn-restaurar" id="restaurarBackupBtn"><i class="fas fa-undo"></i> Restaurar</button>
     <button class="btn-excluir-concluidos" id="excluirConcluidosBtn"><i class="fas fa-trash-alt"></i> Excluir Concluídos PAGOS</button>
   </div>
 
@@ -1241,9 +1436,15 @@
   <div id="receitaContainer" style="display: none;"></div>
   <div id="clientesContainer" style="display: none;"></div>
   <div id="vendrapidaContainer" style="display: none;"></div>
+  <div id="dashboardContainer" style="display: none;"></div>
 
   <!-- ===== TOAST CONTAINER ===== -->
   <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ===== SHORTCUTS HINT ===== -->
+  <div class="shortcuts-hint" id="shortcutsHint" title="Clique para fechar">
+    <kbd>Ctrl+N</kbd> Novo • <kbd>Ctrl+F</kbd> Buscar • <kbd>Esc</kbd> Fechar
+  </div>
 </div>
 
 <!-- ===== MODALS ===== -->
@@ -1277,6 +1478,14 @@
       <option value="aguardando">💰 Aguardando Pagamento</option>
       <option value="pago">✅ Pago</option>
     </select>
+    <label>Categorias/Tags</label>
+    <div class="tags-input" id="tagsInputContainer">
+      <div id="tagsDisplay" style="display:flex;flex-wrap:wrap;gap:0.3rem;"></div>
+      <input type="text" id="tagsInput" placeholder="Digite e pressione Enter">
+    </div>
+    <label>Fotos do Pedido</label>
+    <input type="file" id="fotosPedido" accept="image/*" multiple>
+    <div id="previewFotos" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;"></div>
     <div class="checkbox-row">
       <input type="checkbox" id="urgenteCheckbox">
       <label for="urgenteCheckbox">🔴 Marcar como URGENTE</label>
@@ -1285,6 +1494,8 @@
       <input type="checkbox" id="rotaEntregaCheckbox">
       <label for="rotaEntregaCheckbox">🚚 Rota de Entrega (hoje)</label>
     </div>
+    <label>Observações</label>
+    <textarea id="observacoes" rows="2" placeholder="Anotações sobre o pedido..."></textarea>
     <div class="modal-buttons">
       <button class="icon-btn" id="closeModalBtn" style="background: var(--border); padding: 0.4rem 1.2rem;">Cancelar</button>
       <button class="btn-add" id="saveTaskBtn" style="border-radius: 2rem;">Salvar</button>
@@ -1387,12 +1598,30 @@
   </div>
 </div>
 
+<!-- Histórico Modal -->
+<div id="historicoModal" class="modal">
+  <div class="modal-content">
+    <h3><i class="fas fa-history"></i> Histórico de Alterações</h3>
+    <div id="historicoContent" style="max-height:400px;overflow-y:auto;"></div>
+    <div class="modal-buttons" style="margin-top:1rem;">
+      <button class="icon-btn" id="closeHistoricoModalBtn" style="background: var(--border); padding: 0.4rem 1.2rem;">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // ============================================================
-  //  FLOWTASKS - CÓDIGO COMPLETO COM MELHORIAS
-  //  - PDF com TOTAL (Aguardando + Recebido)
-  //  - Rota com Google Maps
-  //  - Abas arrastáveis
+  //  FLOWTASKS - CÓDIGO COMPLETO COM TODAS AS MELHORIAS
+  //  - Backup automático
+  //  - Tags/Categorias
+  //  - Fotos anexadas
+  //  - Histórico de alterações
+  //  - Dashboard com KPIs
+  //  - Atalhos de teclado
+  //  - Validação de telefone
+  //  - Exportação para Excel
+  //  - Notificações
+  //  - Modo de impressão
   // ============================================================
 
   // ---- VARIÁVEIS GLOBAIS ----
@@ -1415,6 +1644,7 @@
   let showingDespesa = false;
   let showingStatusAgrupado = false;
   let showingVendaRapida = false;
+  let showingDashboard = false;
   let receitaChart = null;
   let pizzaChart = null;
   let lucroChart = null;
@@ -1422,10 +1652,12 @@
   let currentStatusFilter = "todos";
   let currentPaymentFilter = "todos-pagamento";
   let semanasOrdenadas = [1, 2, 3];
-  
-  // Variáveis para drag das abas
   let draggedTabIndex = null;
   let draggedTabElement = null;
+  let currentTags = [];
+  let currentFotos = [];
+  let metaMensal = 5000;
+  let notificacaoPermitida = false;
 
   // ---- FUNÇÕES AUXILIARES ----
   function getSemanaNome(semanaNum) { return `${semanaNum}ª Semana`; }
@@ -1474,6 +1706,13 @@
     return 'normal';
   }
 
+  // ---- VALIDAÇÃO DE TELEFONE ----
+  function validarTelefone(telefone) {
+    if(!telefone) return true; // Opcional
+    const numeros = telefone.replace(/\D/g, '');
+    return numeros.length >= 10 && numeros.length <= 11;
+  }
+
   // ---- TOAST ----
   function showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
@@ -1485,6 +1724,169 @@
     setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100px)'; setTimeout(() => toast.remove(), 300); }, 3000);
   }
 
+  // ---- NOTIFICAÇÕES ----
+  function solicitarPermissaoNotificacao() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        notificacaoPermitida = permission === 'granted';
+      });
+    } else if ('Notification' in window && Notification.permission === 'granted') {
+      notificacaoPermitida = true;
+    }
+  }
+
+  function notificarUrgencia(task) {
+    if (task.urgente && notificacaoPermitida && 'Notification' in window) {
+      new Notification('🚨 Pedido Urgente!', {
+        body: `${task.nome} - ${task.descricao}`,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🚨</text></svg>'
+      });
+    }
+  }
+
+  // ---- HISTÓRICO DE ALTERAÇÕES ----
+  function logAlteracao(taskId, campo, valorAntigo, valorNovo) {
+    const log = {
+      taskId,
+      campo,
+      valorAntigo: valorAntigo !== undefined ? String(valorAntigo) : '',
+      valorNovo: valorNovo !== undefined ? String(valorNovo) : '',
+      data: new Date().toISOString(),
+      usuario: 'admin'
+    };
+    let historico = JSON.parse(localStorage.getItem('flowtasks_historico') || '[]');
+    historico.push(log);
+    localStorage.setItem('flowtasks_historico', JSON.stringify(historico));
+  }
+
+  function exibirHistorico(taskId) {
+    const historico = JSON.parse(localStorage.getItem('flowtasks_historico') || '[]');
+    const logs = historico.filter(l => l.taskId === taskId);
+    const container = document.getElementById('historicoContent');
+    if (logs.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary);">Nenhuma alteração registrada para este pedido.</div>';
+    } else {
+      container.innerHTML = logs.slice().reverse().map(log => `
+        <div class="historico-item">
+          <span><strong>${escapeHtml(log.campo)}</strong>: ${escapeHtml(log.valorAntigo)} → ${escapeHtml(log.valorNovo)}</span>
+          <span class="data">${formatDate(log.data.split('T')[0])} ${log.data.split('T')[1].slice(0,5)}</span>
+        </div>
+      `).join('');
+    }
+    document.getElementById('historicoModal').style.display = 'flex';
+  }
+
+  // ---- BACKUP AUTOMÁTICO ----
+  function fazerBackupAutomatico() {
+    const data = JSON.stringify(tasks);
+    const hoje = new Date().toISOString().split('T')[0];
+    localStorage.setItem('flowtasks_backup_' + hoje, data);
+    // Manter apenas últimos 30 dias
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('flowtasks_backup_'));
+    if (keys.length > 30) {
+      keys.sort();
+      const remover = keys.slice(0, keys.length - 30);
+      remover.forEach(k => localStorage.removeItem(k));
+    }
+  }
+
+  function restaurarBackup() {
+    const backups = Object.keys(localStorage).filter(k => k.startsWith('flowtasks_backup_')).sort();
+    if (backups.length === 0) {
+      showToast('Nenhum backup encontrado!', 'warning');
+      return;
+    }
+    // Mostrar lista de backups disponíveis
+    const backupList = backups.map(k => {
+      const data = k.replace('flowtasks_backup_', '');
+      const size = localStorage.getItem(k).length;
+      return `<div style="padding:0.4rem;cursor:pointer;border-bottom:1px solid var(--border);" onclick="restaurarBackupData('${k}')">
+        📅 ${data} - ${(size/1024).toFixed(1)} KB
+      </div>`;
+    }).join('');
+
+    // Criar um modal simples para escolher o backup
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <h3><i class="fas fa-undo"></i> Restaurar Backup</h3>
+        <p style="margin-bottom:1rem;color:var(--text-secondary);">Selecione um backup para restaurar:</p>
+        <div style="max-height:300px;overflow-y:auto;">${backupList}</div>
+        <div class="modal-buttons" style="margin-top:1rem;">
+          <button class="icon-btn" onclick="this.closest('.modal').remove()" style="background:var(--border);padding:0.4rem 1.2rem;">Cancelar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  function restaurarBackupData(key) {
+    if (confirm('Isso substituirá todos os dados atuais. Continuar?')) {
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        tasks = data;
+        saveToLocal();
+        // Fechar modal
+        document.querySelector('.modal')?.remove();
+        renderTasks();
+        atualizarContadores();
+        showToast('✅ Backup restaurado com sucesso!', 'success');
+      } catch (e) {
+        showToast('Erro ao restaurar backup!', 'error');
+      }
+    }
+  }
+
+  // ---- TAGS ----
+  function adicionarTag(tag) {
+    tag = tag.trim();
+    if (!tag) return;
+    if (currentTags.includes(tag)) {
+      showToast('Tag já adicionada!', 'warning');
+      return;
+    }
+    currentTags.push(tag);
+    renderTags();
+  }
+
+  function removerTag(tag) {
+    currentTags = currentTags.filter(t => t !== tag);
+    renderTags();
+  }
+
+  function renderTags() {
+    const display = document.getElementById('tagsDisplay');
+    if (!display) return;
+    display.innerHTML = currentTags.map(tag => `
+      <span class="tag-item">
+        ${escapeHtml(tag)}
+        <span class="remove-tag" onclick="removerTag('${escapeHtml(tag)}')">&times;</span>
+      </span>
+    `).join('');
+  }
+
+  // ---- FOTOS ----
+  async function processarFotos(files) {
+    const promises = Array.from(files).map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    });
+    return Promise.all(promises);
+  }
+
+  function renderPreviewFotos(fotos) {
+    const container = document.getElementById('previewFotos');
+    if (!container) return;
+    container.innerHTML = fotos.map(foto => `
+      <img src="${foto}" class="foto-preview" alt="Foto do pedido">
+    `).join('');
+  }
+
   // ---- CONTADORES ----
   function atualizarContadores() {
     const pedidosAtivos = tasks.filter(t => !t.concluido);
@@ -1494,13 +1896,13 @@
     const producao = pedidosAtivos.filter(t => t.status === "producao").length;
     const retirada = pedidosAtivos.filter(t => t.status === "retirada").length;
     const concluido = pedidosConcluidos.length;
-    
+
     document.getElementById("totalPedidosCount").innerText = totalAtivos;
     document.getElementById("aguardandoCount").innerText = aguardando;
     document.getElementById("producaoCount").innerText = producao;
     document.getElementById("retiradaCount").innerText = retirada;
     document.getElementById("concluidoCount").innerText = concluido;
-    
+
     document.getElementById("filterTodosCount").innerText = totalAtivos + concluido;
     document.getElementById("filterAguardandoCount").innerText = aguardando;
     document.getElementById("filterProducaoCount").innerText = producao;
@@ -1508,7 +1910,7 @@
     document.getElementById("filterConcluidoCount").innerText = concluido;
   }
 
-  // ---- ROTA ----
+  // ---- ROTA (mantido do original) ----
   function toggleRotaEntrega(taskId) {
     const task = tasks.find(t => t.id === taskId);
     if(task) {
@@ -1584,13 +1986,13 @@
     document.getElementById("posicaoRotaModal").style.display = "flex";
   }
 
-  // ---- ABAS ARRASTÁVEIS ----
+  // ---- ABAS ARRASTÁVEIS (mantido) ----
   function initTabDrag() {
     const wrappers = document.querySelectorAll('.tab-wrapper');
     wrappers.forEach((wrapper, index) => {
       wrapper.setAttribute('draggable', 'true');
       wrapper.dataset.index = index;
-      
+
       wrapper.addEventListener('dragstart', function(e) {
         draggedTabIndex = parseInt(this.dataset.index);
         draggedTabElement = this;
@@ -1598,14 +2000,14 @@
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', String(draggedTabIndex));
       });
-      
+
       wrapper.addEventListener('dragend', function(e) {
         this.classList.remove('dragging');
         document.querySelectorAll('.tab-wrapper.drag-over').forEach(el => el.classList.remove('drag-over'));
         draggedTabIndex = null;
         draggedTabElement = null;
       });
-      
+
       wrapper.addEventListener('dragover', function(e) {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
@@ -1614,24 +2016,21 @@
           this.classList.add('drag-over');
         }
       });
-      
+
       wrapper.addEventListener('dragleave', function(e) {
         this.classList.remove('drag-over');
       });
-      
+
       wrapper.addEventListener('drop', function(e) {
         e.preventDefault();
         this.classList.remove('drag-over');
         const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
         const toIndex = parseInt(this.dataset.index);
         if (fromIndex !== toIndex && fromIndex !== null && !isNaN(fromIndex) && !isNaN(toIndex)) {
-          // Reordenar o array
           const [moved] = semanasOrdenadas.splice(fromIndex, 1);
           semanasOrdenadas.splice(toIndex, 0, moved);
           saveSemanasOrdem();
           atualizarAbasSemanas();
-          // Manter a aba ativa
-          const activeWeek = currentWeek;
           renderTasks();
           showToast('📌 Aba reposicionada com sucesso!', 'success');
         }
@@ -1639,7 +2038,7 @@
     });
   }
 
-  // ---- SEMANAS ----
+  // ---- SEMANAS (mantido) ----
   function saveSemanasOrdem() { localStorage.setItem("flowtasks_semanas_ordem", JSON.stringify(semanasOrdenadas)); }
 
   function renomearSemanasPorPosicao() {
@@ -1722,7 +2121,7 @@
     return true;
   }
 
-  // ---- CLIENTES ----
+  // ---- CLIENTES (mantido) ----
   function saveClientes() { localStorage.setItem("flowtasks_clientes", JSON.stringify(clientesCadastrados)); }
 
   function atualizarOuAdicionarCliente(nome, telefone, dataPedido, valor) {
@@ -1778,7 +2177,7 @@
     });
   }
 
-  // ---- RECEITA / DESPESAS ----
+  // ---- RECEITA / DESPESAS (mantido) ----
   function saveHistoricoReceita() { localStorage.setItem("flowtasks_historico_receita", JSON.stringify(historicoReceita)); }
 
   function registrarReceita(task) {
@@ -1823,7 +2222,7 @@
     saveDespesas();
   }
 
-  // ---- VENDA RÁPIDA ----
+  // ---- VENDA RÁPIDA (mantido) ----
   function loadVendasRapidas() {
     const stored = localStorage.getItem("flowtasks_vendas_rapidas");
     if(stored) {
@@ -1845,7 +2244,7 @@
     };
     vendasRapidas.push(venda);
     saveVendasRapidas();
-    
+
     historicoReceita.push({
       id: 'vr_' + venda.id,
       nome: 'Venda Rápida',
@@ -1854,7 +2253,7 @@
       descricao: descricao || 'Venda Rápida'
     });
     saveHistoricoReceita();
-    
+
     return true;
   }
 
@@ -1870,7 +2269,7 @@
     return false;
   }
 
-  // ---- ORDENAÇÃO ----
+  // ---- ORDENAÇÃO (mantido) ----
   function reordenarPorDataEntrega() {
     for(let semana of semanasOrdenadas) {
       let weekTasks = tasks.filter(t => t.semana === semana && !t.concluido);
@@ -1893,8 +2292,12 @@
 
   function reorderAllByWeek() { reordenarPorDataEntrega(); }
 
-  // ---- CRUD TASKS ----
-  function saveToLocal() { localStorage.setItem("flowtasks_app", JSON.stringify(tasks)); saveSemanasOrdem(); }
+  // ---- CRUD TASKS (com melhorias) ----
+  function saveToLocal() {
+    localStorage.setItem("flowtasks_app", JSON.stringify(tasks));
+    saveSemanasOrdem();
+    fazerBackupAutomatico();
+  }
 
   function addTask(task) {
     task.id = nextId++;
@@ -1903,6 +2306,9 @@
     if(task.rotaEntrega === undefined) task.rotaEntrega = false;
     if(task.concluido === undefined) task.concluido = false;
     if(task.rotaOrdem === undefined) task.rotaOrdem = 0;
+    if(!task.tags) task.tags = [];
+    if(!task.fotos) task.fotos = [];
+    if(!task.observacoes) task.observacoes = '';
     tasks.push(task);
     atualizarOuAdicionarCliente(task.nome, task.telefone, task.dataLancamento, task.valor);
     if(task.rotaEntrega) atualizarOrdemRota();
@@ -1911,6 +2317,8 @@
     atualizarAbasSemanas();
     atualizarContadores();
     renderTasks();
+    if (task.urgente) notificarUrgencia(task);
+    logAlteracao(task.id, 'CRIAÇÃO', '', 'Pedido criado');
     showToast(`✅ Pedido de ${task.nome} adicionado com sucesso!`, 'success');
   }
 
@@ -1919,6 +2327,18 @@
     if(index !== -1) {
       const old = tasks[index];
       const eraPago = old.pagamento === "pago";
+
+      // Log alterações
+      if (old.nome !== updated.nome) logAlteracao(updated.id, 'Nome', old.nome, updated.nome);
+      if (old.telefone !== updated.telefone) logAlteracao(updated.id, 'Telefone', old.telefone, updated.telefone);
+      if (old.descricao !== updated.descricao) logAlteracao(updated.id, 'Descrição', old.descricao, updated.descricao);
+      if (old.valor !== updated.valor) logAlteracao(updated.id, 'Valor', old.valor, updated.valor);
+      if (old.status !== updated.status) logAlteracao(updated.id, 'Status', old.status, updated.status);
+      if (old.pagamento !== updated.pagamento) logAlteracao(updated.id, 'Pagamento', old.pagamento, updated.pagamento);
+      if (old.urgente !== updated.urgente) logAlteracao(updated.id, 'Urgente', old.urgente, updated.urgente);
+      if (old.rotaEntrega !== updated.rotaEntrega) logAlteracao(updated.id, 'Rota Entrega', old.rotaEntrega, updated.rotaEntrega);
+      if (old.dataEntrega !== updated.dataEntrega) logAlteracao(updated.id, 'Data Entrega', old.dataEntrega, updated.dataEntrega);
+
       if(old.nome !== updated.nome) {
         removerPedidoDoCliente(old.nome, old.valor);
         atualizarOuAdicionarCliente(updated.nome, updated.telefone, updated.dataLancamento, updated.valor);
@@ -1929,6 +2349,9 @@
       updated.dataLancamento = old.dataLancamento;
       updated.concluido = old.concluido;
       updated.dataConclusao = old.dataConclusao;
+      updated.tags = updated.tags || [];
+      updated.fotos = updated.fotos || [];
+      updated.observacoes = updated.observacoes || '';
       tasks[index] = updated;
       if(updated.pagamento === "pago" && updated.concluido === true) registrarReceita(updated);
       else if(updated.pagamento === "aguardando" && eraPago) removerReceita(updated.id);
@@ -1941,6 +2364,7 @@
       if(showingReceita) renderReceita();
       if(showingClientes) renderClientes();
       if(showingRota) renderRota();
+      if (updated.urgente && !old.urgente) notificarUrgencia(updated);
       showToast(`✅ Pedido de ${updated.nome} atualizado!`, 'success');
     }
   }
@@ -1948,6 +2372,7 @@
   function deleteTask(id) {
     const task = tasks.find(t => t.id === id);
     if(task) {
+      logAlteracao(id, 'EXCLUSÃO', '', 'Pedido excluído');
       removerPedidoDoCliente(task.nome, task.valor);
       if(task.pagamento === "pago" && task.concluido === true) removerReceita(id);
     }
@@ -1971,6 +2396,7 @@
       task.pagamento = task.pagamento === "aguardando" ? "pago" : "aguardando";
       if(task.pagamento === "pago" && task.concluido === true) registrarReceita(task);
       else if(task.pagamento === "aguardando" && eraPago) removerReceita(task.id);
+      logAlteracao(taskId, 'Pagamento (toggle)', eraPago ? 'pago' : 'aguardando', task.pagamento);
       saveToLocal();
       renderTasks();
       if(showingReceita) renderReceita();
@@ -1983,9 +2409,11 @@
     const task = tasks.find(t => t.id === taskId);
     if(task && !task.concluido) {
       task.urgente = !task.urgente;
+      logAlteracao(taskId, 'Urgente', !task.urgente, task.urgente);
       reordenarPorDataEntrega();
       saveToLocal();
       renderTasks();
+      if (task.urgente) notificarUrgencia(task);
       showToast(task.urgente ? '🔴 Marcado como URGENTE' : '🟢 Urgência removida', 'warning');
     }
   }
@@ -1997,6 +2425,7 @@
       task.dataConclusao = new Date().toISOString().split('T')[0];
       task.rotaEntrega = false;
       if(task.pagamento === "pago") registrarReceita(task);
+      logAlteracao(taskId, 'Concluído', 'Não', 'Sim');
       saveToLocal();
       atualizarAbasSemanas();
       atualizarContadores();
@@ -2012,7 +2441,9 @@
     if(!task || task.concluido) return;
     const order = ['aguardando', 'producao', 'retirada'];
     let idx = order.indexOf(task.status);
-    task.status = order[(idx+1) % order.length];
+    const newStatus = order[(idx+1) % order.length];
+    logAlteracao(taskId, 'Status', task.status, newStatus);
+    task.status = newStatus;
     saveToLocal();
     atualizarContadores();
     renderTasks();
@@ -2032,6 +2463,7 @@
     weekTasks.splice(currentIndex, 1);
     weekTasks.splice(targetIndex, 0, task);
     weekTasks.forEach((t, idx) => t.ordem = idx);
+    logAlteracao(taskId, 'Posição', currentIndex+1, novaPosicao);
     saveToLocal();
     renderTasks();
     return true;
@@ -2073,7 +2505,7 @@
     }
   }
 
-  // ---- WHATSAPP ----
+  // ---- WHATSAPP (mantido) ----
   function sendWhatsApp(task) {
     if(!task.telefone || task.telefone.trim() === "") {
       showToast('Número de telefone não informado', 'error');
@@ -2094,7 +2526,7 @@
     window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank');
   }
 
-  // ---- EXPORT / IMPORT ----
+  // ---- EXPORT / IMPORT (mantido + Excel) ----
   function exportToCSV() {
     const data = tasks.map(t => ({
       ID: t.id, Nome: t.nome, Telefone: t.telefone, Descricao: t.descricao,
@@ -2102,7 +2534,7 @@
       Pagamento: t.pagamento, Urgente: t.urgente ? "Sim" : "Não",
       "Rota Entrega": t.rotaEntrega ? "Sim" : "Não",
       Concluido: t.concluido ? "Sim" : "Não", Semana: t.semana,
-      "Data Lançamento": t.dataLancamento
+      "Data Lançamento": t.dataLancamento, Tags: (t.tags || []).join(';'), Observacoes: t.observacoes || ''
     }));
     const headers = Object.keys(data[0] || {});
     const csvRows = [headers.join(',')];
@@ -2119,6 +2551,43 @@
     document.body.removeChild(link);
     URL.revokeObjectURL(link.href);
     showToast('📤 CSV exportado com sucesso!', 'success');
+  }
+
+  function exportToExcel() {
+    try {
+      // Usando XLSX via CDN
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      script.onload = function() {
+        const data = tasks.map(t => ({
+          'ID': t.id,
+          'Cliente': t.nome,
+          'Telefone': t.telefone,
+          'Serviço': t.descricao,
+          'Data Entrega': t.dataEntrega || '',
+          'Valor': t.valor || '0',
+          'Status': t.status || 'aguardando',
+          'Pagamento': t.pagamento || 'aguardando',
+          'Urgente': t.urgente ? 'Sim' : 'Não',
+          'Rota': t.rotaEntrega ? 'Sim' : 'Não',
+          'Concluído': t.concluido ? 'Sim' : 'Não',
+          'Semana': t.semana || 1,
+          'Tags': (t.tags || []).join('; '),
+          'Observações': t.observacoes || ''
+        }));
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, 'Pedidos');
+        XLSX.writeFile(wb, `pedidos_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('📊 Excel exportado com sucesso!', 'success');
+      };
+      script.onerror = function() {
+        showToast('Erro ao carregar a biblioteca Excel. Verifique sua conexão.', 'error');
+      };
+      document.head.appendChild(script);
+    } catch(e) {
+      showToast('Erro ao exportar para Excel', 'error');
+    }
   }
 
   function importFromCSV(file) {
@@ -2158,7 +2627,9 @@
             concluido: pedido.Concluido === "Sim",
             semana: parseInt(pedido.Semana) || 1,
             dataLancamento: pedido["Data Lançamento"] || new Date().toISOString().split('T')[0],
-            ordem: 0, rotaOrdem: 0
+            ordem: 0, rotaOrdem: 0,
+            tags: pedido.Tags ? pedido.Tags.split(';').map(t => t.trim()).filter(Boolean) : [],
+            observacoes: pedido.Observacoes || ''
           });
         }
       }
@@ -2167,6 +2638,7 @@
           tasks.push(p);
           atualizarOuAdicionarCliente(p.nome, p.telefone, p.dataLancamento, p.valor);
           if(p.pagamento === "pago" && p.concluido === true) registrarReceita(p);
+          logAlteracao(p.id, 'IMPORTAÇÃO', '', 'Pedido importado do CSV');
         });
         renomearSemanasPorPosicao();
         atualizarOrdemRota();
@@ -2182,7 +2654,7 @@
     reader.readAsText(file);
   }
 
-  // ---- EXCLUIR CONCLUÍDOS PAGOS ----
+  // ---- EXCLUIR CONCLUÍDOS PAGOS (mantido) ----
   function excluirTodosConcluidos() {
     const concluidosPagos = tasks.filter(t => t.concluido === true && t.pagamento === "pago");
     const concluidosAguardando = tasks.filter(t => t.concluido === true && t.pagamento === "aguardando");
@@ -2193,6 +2665,7 @@
       return;
     }
     if(confirm(`ATENÇÃO! Excluir ${concluidosPagos.length} pedido(s) PAGOS?\n\n${concluidosAguardando.length} aguardando serão MANTIDOS.\nOs valores financeiros permanecem INALTERADOS.`)) {
+      concluidosPagos.forEach(t => logAlteracao(t.id, 'EXCLUSÃO EM MASSA', '', 'Pedido excluído (concluídos pagos)'));
       tasks = tasks.filter(t => !(t.concluido === true && t.pagamento === "pago"));
       renomearSemanasPorPosicao();
       reordenarPorDataEntrega();
@@ -2207,7 +2680,7 @@
     }
   }
 
-  // ---- ZERAR FILTROS ----
+  // ---- ZERAR FILTROS (mantido) ----
   function zerarFiltros() {
     searchQuery = "";
     document.getElementById("searchInput").value = "";
@@ -2223,7 +2696,7 @@
       b.classList.remove('active');
       if(b.dataset.payment === "todos-pagamento") b.classList.add('active');
     });
-    if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado || showingVendaRapida) {
+    if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado || showingVendaRapida || showingDashboard) {
       if(viewAllMode) setViewAllMode(false);
       if(showingConcluido) setConcluidoMode(false);
       if(showingReceita) setReceitaMode(false);
@@ -2232,6 +2705,7 @@
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
       if(showingVendaRapida) setVendaRapidaMode(false);
+      if(showingDashboard) setDashboardMode(false);
       document.querySelectorAll(".tab-btn[data-week]").forEach(btn => {
         btn.classList.remove('active');
         if(parseInt(btn.dataset.week) === currentWeek) btn.classList.add('active');
@@ -2241,15 +2715,16 @@
     showToast('🔄 Filtros zerados!', 'info');
   }
 
-  // ---- RENDER TASKS ----
+  // ---- RENDER TASKS (atualizado com tags, fotos, histórico) ----
   function renderTasks() {
     let filtered = [];
-    
+
     if(showingRota) { renderRota(); return; }
     else if(showingReceita) { renderReceita(); return; }
     else if(showingClientes) { renderClientes(); return; }
     else if(showingDespesa) { renderDespesas(); return; }
     else if(showingVendaRapida) { renderVendaRapida(); return; }
+    else if(showingDashboard) { renderDashboard(); return; }
     else if(showingStatusAgrupado) {
       filtered = tasks.filter(t => !t.concluido);
       const statusOrder = { aguardando: 0, producao: 1, retirada: 2 };
@@ -2270,17 +2745,17 @@
     } else {
       filtered = tasks.filter(t => t.semana === currentWeek && !t.concluido).sort((a,b) => (a.ordem||0) - (b.ordem||0));
     }
-    
+
     if(currentStatusFilter !== "todos") {
       filtered = filtered.filter(t => t.status === currentStatusFilter);
     }
     if(currentPaymentFilter !== "todos-pagamento") {
       filtered = filtered.filter(t => t.pagamento === currentPaymentFilter);
     }
-    
+
     if(productSearchQuery.trim() !== "") {
       const q = productSearchQuery.trim().toLowerCase();
-      filtered = filtered.filter(t => (t.descricao || "").toLowerCase().includes(q));
+      filtered = filtered.filter(t => (t.descricao || "").toLowerCase().includes(q) || (t.tags || []).some(tag => tag.toLowerCase().includes(q)));
     }
     if(searchQuery.trim() !== "") {
       const q = searchQuery.trim().toLowerCase();
@@ -2297,16 +2772,16 @@
 
     let html = '';
     let lastWeek = null;
-    
+
     filtered.forEach((task, index) => {
       if((viewAllMode || showingStatusAgrupado) && !showingConcluido && lastWeek !== task.semana) {
         lastWeek = task.semana;
         html += `<div class="week-separator"><i class="fas fa-calendar-week"></i> ${getSemanaNome(task.semana)}</div>`;
       }
-      
+
       const statusClass = `status-${task.status}`;
       const statusText = task.status === 'aguardando' ? '🟡 Aguardando' : (task.status === 'producao' ? '🟣 Produção' : (task.status === 'retirada' ? '🟢 Retirada' : '✅ Concluído'));
-      
+
       let numero;
       if(showingConcluido) numero = index + 1;
       else if(viewAllMode || showingStatusAgrupado) {
@@ -2318,7 +2793,7 @@
         const idxInWeek = weekFiltered.findIndex(t => t.id === task.id);
         numero = idxInWeek + 1;
       }
-      
+
       const urgentClass = task.urgente && !task.concluido ? 'urgente' : '';
       const rotaClass = task.rotaEntrega && !task.concluido ? 'rota-entrega' : '';
       const concluidoClass = task.concluido ? 'concluido' : '';
@@ -2326,14 +2801,15 @@
       let tipoClass = '', tipoBadge = '';
       if(tipoPedido === 'foto') { tipoClass = 'tipo-foto'; tipoBadge = '<span class="tipo-badge foto"><i class="fas fa-camera"></i> FOTO</span>'; }
       else if(tipoPedido === 'caneca') { tipoClass = 'tipo-caneca'; tipoBadge = '<span class="tipo-badge caneca"><i class="fas fa-mug-hot"></i> CANECA</span>'; }
-      
+
       const urgentBadge = task.urgente && !task.concluido ? '<span class="urgent-chip"><i class="fas fa-exclamation-circle"></i> URGENTE</span>' : '';
       const rotaBadge = task.rotaEntrega && !task.concluido ? '<span class="rota-chip"><i class="fas fa-truck"></i> Rota</span>' : '';
       const pagamentoClass = task.pagamento === "pago" ? "payment-pago" : "payment-aguardando";
       const pagamentoText = task.pagamento === "pago" ? "✅ Pago" : "⏳ Aguardando";
       const concluidoBadge = task.concluido ? '<span class="urgent-chip" style="background:#22c55e;"><i class="fas fa-check-circle"></i> CONCLUÍDO</span>' : '';
       const dataEntregaFormatada = task.dataEntrega ? formatDate(task.dataEntrega) : 'Sem data';
-      
+      const tagsHtml = (task.tags || []).map(tag => `<span class="tag-item" style="font-size:0.6rem;">${escapeHtml(tag)}</span>`).join('');
+
       html += `
         <div class="task-card ${urgentClass} ${rotaClass} ${concluidoClass} ${tipoClass}" data-id="${task.id}" draggable="${!viewAllMode && !showingConcluido && !showingStatusAgrupado}">
           <div class="task-number" data-task-id="${task.id}" data-task-nome="${escapeHtml(task.nome)}">${numero}</div>
@@ -2345,6 +2821,9 @@
             <span class="info-chip"><i class="fas fa-dollar-sign"></i> R$ ${escapeHtml(task.valor)}</span>
             <span class="payment-status ${pagamentoClass}" onclick="window.togglePagamento(${task.id})">${pagamentoText}</span>
             ${tipoBadge} ${urgentBadge} ${rotaBadge} ${concluidoBadge}
+            ${tagsHtml}
+            ${(task.observacoes) ? `<span class="info-chip" title="Observações"><i class="fas fa-sticky-note"></i></span>` : ''}
+            ${(task.fotos && task.fotos.length > 0) ? `<span class="info-chip" title="${task.fotos.length} foto(s)"><i class="fas fa-image"></i> ${task.fotos.length}</span>` : ''}
           </div>
           ${!task.concluido ? `<div class="task-status ${statusClass}" onclick="window.cycleStatus(${task.id})">${statusText}</div>` : ''}
           <div class="task-actions">
@@ -2360,13 +2839,14 @@
             <button class="icon-btn" onclick="window.editTaskModal(${task.id})"><i class="fas fa-edit"></i></button>
             <button class="icon-btn" onclick="window.deleteTaskConfirm(${task.id})"><i class="fas fa-trash-alt"></i></button>
             <button class="icon-btn whatsapp-btn" onclick="window.sendWhatsAppById(${task.id})"><i class="fab fa-whatsapp"></i></button>
+            <button class="icon-btn" onclick="window.exibirHistorico(${task.id})" title="Histórico"><i class="fas fa-history"></i></button>
           </div>
         </div>
       `;
     });
-    
+
     container.innerHTML = html;
-    
+
     document.querySelectorAll('.task-number').forEach(el => {
       el.addEventListener('dblclick', function(e) {
         e.stopPropagation();
@@ -2375,7 +2855,7 @@
         abrirModalPosicao(taskId, taskNome);
       });
     });
-    
+
     if(!viewAllMode && !showingConcluido && !showingStatusAgrupado) attachCardDragEvents();
   }
 
@@ -2383,7 +2863,7 @@
     document.querySelectorAll('.task-card').forEach(card => {
       card.setAttribute('draggable', 'true');
       card.addEventListener('dragstart', (e) => {
-        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado || showingVendaRapida) {
+        if(viewAllMode || showingConcluido || showingReceita || showingClientes || showingRota || showingDespesa || showingStatusAgrupado || showingVendaRapida || showingDashboard) {
           e.preventDefault(); return false;
         }
         draggedTaskId = parseInt(card.dataset.id);
@@ -2394,16 +2874,15 @@
     });
   }
 
-  // ---- RENDER ROTA (com Google Maps) ----
+  // ---- RENDER ROTA (mantido) ----
   function renderRota() {
     let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
     pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
     const totalRota = pedidosRota.length;
     const valorTotal = pedidosRota.reduce((s, t) => s + converterParaNumero(t.valor), 0);
-    
-    // Endereço para rota
+
     const enderecoRota = localStorage.getItem('flowtasks_endereco_rota') || '';
-    
+
     const html = `
       <div class="rota-container">
         <div class="rota-header">
@@ -2411,7 +2890,7 @@
           <div class="rota-total"><h3><i class="fas fa-dollar-sign"></i> TOTAL</h3><div class="valor">R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div></div>
           <div><button class="btn-pdf-rota" id="gerarPDFRotaBtn"><i class="fas fa-file-pdf"></i> PDF da Rota</button></div>
         </div>
-        
+
         <div class="rota-gmaps">
           <i class="fas fa-map-marked-alt" style="font-size:1.2rem; color:#ea4335;"></i>
           <input type="text" id="enderecoRota" placeholder="Digite o endereço de partida para traçar rota..." value="${escapeHtml(enderecoRota)}">
@@ -2419,12 +2898,12 @@
             <i class="fab fa-google"></i> Traçar Rota no Google Maps
           </button>
         </div>
-        
+
         <div style="margin-bottom:0.8rem;padding:0.4rem;background:var(--accent);border-radius:0.5rem;color:white;text-align:center;font-size:0.9rem;">
           <i class="fas fa-info-circle"></i> Clique duas vezes no número para escolher a posição
         </div>
         <div class="rota-lista">
-          ${pedidosRota.length === 0 ? '<div style="text-align:center;padding:2rem;">🚚 Nenhum pedido na rota de entrega</div>' : 
+          ${pedidosRota.length === 0 ? '<div style="text-align:center;padding:2rem;">🚚 Nenhum pedido na rota de entrega</div>' :
             pedidosRota.map((t, idx) => `
               <div class="rota-item" data-id="${t.id}">
                 <div class="rota-numero" data-id="${t.id}" data-nome="${escapeHtml(t.nome)}" data-max="${pedidosRota.length}">${idx+1}</div>
@@ -2450,33 +2929,31 @@
         </div>
       </div>
     `;
-    
+
     const container = document.getElementById("rotaContainer");
     if(container) {
       container.innerHTML = html;
-      
+
       document.getElementById("gerarPDFRotaBtn")?.addEventListener("click", gerarPDFRota);
-      
-      // Salvar endereço ao digitar
+
       const enderecoInput = document.getElementById("enderecoRota");
       if(enderecoInput) {
         enderecoInput.addEventListener('change', function() {
           localStorage.setItem('flowtasks_endereco_rota', this.value);
         });
       }
-      
-      // Google Maps - abrir com todos os endereços
+
       document.getElementById("btnAbrirGoogleMaps")?.addEventListener("click", function() {
         const enderecoPartida = document.getElementById("enderecoRota").value.trim();
         if(!enderecoPartida) {
           showToast('Digite o endereço de partida primeiro!', 'warning');
           return;
         }
-        
+
         const destinos = pedidosRota.map((t, idx) => {
           return `${idx+1} - ${t.nome}`;
         }).join(', ');
-        
+
         if(destinos) {
           const url = `https://www.google.com/maps/dir/${encodeURIComponent(enderecoPartida)}/${encodeURIComponent(destinos)}`;
           window.open(url, '_blank');
@@ -2485,7 +2962,7 @@
           showToast('Nenhum destino na rota!', 'warning');
         }
       });
-      
+
       document.querySelectorAll('.rota-numero').forEach(el => {
         el.addEventListener('dblclick', function() {
           const taskId = parseInt(this.dataset.id);
@@ -2497,12 +2974,10 @@
     }
   }
 
-  // Abrir endereço individual no Google Maps
   window.abrirEnderecoRota = function(taskId) {
     const task = tasks.find(t => t.id === taskId);
     if(!task) return;
     const nome = task.nome;
-    // Pergunta o endereço do cliente
     const endereco = prompt(`Digite o endereço de ${nome} para abrir no Google Maps:`, task.endereco || '');
     if(endereco !== null && endereco.trim()) {
       task.endereco = endereco.trim();
@@ -2511,18 +2986,18 @@
     }
   };
 
-  // ---- GERAR PDF ROTA ----
+  // ---- GERAR PDF ROTA (mantido) ----
   function gerarPDFRota() {
     let pedidosRota = tasks.filter(t => t.rotaEntrega === true && !t.concluido);
     pedidosRota.sort((a,b) => (a.rotaOrdem || 0) - (b.rotaOrdem || 0));
     if(pedidosRota.length === 0) { showToast('Nenhum pedido na rota de entrega!', 'warning'); return; }
-    
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     let y = 20;
     const hoje = new Date().toLocaleDateString('pt-BR');
     const valorTotal = pedidosRota.reduce((s, p) => s + converterParaNumero(p.valor), 0);
-    
+
     doc.setFontSize(20);
     doc.text("ROTA DE ENTREGA", 105, y, { align: 'center' });
     y += 10;
@@ -2532,7 +3007,7 @@
     doc.setFontSize(13);
     doc.text(`Total: ${pedidosRota.length} entregas - Valor total: R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, y);
     y += 12;
-    
+
     doc.setFontSize(11);
     pedidosRota.forEach((p, i) => {
       if(y > 270) { doc.addPage(); y = 20; }
@@ -2541,49 +3016,49 @@
       doc.text(`${i+1} (${letra}) ${p.nome} - R$ ${converterParaNumero(p.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})} - ${status}`, 20, y);
       y += 7;
     });
-    
+
     doc.save(`rota_entrega_${new Date().toISOString().split('T')[0]}.pdf`);
     showToast('📄 PDF da rota gerado!', 'success');
   }
 
-  // ---- RENDER RECEITA (com TOTAL) ----
+  // ---- RENDER RECEITA (atualizado com meta mensal) ----
   function renderReceita() {
     const dataInicio = document.getElementById("dataInicio")?.value;
     const dataFim = document.getElementById("dataFim")?.value;
     const tipoFiltro = document.getElementById("tipoFiltro")?.value;
-    
+
     let projecaoFiltrada = [];
     let pagosFiltrados = [];
     let despesasFiltradas = [...despesas];
-    
+
     const pedidosEmAndamento = tasks.filter(t => !t.concluido);
     pedidosEmAndamento.forEach(t => {
       projecaoFiltrada.push({
-        id: t.id, 
-        nome: t.nome, 
+        id: t.id,
+        nome: t.nome,
         valor: converterParaNumero(t.valor),
         dataPagamento: t.dataEntrega || t.dataLancamento,
-        descricao: t.descricao, 
+        descricao: t.descricao,
         status_pagamento: t.pagamento,
         status_pedido: t.status
       });
     });
-    
+
     const concluidosNaoPagos = tasks.filter(t => t.concluido && t.pagamento === "aguardando");
     concluidosNaoPagos.forEach(t => {
       projecaoFiltrada.push({
-        id: t.id, 
-        nome: t.nome, 
+        id: t.id,
+        nome: t.nome,
         valor: converterParaNumero(t.valor),
         dataPagamento: t.dataConclusao || t.dataLancamento,
-        descricao: t.descricao, 
+        descricao: t.descricao,
         status_pagamento: t.pagamento,
         status_pedido: 'concluido_aguardando'
       });
     });
-    
+
     pagosFiltrados = [...historicoReceita].map(r => ({ ...r, valor: converterParaNumero(r.valor) }));
-    
+
     if(dataInicio && dataFim) {
       const inicio = new Date(dataInicio), fim = new Date(dataFim); fim.setHours(23,59,59);
       projecaoFiltrada = projecaoFiltrada.filter(r => { const d = new Date(r.dataPagamento); return d >= inicio && d <= fim; });
@@ -2608,7 +3083,7 @@
       pagosFiltrados = pagosFiltrados.filter(r => { const d = new Date(r.dataPagamento); return d >= inicioAno && d <= fimAno; });
       despesasFiltradas = despesasFiltradas.filter(d => { const dt = new Date(d.data); return dt >= inicioAno && dt <= fimAno; });
     }
-    
+
     const vendasRapidasFiltradas = vendasRapidas.filter(v => {
       if(dataInicio && dataFim) {
         const d = new Date(v.data);
@@ -2617,29 +3092,31 @@
       }
       return true;
     });
-    
+
     const projecaoAguardando = projecaoFiltrada.filter(r => r.status_pagamento === "aguardando");
     const projecaoPago = projecaoFiltrada.filter(r => r.status_pagamento === "pago");
-    
+
     const totalProjecaoAguardando = projecaoAguardando.reduce((s, r) => s + r.valor, 0);
     const totalProjecaoPago = projecaoPago.reduce((s, r) => s + r.valor, 0);
     const totalVendasRapidas = vendasRapidasFiltradas.reduce((s, v) => s + v.valor, 0);
     const totalRecebido = pagosFiltrados.reduce((s, r) => s + r.valor, 0) + totalVendasRapidas;
-    
+
     const totalDespesas = despesasFiltradas.reduce((s, d) => s + d.valor, 0);
     const lucroLiquido = totalRecebido - totalDespesas;
     const percentualLucro = totalRecebido > 0 ? (lucroLiquido / totalRecebido) * 100 : 0;
     const percentualDespesa = totalRecebido > 0 ? (totalDespesas / totalRecebido) * 100 : 0;
-    
-    // TOTAL = Aguardando + Recebido (agora com destaque)
+
     const totalGeral = totalProjecaoAguardando + totalRecebido;
-    
+
     const mesesPagos = {};
     pagosFiltrados.forEach(r => { const d = new Date(r.dataPagamento); const key = `${d.getMonth()+1}/${d.getFullYear()}`; mesesPagos[key] = (mesesPagos[key]||0) + r.valor; });
     vendasRapidasFiltradas.forEach(v => { const d = new Date(v.data); const key = `${d.getMonth()+1}/${d.getFullYear()}`; mesesPagos[key] = (mesesPagos[key]||0) + v.valor; });
     const mesesDespesas = {};
     despesasFiltradas.forEach(d => { const dt = new Date(d.data); const key = `${dt.getMonth()+1}/${dt.getFullYear()}`; mesesDespesas[key] = (mesesDespesas[key]||0) + d.valor; });
-    
+
+    // Meta mensal
+    const progressoMeta = Math.min((totalRecebido / metaMensal) * 100, 100);
+
     const html = `
       <div class="receita-container">
         <div class="cards-receita-horizontal">
@@ -2659,12 +3136,28 @@
             <small style="color:rgba(255,255,255,0.8);">${projecaoAguardando.length + pagosFiltrados.length + vendasRapidasFiltradas.length} itens</small>
           </div>
         </div>
-        
+
         <div class="cards-receita-horizontal" style="margin-top:-0.5rem;">
           <div class="card-receita-mini"><h4>📉 DESPESAS</h4><div class="valor valor-despesa">R$ ${totalDespesas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div></div>
           <div class="card-receita-mini"><h4>💰 LUCRO</h4><div class="valor valor-lucro">R$ ${lucroLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><small>${percentualLucro.toFixed(1)}% margem</small></div>
         </div>
-        
+
+        <div class="meta-progresso">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span><strong>🎯 Meta Mensal</strong> R$ ${metaMensal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+            <span>${progressoMeta.toFixed(1)}%</span>
+          </div>
+          <div class="barra-container">
+            <div class="barra" style="width:${progressoMeta}%;">
+              ${progressoMeta > 15 ? `R$ ${totalRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : ''}
+            </div>
+          </div>
+          <div class="info">
+            <span>Recebido: R$ ${totalRecebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+            <span>Faltam: R$ ${Math.max(0, metaMensal - totalRecebido).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+          </div>
+        </div>
+
         <div class="filtros-receita">
           <div class="filtro-group">
             <label>Período:</label>
@@ -2683,7 +3176,7 @@
           <button class="btn-filtrar" onclick="window.aplicarFiltroReceita()">Filtrar</button>
           <button class="btn-add-despesa" id="openAddDespesaBtnReceita"><i class="fas fa-plus"></i> Nova Despesa</button>
         </div>
-        
+
         <div class="chart-row">
           <div class="chart-box"><h4>Projeção vs Recebido</h4><canvas id="pizzaChart"></canvas></div>
           <div class="chart-box"><h4>Evolução Mensal</h4><canvas id="receitaChart"></canvas></div>
@@ -2694,21 +3187,21 @@
         </div>
       </div>
     `;
-    
+
     const container = document.getElementById("receitaContainer");
     if(container) {
       container.innerHTML = html;
-      
+
       const tipoSelect = document.getElementById("tipoFiltro");
       const periodoPersonalizado = document.getElementById("periodoPersonalizado");
       tipoSelect?.addEventListener("change", () => {
         periodoPersonalizado.style.display = tipoSelect.value === "personalizado" ? "flex" : "none";
       });
-      
+
       document.getElementById("openAddDespesaBtnReceita")?.addEventListener("click", () => {
         document.getElementById("despesaModal").style.display = "flex";
       });
-      
+
       const pizzaCtx = document.getElementById('pizzaChart')?.getContext('2d');
       if(pizzaCtx) {
         if(pizzaChart) pizzaChart.destroy();
@@ -2727,7 +3220,7 @@
           options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
         });
       }
-      
+
       const barCtx = document.getElementById('receitaChart')?.getContext('2d');
       if(barCtx) {
         if(receitaChart) receitaChart.destroy();
@@ -2744,7 +3237,7 @@
           options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ticks: { callback: v => `R$ ${v.toFixed(0)}` } } } }
         });
       }
-      
+
       const lucroCtx = document.getElementById('lucroChart')?.getContext('2d');
       if(lucroCtx) {
         if(lucroChart) lucroChart.destroy();
@@ -2761,7 +3254,7 @@
           options: { responsive: true, plugins: { legend: { position: 'top' } } }
         });
       }
-      
+
       const distCtx = document.getElementById('distribuicaoChart')?.getContext('2d');
       if(distCtx) {
         new Chart(distCtx, {
@@ -2776,7 +3269,7 @@
     }
   }
 
-  // ---- RENDER CLIENTES ----
+  // ---- RENDER CLIENTES (mantido) ----
   function renderClientes() {
     const searchCliente = document.getElementById("searchCliente")?.value || "";
     let clientesFiltrados = [...clientesCadastrados];
@@ -2784,7 +3277,7 @@
       clientesFiltrados = clientesFiltrados.filter(c => c.nome.toLowerCase().includes(searchCliente.toLowerCase()));
     }
     clientesFiltrados.sort((a,b) => b.totalPedidos - a.totalPedidos);
-    
+
     const html = `
       <div class="clientes-container">
         <div class="clientes-header">
@@ -2803,7 +3296,7 @@
           <button class="btn-filtrar" id="btnLimparBuscaCliente" style="background:#ef4444;">Limpar</button>
         </div>
         <div class="clientes-lista">
-          ${clientesFiltrados.length === 0 ? '<div style="text-align:center;padding:2rem;">Nenhum cliente</div>' : 
+          ${clientesFiltrados.length === 0 ? '<div style="text-align:center;padding:2rem;">Nenhum cliente</div>' :
             clientesFiltrados.map(c => `
               <div class="cliente-item ${c.totalPedidos > 1 ? 'cliente-recorrente' : ''}">
                 <div>
@@ -2823,14 +3316,14 @@
         </div>
       </div>
     `;
-    
+
     const container = document.getElementById("clientesContainer");
     if(container) {
       container.innerHTML = html;
-      
+
       const searchInput = document.getElementById("searchCliente");
       const suggestionsDiv = document.getElementById("clienteSuggestions");
-      
+
       function showClienteSuggestions() {
         const valor = searchInput.value.toLowerCase().trim();
         if(!valor || valor.length < 1) { suggestionsDiv.style.display = "none"; return; }
@@ -2851,7 +3344,7 @@
           });
         });
       }
-      
+
       function renderClientesComFiltro(filtro) {
         let filtrados = [...clientesCadastrados];
         if(filtro && filtro.trim()) filtrados = filtrados.filter(c => c.nome.toLowerCase().includes(filtro.toLowerCase()));
@@ -2876,7 +3369,7 @@
             `).join('');
         }
       }
-      
+
       if(searchInput) {
         searchInput.addEventListener("input", showClienteSuggestions);
         searchInput.addEventListener("keypress", (e) => { if(e.key === "Enter") { suggestionsDiv.style.display = "none"; renderClientesComFiltro(searchInput.value); } });
@@ -2897,7 +3390,7 @@
     showToast(`🔍 Mostrando pedidos de: ${nome}`, 'info');
   }
 
-  // ---- RENDER DESPESAS ----
+  // ---- RENDER DESPESAS (mantido) ----
   function renderDespesas() {
     const totalDespesas = despesas.reduce((s, d) => s + d.valor, 0);
     const html = `
@@ -2942,10 +3435,10 @@
     }
   };
 
-  // ---- RENDER VENDA RÁPIDA ----
+  // ---- RENDER VENDA RÁPIDA (mantido) ----
   function renderVendaRapida() {
     const totalVendas = vendasRapidas.reduce((s, v) => s + v.valor, 0);
-    
+
     const html = `
       <div class="vendrapida-container">
         <div class="vendrapida-header">
@@ -2962,7 +3455,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="vendrapida-form">
           <div class="form-group">
             <label><i class="fas fa-tag"></i> Descrição (opcional)</label>
@@ -2976,7 +3469,7 @@
             <i class="fas fa-bolt"></i> ADICIONAR VENDA
           </button>
         </div>
-        
+
         <div class="vendrapida-historico">
           <h3 style="margin-bottom:1rem;"><i class="fas fa-history"></i> Histórico de Vendas Rápidas</h3>
           ${vendasRapidas.length === 0 ? '<div style="text-align:center;padding:2rem;background:var(--bg-page);border-radius:1rem;">Nenhuma venda rápida registrada ainda.</div>' : `
@@ -3015,21 +3508,21 @@
         </div>
       </div>
     `;
-    
+
     const container = document.getElementById("vendrapidaContainer");
     if(container) {
       container.innerHTML = html;
-      
+
       document.getElementById("btnAddVendaRapida")?.addEventListener("click", function() {
         const descricao = document.getElementById("vendaDescricao").value.trim();
         const valorStr = document.getElementById("vendaValor").value.trim();
         const valorNum = converterParaNumero(valorStr);
-        
+
         if(!valorStr || valorNum <= 0) {
           showToast('Digite um valor válido maior que zero!', 'error');
           return;
         }
-        
+
         if(adicionarVendaRapida(descricao, valorNum)) {
           document.getElementById("vendaDescricao").value = "";
           document.getElementById("vendaValor").value = "";
@@ -3038,7 +3531,7 @@
           if(showingReceita) renderReceita();
         }
       });
-      
+
       document.getElementById("vendaValor")?.addEventListener("keypress", function(e) {
         if(e.key === "Enter") {
           document.getElementById("btnAddVendaRapida").click();
@@ -3057,7 +3550,123 @@
     }
   };
 
-  // ---- FILTROS ----
+  // ---- RENDER DASHBOARD ----
+  function renderDashboard() {
+    const totalPedidos = tasks.length;
+    const ativos = tasks.filter(t => !t.concluido).length;
+    const concluidos = tasks.filter(t => t.concluido).length;
+    const urgentes = tasks.filter(t => t.urgente && !t.concluido).length;
+    const emRota = tasks.filter(t => t.rotaEntrega && !t.concluido).length;
+
+    const hoje = new Date().toISOString().split('T')[0];
+    const pedidosHoje = tasks.filter(t => t.dataLancamento === hoje).length;
+
+    // Ticket médio
+    const valores = tasks.map(t => converterParaNumero(t.valor));
+    const totalValor = valores.reduce((a, b) => a + b, 0);
+    const ticketMedio = totalValor > 0 ? totalValor / tasks.length : 0;
+
+    // Tempo médio (para concluídos)
+    let tempoMedio = 0;
+    const concluidosComData = tasks.filter(t => t.concluido && t.dataConclusao && t.dataLancamento);
+    if (concluidosComData.length > 0) {
+      const totalDias = concluidosComData.reduce((acc, t) => {
+        const inicio = new Date(t.dataLancamento);
+        const fim = new Date(t.dataConclusao);
+        const diff = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24));
+        return acc + (diff > 0 ? diff : 1);
+      }, 0);
+      tempoMedio = totalDias / concluidosComData.length;
+    }
+
+    const html = `
+      <div class="dashboard-container">
+        <div class="dashboard-header">
+          <h2><i class="fas fa-chart-pie"></i> Dashboard</h2>
+          <span style="font-size:0.8rem;color:var(--text-secondary);">Atualizado: ${new Date().toLocaleString('pt-BR')}</span>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card-kpi">
+            <h3>📦 Total de Pedidos</h3>
+            <div class="valor">${totalPedidos}</div>
+            <div class="sub">${ativos} ativos • ${concluidos} concluídos</div>
+          </div>
+          <div class="card-kpi">
+            <h3>🚨 Urgentes</h3>
+            <div class="valor" style="color:#ef4444;">${urgentes}</div>
+            <div class="sub">${urgentes > 0 ? '⚠️ Atenção!' : '✅ Nenhum urgente'}</div>
+          </div>
+          <div class="card-kpi">
+            <h3>🚚 Em Rota</h3>
+            <div class="valor" style="color:var(--accent);">${emRota}</div>
+            <div class="sub">${emRota > 0 ? 'Em entrega hoje' : 'Nenhum na rota'}</div>
+          </div>
+          <div class="card-kpi">
+            <h3>📅 Pedidos Hoje</h3>
+            <div class="valor">${pedidosHoje}</div>
+            <div class="sub">${pedidosHoje > 0 ? 'Novos pedidos' : 'Nenhum novo hoje'}</div>
+          </div>
+          <div class="card-kpi">
+            <h3>💰 Ticket Médio</h3>
+            <div class="valor" style="color:#10b981;">R$ ${ticketMedio.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+            <div class="sub">${tasks.length} pedidos</div>
+          </div>
+          <div class="card-kpi">
+            <h3>⏱️ Tempo Médio</h3>
+            <div class="valor" style="color:#8b5cf6;">${tempoMedio.toFixed(1)} dias</div>
+            <div class="sub">${concluidosComData.length} concluídos</div>
+          </div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-box"><h4>Status dos Pedidos</h4><canvas id="statusChart"></canvas></div>
+          <div class="chart-box"><h4>Pagamentos</h4><canvas id="pagamentoChart"></canvas></div>
+        </div>
+      </div>
+    `;
+
+    const container = document.getElementById("dashboardContainer");
+    if (container) {
+      container.innerHTML = html;
+
+      // Gráfico de Status
+      const statusCtx = document.getElementById('statusChart')?.getContext('2d');
+      if (statusCtx) {
+        const statusCounts = {
+          aguardando: tasks.filter(t => t.status === 'aguardando' && !t.concluido).length,
+          producao: tasks.filter(t => t.status === 'producao' && !t.concluido).length,
+          retirada: tasks.filter(t => t.status === 'retirada' && !t.concluido).length,
+          concluido: tasks.filter(t => t.concluido).length
+        };
+        new Chart(statusCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Aguardando', 'Produção', 'Retirada', 'Concluído'],
+            datasets: [{ data: [statusCounts.aguardando, statusCounts.producao, statusCounts.retirada, statusCounts.concluido], backgroundColor: ['#f59e0b', '#8b5cf6', '#10b981', '#22c55e'] }]
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+      }
+
+      // Gráfico de Pagamentos
+      const pagamentoCtx = document.getElementById('pagamentoChart')?.getContext('2d');
+      if (pagamentoCtx) {
+        const pagos = tasks.filter(t => t.pagamento === 'pago').length;
+        const aguardando = tasks.filter(t => t.pagamento === 'aguardando').length;
+        new Chart(pagamentoCtx, {
+          type: 'pie',
+          data: {
+            labels: ['Pago', 'Aguardando'],
+            datasets: [{ data: [pagos, aguardando], backgroundColor: ['#10b981', '#f59e0b'] }]
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+      }
+    }
+  }
+
+  // ---- FILTROS (mantido) ----
   function setStatusFilter(filter) {
     currentStatusFilter = filter;
     document.querySelectorAll('#statusFilterBar .filter-btn').forEach(b => {
@@ -3089,12 +3698,12 @@
 
   function aplicarFiltroReceita() { renderReceita(); }
 
-  // ---- MODOS DE VISUALIZAÇÃO ----
+  // ---- MODOS DE VISUALIZAÇÃO (atualizado com Dashboard) ----
   function setViewAllMode(enable) {
     viewAllMode = enable;
     showingConcluido = false; showingReceita = false; showingClientes = false;
     showingRota = false; showingDespesa = false; showingStatusAgrupado = false;
-    showingVendaRapida = false;
+    showingVendaRapida = false; showingDashboard = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('viewAllBtn')?.style.setProperty('background', 'var(--accent-hover)');
@@ -3107,6 +3716,7 @@
     document.getElementById("clientesContainer").style.display = "none";
     document.getElementById("rotaContainer").style.display = "none";
     document.getElementById("vendrapidaContainer").style.display = "none";
+    document.getElementById("dashboardContainer").style.display = "none";
     document.getElementById("actionsRow").style.display = "flex";
     renderTasks();
   }
@@ -3115,7 +3725,7 @@
     showingConcluido = enable;
     viewAllMode = false; showingReceita = false; showingClientes = false;
     showingRota = false; showingDespesa = false; showingStatusAgrupado = false;
-    showingVendaRapida = false;
+    showingVendaRapida = false; showingDashboard = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('concluidoTab')?.classList.add('active');
@@ -3127,6 +3737,7 @@
     document.getElementById("clientesContainer").style.display = "none";
     document.getElementById("rotaContainer").style.display = "none";
     document.getElementById("vendrapidaContainer").style.display = "none";
+    document.getElementById("dashboardContainer").style.display = "none";
     document.getElementById("actionsRow").style.display = "flex";
     renderTasks();
   }
@@ -3135,7 +3746,7 @@
     showingReceita = enable;
     viewAllMode = false; showingConcluido = false; showingClientes = false;
     showingRota = false; showingDespesa = false; showingStatusAgrupado = false;
-    showingVendaRapida = false;
+    showingVendaRapida = false; showingDashboard = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('receitaTab')?.classList.add('active');
@@ -3144,6 +3755,7 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
       renderReceita();
     } else {
       document.getElementById('receitaTab')?.classList.remove('active');
@@ -3152,6 +3764,7 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
     }
     document.getElementById("actionsRow").style.display = "flex";
   }
@@ -3160,7 +3773,7 @@
     showingClientes = enable;
     viewAllMode = false; showingConcluido = false; showingReceita = false;
     showingRota = false; showingDespesa = false; showingStatusAgrupado = false;
-    showingVendaRapida = false;
+    showingVendaRapida = false; showingDashboard = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('clientesTab')?.classList.add('active');
@@ -3169,6 +3782,7 @@
       document.getElementById("clientesContainer").style.display = "block";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
       renderClientes();
     } else {
       document.getElementById('clientesTab')?.classList.remove('active');
@@ -3177,6 +3791,7 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
     }
     document.getElementById("actionsRow").style.display = "flex";
   }
@@ -3185,7 +3800,7 @@
     showingRota = enable;
     viewAllMode = false; showingConcluido = false; showingReceita = false;
     showingClientes = false; showingDespesa = false; showingStatusAgrupado = false;
-    showingVendaRapida = false;
+    showingVendaRapida = false; showingDashboard = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('rotaTab')?.classList.add('active');
@@ -3194,6 +3809,7 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "block";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
       renderRota();
     } else {
       document.getElementById('rotaTab')?.classList.remove('active');
@@ -3202,6 +3818,7 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
     }
     document.getElementById("actionsRow").style.display = "flex";
   }
@@ -3210,7 +3827,7 @@
     showingDespesa = enable;
     viewAllMode = false; showingConcluido = false; showingReceita = false;
     showingClientes = false; showingRota = false; showingStatusAgrupado = false;
-    showingVendaRapida = false;
+    showingVendaRapida = false; showingDashboard = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('despesaTab')?.classList.add('active');
@@ -3219,6 +3836,7 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
       renderDespesas();
     } else {
       document.getElementById('despesaTab')?.classList.remove('active');
@@ -3227,6 +3845,7 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
     }
     document.getElementById("actionsRow").style.display = "flex";
   }
@@ -3235,7 +3854,7 @@
     showingStatusAgrupado = enable;
     viewAllMode = false; showingConcluido = false; showingReceita = false;
     showingClientes = false; showingRota = false; showingDespesa = false;
-    showingVendaRapida = false;
+    showingVendaRapida = false; showingDashboard = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('statusAgrupadoTab')?.classList.add('active');
@@ -3244,6 +3863,7 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
     } else {
       document.getElementById('statusAgrupadoTab')?.classList.remove('active');
     }
@@ -3255,7 +3875,7 @@
     showingVendaRapida = enable;
     viewAllMode = false; showingConcluido = false; showingReceita = false;
     showingClientes = false; showingRota = false; showingDespesa = false;
-    showingStatusAgrupado = false;
+    showingStatusAgrupado = false; showingDashboard = false;
     if(enable) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('vendrapidaTab')?.classList.add('active');
@@ -3264,6 +3884,7 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "block";
+      document.getElementById("dashboardContainer").style.display = "none";
       renderVendaRapida();
     } else {
       document.getElementById('vendrapidaTab')?.classList.remove('active');
@@ -3272,16 +3893,44 @@
       document.getElementById("clientesContainer").style.display = "none";
       document.getElementById("rotaContainer").style.display = "none";
       document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
     }
     document.getElementById("actionsRow").style.display = "flex";
   }
 
-  // ---- ATUALIZAR ABAS SEMANAS (com drag) ----
+  function setDashboardMode(enable) {
+    showingDashboard = enable;
+    viewAllMode = false; showingConcluido = false; showingReceita = false;
+    showingClientes = false; showingRota = false; showingDespesa = false;
+    showingStatusAgrupado = false; showingVendaRapida = false;
+    if(enable) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('dashboardTab')?.classList.add('active');
+      document.getElementById("tasksContainer").style.display = "none";
+      document.getElementById("receitaContainer").style.display = "none";
+      document.getElementById("clientesContainer").style.display = "none";
+      document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "block";
+      renderDashboard();
+    } else {
+      document.getElementById('dashboardTab')?.classList.remove('active');
+      document.getElementById("tasksContainer").style.display = "flex";
+      document.getElementById("receitaContainer").style.display = "none";
+      document.getElementById("clientesContainer").style.display = "none";
+      document.getElementById("rotaContainer").style.display = "none";
+      document.getElementById("vendrapidaContainer").style.display = "none";
+      document.getElementById("dashboardContainer").style.display = "none";
+    }
+    document.getElementById("actionsRow").style.display = "flex";
+  }
+
+  // ---- ATUALIZAR ABAS SEMANAS (com Dashboard) ----
   function atualizarAbasSemanas() {
     const tabContainer = document.getElementById("tabContainer");
     let html = '';
     semanasOrdenadas.forEach((semana, idx) => {
-      const isActive = (!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida && currentWeek === semana);
+      const isActive = (!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida && !showingDashboard && currentWeek === semana);
       html += `
         <div class="tab-wrapper" data-index="${idx}" data-semana="${semana}">
           <button class="tab-btn ${isActive ? 'active' : ''}" data-week="${semana}" data-week-num="${semana}">📅 ${getSemanaNome(semana)}</button>
@@ -3293,6 +3942,7 @@
     });
     html += `
       <button class="btn-add-semana" id="addSemanaBtn"><i class="fas fa-plus"></i> Semana</button>
+      <button class="tab-btn dashboard-btn" id="dashboardTab" ${showingDashboard ? 'active' : ''}><i class="fas fa-chart-pie"></i> Dashboard</button>
       <button class="tab-btn status-agrupado-btn" id="statusAgrupadoTab" ${showingStatusAgrupado ? 'active' : ''}><i class="fas fa-layer-group"></i> Aguard+Prod+Ret</button>
       <button class="tab-btn concluido-btn" id="concluidoTab" ${showingConcluido ? 'active' : ''}>✅ Concluído</button>
       <button class="tab-btn rota-btn" id="rotaTab" ${showingRota ? 'active' : ''}>🚚 ROTA</button>
@@ -3303,10 +3953,9 @@
       <button class="view-all-btn" id="viewAllBtn"><i class="fas fa-list-ul"></i> Todos</button>
     `;
     tabContainer.innerHTML = html;
-    
-    // Inicializar drag das abas
+
     initTabDrag();
-    
+
     document.querySelectorAll(".tab-btn[data-week]").forEach(btn => {
       btn.addEventListener("click", (e) => {
         if(viewAllMode) setViewAllMode(false);
@@ -3317,38 +3966,51 @@
         if(showingDespesa) setDespesaMode(false);
         if(showingStatusAgrupado) setStatusAgrupadoMode(false);
         if(showingVendaRapida) setVendaRapidaMode(false);
+        if(showingDashboard) setDashboardMode(false);
         document.querySelectorAll(".tab-btn[data-week]").forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentWeek = parseInt(btn.dataset.week);
         viewAllMode = false; showingConcluido = false; showingReceita = false;
-        showingClientes = false; showingRota = false; showingDespesa = false; 
-        showingStatusAgrupado = false; showingVendaRapida = false;
+        showingClientes = false; showingRota = false; showingDespesa = false;
+        showingStatusAgrupado = false; showingVendaRapida = false; showingDashboard = false;
         document.getElementById("tasksContainer").style.display = "flex";
         document.getElementById("receitaContainer").style.display = "none";
         document.getElementById("clientesContainer").style.display = "none";
         document.getElementById("rotaContainer").style.display = "none";
         document.getElementById("vendrapidaContainer").style.display = "none";
+        document.getElementById("dashboardContainer").style.display = "none";
         document.getElementById("actionsRow").style.display = "flex";
         renderTasks();
       });
       btn.addEventListener('dragover', (e) => {
         e.preventDefault();
-        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida) btn.classList.add('drag-over');
+        if(!viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida && !showingDashboard) btn.classList.add('drag-over');
       });
       btn.addEventListener('dragleave', () => btn.classList.remove('drag-over'));
       btn.addEventListener('drop', (e) => {
         e.preventDefault();
         btn.classList.remove('drag-over');
         const targetWeek = parseInt(btn.dataset.week);
-        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida) {
+        if(draggedTaskId && targetWeek && !viewAllMode && !showingConcluido && !showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingStatusAgrupado && !showingVendaRapida && !showingDashboard) {
           moveTaskToWeek(draggedTaskId, targetWeek);
           draggedTaskId = null;
         }
       });
     });
-    
+
     document.getElementById("addSemanaBtn")?.addEventListener("click", adicionarSemana);
-    
+
+    document.getElementById("dashboardTab")?.addEventListener("click", () => {
+      if(viewAllMode) setViewAllMode(false);
+      if(showingConcluido) setConcluidoMode(false);
+      if(showingReceita) setReceitaMode(false);
+      if(showingClientes) setClientesMode(false);
+      if(showingRota) setRotaMode(false);
+      if(showingDespesa) setDespesaMode(false);
+      if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      if(showingVendaRapida) setVendaRapidaMode(false);
+      setDashboardMode(true);
+    });
     document.getElementById("statusAgrupadoTab")?.addEventListener("click", () => {
       if(viewAllMode) setViewAllMode(false);
       if(showingConcluido) setConcluidoMode(false);
@@ -3357,6 +4019,7 @@
       if(showingRota) setRotaMode(false);
       if(showingDespesa) setDespesaMode(false);
       if(showingVendaRapida) setVendaRapidaMode(false);
+      if(showingDashboard) setDashboardMode(false);
       setStatusAgrupadoMode(true);
     });
     document.getElementById("concluidoTab")?.addEventListener("click", () => {
@@ -3367,6 +4030,7 @@
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
       if(showingVendaRapida) setVendaRapidaMode(false);
+      if(showingDashboard) setDashboardMode(false);
       setConcluidoMode(true);
     });
     document.getElementById("vendrapidaTab")?.addEventListener("click", () => {
@@ -3377,6 +4041,7 @@
       if(showingRota) setRotaMode(false);
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
+      if(showingDashboard) setDashboardMode(false);
       setVendaRapidaMode(true);
     });
     document.getElementById("receitaTab")?.addEventListener("click", () => {
@@ -3387,6 +4052,7 @@
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
       if(showingVendaRapida) setVendaRapidaMode(false);
+      if(showingDashboard) setDashboardMode(false);
       setReceitaMode(true);
     });
     document.getElementById("clientesTab")?.addEventListener("click", () => {
@@ -3397,6 +4063,7 @@
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
       if(showingVendaRapida) setVendaRapidaMode(false);
+      if(showingDashboard) setDashboardMode(false);
       setClientesMode(true);
     });
     document.getElementById("rotaTab")?.addEventListener("click", () => {
@@ -3407,6 +4074,7 @@
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
       if(showingVendaRapida) setVendaRapidaMode(false);
+      if(showingDashboard) setDashboardMode(false);
       setRotaMode(true);
     });
     document.getElementById("despesaTab")?.addEventListener("click", () => {
@@ -3417,6 +4085,7 @@
       if(showingRota) setRotaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
       if(showingVendaRapida) setVendaRapidaMode(false);
+      if(showingDashboard) setDashboardMode(false);
       setDespesaMode(true);
     });
     document.getElementById("viewAllBtn")?.addEventListener("click", () => {
@@ -3427,6 +4096,7 @@
       if(showingDespesa) setDespesaMode(false);
       if(showingStatusAgrupado) setStatusAgrupadoMode(false);
       if(showingVendaRapida) setVendaRapidaMode(false);
+      if(showingDashboard) setDashboardMode(false);
       setViewAllMode(true);
     });
   }
@@ -3445,6 +4115,8 @@
   window.editTaskModal = (id) => { const task = tasks.find(t => t.id === id); if(task) openModalForEdit(task); };
   window.filtrarPedidosCliente = filtrarPedidosCliente;
   window.aplicarFiltroReceita = aplicarFiltroReceita;
+  window.exibirHistorico = exibirHistorico;
+  window.removerTag = removerTag;
 
   // ---- LOAD DATA ----
   function loadData() {
@@ -3461,18 +4133,21 @@
         if(t.status === undefined) t.status = "aguardando";
         if(t.rotaOrdem === undefined) t.rotaOrdem = 0;
         if(t.endereco === undefined) t.endereco = "";
+        if(t.tags === undefined) t.tags = [];
+        if(t.fotos === undefined) t.fotos = [];
+        if(t.observacoes === undefined) t.observacoes = '';
       });
     } else {
       const hoje = new Date().toISOString().split('T')[0];
       const ontem = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       tasks = [
-        { id: 1, semana: 1, nome: "Ana Souza", telefone: "11999991111", descricao: "Manutenção PC", dataEntrega: "2026-06-15", valor: "250,00", status: "aguardando", ordem: 0, urgente: true, dataLancamento: ontem, pagamento: "aguardando", rotaEntrega: false, concluido: false, rotaOrdem: 0, endereco: "Rua das Flores, 123 - São Paulo" },
-        { id: 2, semana: 1, nome: "Carlos Lima", telefone: "21988887777", descricao: "Formatação", dataEntrega: "2026-06-18", valor: "120,00", status: "producao", ordem: 1, urgente: false, dataLancamento: hoje, pagamento: "pago", rotaEntrega: true, concluido: false, rotaOrdem: 0, endereco: "Av. Brasil, 456 - Rio de Janeiro" },
-        { id: 3, semana: 2, nome: "Mariana Rocha", telefone: "31977776666", descricao: "Troca de Tela", dataEntrega: "2026-06-22", valor: "450,00", status: "retirada", ordem: 0, urgente: true, dataLancamento: hoje, pagamento: "aguardando", rotaEntrega: false, concluido: false, rotaOrdem: 0, endereco: "Praça da Sé, 789 - Belo Horizonte" }
+        { id: 1, semana: 1, nome: "Ana Souza", telefone: "11999991111", descricao: "Manutenção PC", dataEntrega: "2026-06-15", valor: "250,00", status: "aguardando", ordem: 0, urgente: true, dataLancamento: ontem, pagamento: "aguardando", rotaEntrega: false, concluido: false, rotaOrdem: 0, endereco: "Rua das Flores, 123 - São Paulo", tags: ["manutenção"], observacoes: "", fotos: [] },
+        { id: 2, semana: 1, nome: "Carlos Lima", telefone: "21988887777", descricao: "Formatação", dataEntrega: "2026-06-18", valor: "120,00", status: "producao", ordem: 1, urgente: false, dataLancamento: hoje, pagamento: "pago", rotaEntrega: true, concluido: false, rotaOrdem: 0, endereco: "Av. Brasil, 456 - Rio de Janeiro", tags: ["formatação"], observacoes: "", fotos: [] },
+        { id: 3, semana: 2, nome: "Mariana Rocha", telefone: "31977776666", descricao: "Troca de Tela", dataEntrega: "2026-06-22", valor: "450,00", status: "retirada", ordem: 0, urgente: true, dataLancamento: hoje, pagamento: "aguardando", rotaEntrega: false, concluido: false, rotaOrdem: 0, endereco: "Praça da Sé, 789 - Belo Horizonte", tags: ["tela", "urgente"], observacoes: "Cliente precisa até sexta", fotos: [] }
       ];
       nextId = 4;
     }
-    
+
     const storedSemanas = localStorage.getItem("flowtasks_semanas_ordem");
     if(storedSemanas) {
       semanasOrdenadas = JSON.parse(storedSemanas);
@@ -3482,10 +4157,10 @@
       if(semanasExistentes.length > 0) semanasOrdenadas = semanasExistentes;
       renomearSemanasPorPosicao();
     }
-    
+
     loadDespesas();
     loadVendasRapidas();
-    
+
     const storedHistorico = localStorage.getItem("flowtasks_historico_receita");
     if(storedHistorico) {
       historicoReceita = JSON.parse(storedHistorico);
@@ -3511,7 +4186,7 @@
       });
       saveHistoricoReceita();
     }
-    
+
     const storedClientes = localStorage.getItem("flowtasks_clientes");
     if(storedClientes) {
       clientesCadastrados = JSON.parse(storedClientes);
@@ -3529,26 +4204,28 @@
       clientesCadastrados = Array.from(map.values());
       saveClientes();
     }
-    
+
     reorderAllByWeek();
     reordenarPorDataEntrega();
     atualizarOrdemRota();
     atualizarContadores();
   }
 
-  // ---- MODAL TASK ----
+  // ---- MODAL TASK (atualizado com tags, fotos, observações) ----
   const modal = document.getElementById("taskModal");
   const posicaoModal = document.getElementById("posicaoModal");
   const posicaoRotaModal = document.getElementById("posicaoRotaModal");
   const pdfModal = document.getElementById("pdfModal");
   const despesaModal = document.getElementById("despesaModal");
-  
+  const historicoModal = document.getElementById("historicoModal");
+
   const openAddBtn = document.getElementById("openAddModalBtn");
   const closeModalBtn = document.getElementById("closeModalBtn");
   const closePosicaoModalBtn = document.getElementById("closePosicaoModalBtn");
   const closePosicaoRotaModalBtn = document.getElementById("closePosicaoRotaModalBtn");
   const closePdfModalBtn = document.getElementById("closePdfModalBtn");
   const closeDespesaModalBtn = document.getElementById("closeDespesaModalBtn");
+  const closeHistoricoModalBtn = document.getElementById("closeHistoricoModalBtn");
   const confirmarPosicaoBtn = document.getElementById("confirmarPosicaoBtn");
   const confirmarPosicaoRotaBtn = document.getElementById("confirmarPosicaoRotaBtn");
   const confirmarPdfBtn = document.getElementById("confirmarPdfBtn");
@@ -3556,7 +4233,9 @@
   const saveBtn = document.getElementById("saveTaskBtn");
   const excluirConcluidosBtn = document.getElementById("excluirConcluidosBtn");
   const btnZerar = document.getElementById("btnZerar");
-  
+  const restaurarBackupBtn = document.getElementById("restaurarBackupBtn");
+  const exportExcelBtn = document.getElementById("exportExcelBtn");
+
   const modalTitle = document.getElementById("modalTitle");
   const editIdField = document.getElementById("editId");
   const nomeField = document.getElementById("nome");
@@ -3568,6 +4247,11 @@
   const pagamentoSelect = document.getElementById("pagamentoSelect");
   const urgenteCheckbox = document.getElementById("urgenteCheckbox");
   const rotaEntregaCheckbox = document.getElementById("rotaEntregaCheckbox");
+  const observacoesField = document.getElementById("observacoes");
+  const fotosPedidoInput = document.getElementById("fotosPedido");
+  const previewFotosDiv = document.getElementById("previewFotos");
+  const tagsInput = document.getElementById("tagsInput");
+  const tagsInputContainer = document.getElementById("tagsInputContainer");
 
   function openModalForEdit(task) {
     modalTitle.innerText = "Editar Pedido";
@@ -3581,6 +4265,11 @@
     pagamentoSelect.value = task.pagamento || "aguardando";
     urgenteCheckbox.checked = task.urgente || false;
     rotaEntregaCheckbox.checked = task.rotaEntrega || false;
+    observacoesField.value = task.observacoes || "";
+    currentTags = task.tags || [];
+    renderTags();
+    currentFotos = task.fotos || [];
+    renderPreviewFotos(currentFotos);
     modal.style.display = "flex";
     setTimeout(() => {
       nomeField.addEventListener("input", function() { showSugestoes(this); });
@@ -3600,6 +4289,12 @@
     pagamentoSelect.value = "aguardando";
     urgenteCheckbox.checked = false;
     rotaEntregaCheckbox.checked = false;
+    observacoesField.value = "";
+    currentTags = [];
+    renderTags();
+    currentFotos = [];
+    renderPreviewFotos(currentFotos);
+    fotosPedidoInput.value = "";
     modal.style.display = "flex";
     setTimeout(() => {
       nomeField.addEventListener("input", function() { showSugestoes(this); });
@@ -3611,6 +4306,10 @@
     const nome = nomeField.value.trim();
     if(!nome) { showToast('Nome do cliente obrigatório!', 'error'); return; }
     const telefone = telefoneField.value.trim();
+    if(telefone && !validarTelefone(telefone)) {
+      showToast('Telefone inválido! Use (DDD) 9xxxx-xxxx', 'error');
+      return;
+    }
     const descricao = descricaoField.value.trim();
     let dataEntrega = dataEntregaField.value;
     const valor = valorField.value.trim() || "0";
@@ -3618,20 +4317,24 @@
     const pagamento = pagamentoSelect.value;
     const urgente = urgenteCheckbox.checked;
     const rotaEntrega = rotaEntregaCheckbox.checked;
+    const observacoes = observacoesField.value.trim();
     const editId = editIdField.value;
-    
+
     if(!dataEntrega) {
       const dataPadrao = new Date();
       dataPadrao.setDate(dataPadrao.getDate() + 7);
       dataEntrega = dataPadrao.toISOString().split('T')[0];
     }
-    
+
     if(editId) {
       const task = tasks.find(t => t.id == editId);
       if(task) {
         task.nome = nome; task.telefone = telefone; task.descricao = descricao;
         task.dataEntrega = dataEntrega; task.valor = valor; task.status = status;
         task.pagamento = pagamento; task.urgente = urgente; task.rotaEntrega = rotaEntrega;
+        task.observacoes = observacoes;
+        task.tags = [...currentTags];
+        if (currentFotos.length > 0) task.fotos = [...currentFotos];
         saveToLocal(); renderTasks();
         if(showingReceita) renderReceita();
         if(showingClientes) renderClientes();
@@ -3639,11 +4342,12 @@
         showToast(`✅ Pedido de ${nome} atualizado!`, 'success');
       }
     } else {
-      const semanaParaAdicionar = (viewAllMode || showingConcluido || showingStatusAgrupado || showingVendaRapida) ? (semanasOrdenadas[0] || 1) : currentWeek;
+      const semanaParaAdicionar = (viewAllMode || showingConcluido || showingStatusAgrupado || showingVendaRapida || showingDashboard) ? (semanasOrdenadas[0] || 1) : currentWeek;
       const newTask = {
         id: 0, semana: semanaParaAdicionar, nome, telefone, descricao,
         dataEntrega, valor, status, pagamento, urgente, rotaEntrega,
-        concluido: false, ordem: 0, rotaOrdem: 0, endereco: ""
+        concluido: false, ordem: 0, rotaOrdem: 0, endereco: "",
+        tags: [...currentTags], fotos: [...currentFotos], observacoes
       };
       addTask(newTask);
     }
@@ -3651,6 +4355,29 @@
     document.getElementById("sugestoesClientes").style.display = "none";
   }
 
+  // ---- EVENTOS TAGS ----
+  tagsInput.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const tag = this.value.trim();
+      if (tag) {
+        adicionarTag(tag);
+        this.value = "";
+      }
+    }
+  });
+
+  // ---- EVENTOS FOTOS ----
+  fotosPedidoInput.addEventListener("change", async function() {
+    if (this.files && this.files.length > 0) {
+      const novasFotos = await processarFotos(this.files);
+      currentFotos = [...currentFotos, ...novasFotos];
+      renderPreviewFotos(currentFotos);
+      this.value = "";
+    }
+  });
+
+  // ---- SAVE DESPESA ----
   function saveDespesaFromModal() {
     const descricao = document.getElementById("despesaDescricao").value.trim();
     const valor = document.getElementById("despesaValor").value.trim();
@@ -3675,6 +4402,7 @@
   closePosicaoRotaModalBtn.onclick = () => posicaoRotaModal.style.display = "none";
   closePdfModalBtn.onclick = () => pdfModal.style.display = "none";
   closeDespesaModalBtn.onclick = () => despesaModal.style.display = "none";
+  closeHistoricoModalBtn.onclick = () => historicoModal.style.display = "none";
   saveDespesaBtn.onclick = saveDespesaFromModal;
   confirmarPosicaoBtn.onclick = () => {
     const taskId = parseInt(document.getElementById("posicaoEditId").value);
@@ -3711,18 +4439,47 @@
     }
     pdfModal.style.display = "none";
   };
-  
+
   excluirConcluidosBtn.onclick = excluirTodosConcluidos;
   btnZerar.onclick = zerarFiltros;
   saveBtn.onclick = saveTaskFromModal;
-  
+  restaurarBackupBtn.onclick = restaurarBackup;
+  exportExcelBtn.onclick = exportToExcel;
+
   window.onclick = (e) => {
     if(e.target === modal) modal.style.display = "none";
     if(e.target === posicaoModal) posicaoModal.style.display = "none";
     if(e.target === posicaoRotaModal) posicaoRotaModal.style.display = "none";
     if(e.target === pdfModal) pdfModal.style.display = "none";
     if(e.target === despesaModal) despesaModal.style.display = "none";
+    if(e.target === historicoModal) historicoModal.style.display = "none";
   };
+
+  // ---- KEYBOARD SHORTCUTS ----
+  document.addEventListener('keydown', (e) => {
+    // Ctrl+N = Novo Pedido
+    if (e.ctrlKey && e.key === 'n') {
+      e.preventDefault();
+      openModalForNew();
+    }
+    // Ctrl+F = Buscar
+    if (e.ctrlKey && e.key === 'f') {
+      e.preventDefault();
+      document.getElementById('searchInput').focus();
+    }
+    // Esc = Fechar modais
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    }
+  });
+
+  // ---- PREVENT PAGE RELOAD ----
+  window.addEventListener('beforeunload', function (e) {
+    if (tasks.length > 0) {
+      e.preventDefault();
+      e.returnValue = 'Você tem alterações não salvas. Deseja realmente sair?';
+    }
+  });
 
   // ---- PDF (com TOTAL) ----
   function abrirModalPDF() {
@@ -3734,7 +4491,7 @@
     const periodoInputs = document.getElementById("periodoInputs");
     const anoSelect = document.getElementById("anoSelect");
     const mesSelect = document.getElementById("mesSelect");
-    
+
     function atualizarVisibilidade() {
       if(radioMensal.checked) {
         periodoInputs.style.display = "none";
@@ -3753,7 +4510,7 @@
     radioMensal.addEventListener("change", atualizarVisibilidade);
     radioAnual.addEventListener("change", atualizarVisibilidade);
     radioPeriodo.addEventListener("change", atualizarVisibilidade);
-    
+
     const hoje = new Date();
     document.getElementById("pdfAnoSelect").value = hoje.getFullYear();
     document.getElementById("pdfMesSelect").value = hoje.getMonth() + 1;
@@ -3766,7 +4523,7 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     let y = 20;
-    
+
     function getValoresReceita(inicio, fim) {
       let projecao = [], pagos = [], despesasFiltradas = [...despesas];
       const emAndamento = tasks.filter(t => !t.concluido);
@@ -3795,16 +4552,16 @@
       const totalRecebido = pagos.reduce((s, r) => s + r.valor, 0) + vendasFiltradas.reduce((s, v) => s + v.valor, 0);
       const totalDespesas = despesasFiltradas.reduce((s, d) => s + d.valor, 0);
       const lucroLiquido = totalRecebido - totalDespesas;
-      return { 
-        totalProjecaoAguardando, 
-        totalRecebido, 
-        totalDespesas, 
-        totalFaturamento: totalProjecaoAguardando + totalRecebido, 
-        lucroLiquido, 
-        percentualLucro: totalRecebido > 0 ? (lucroLiquido/totalRecebido)*100 : 0 
+      return {
+        totalProjecaoAguardando,
+        totalRecebido,
+        totalDespesas,
+        totalFaturamento: totalProjecaoAguardando + totalRecebido,
+        lucroLiquido,
+        percentualLucro: totalRecebido > 0 ? (lucroLiquido/totalRecebido)*100 : 0
       };
     }
-    
+
     if(tipo === 'mensal') {
       const nomeMes = new Date(ano, mes-1, 1).toLocaleString('pt-BR', { month: 'long' });
       const inicio = new Date(ano, mes-1, 1), fim = new Date(ano, mes, 0);
@@ -3835,8 +4592,8 @@
         const v = getValoresReceita(inicio, fim);
         if(v.totalProjecaoAguardando > 0 || v.totalRecebido > 0 || v.totalDespesas > 0) {
           if(y > 240) { doc.addPage(); y = 20; doc.setFontSize(12); doc.text("RESUMO MENSAL (cont.):", 20, y); y += 10; }
-          totalAnualAguardando += v.totalProjecaoAguardando; 
-          totalAnualRecebido += v.totalRecebido; 
+          totalAnualAguardando += v.totalProjecaoAguardando;
+          totalAnualRecebido += v.totalRecebido;
           totalAnualDespesas += v.totalDespesas;
           totalAnualFaturamento += v.totalFaturamento;
           doc.setFontSize(10);
@@ -3891,7 +4648,7 @@
   const searchInputDom = document.getElementById("searchInput");
   searchInputDom.addEventListener("input", (e) => {
     searchQuery = e.target.value;
-    if(!showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingVendaRapida) renderTasks();
+    if(!showingReceita && !showingClientes && !showingRota && !showingDespesa && !showingVendaRapida && !showingDashboard) renderTasks();
   });
 
   document.getElementById("filterTodosBtn")?.addEventListener("click", () => setStatusFilter("todos"));
@@ -3899,16 +4656,16 @@
   document.getElementById("filterProducaoBtn")?.addEventListener("click", () => setStatusFilter("producao"));
   document.getElementById("filterRetiradaBtn")?.addEventListener("click", () => setStatusFilter("retirada"));
   document.getElementById("filterConcluidoBtn")?.addEventListener("click", () => setStatusFilter("concluido"));
-  
+
   document.getElementById("filterTodosPagamentoBtn")?.addEventListener("click", () => setPaymentFilter("todos-pagamento"));
   document.getElementById("filterAguardandoPagamentoBtn")?.addEventListener("click", () => setPaymentFilter("aguardando"));
   document.getElementById("filterPagoBtn")?.addEventListener("click", () => setPaymentFilter("pago"));
-  
+
   document.getElementById("searchProductBtn")?.addEventListener("click", searchByProduct);
   document.getElementById("clearProductSearchBtn")?.addEventListener("click", clearProductSearch);
   document.getElementById("productSearchInput")?.addEventListener("keypress", (e) => { if(e.key === "Enter") searchByProduct(); });
 
-  // ---- TEMA ----
+  // ---- TEMA (mantido) ----
   const themeToggle = document.getElementById("themeToggle");
   const themeTextSpan = document.getElementById("themeText");
   function applyTheme(theme) {
@@ -3928,6 +4685,7 @@
     if(showingRota) renderRota();
     if(showingDespesa) renderDespesas();
     if(showingVendaRapida) renderVendaRapida();
+    if(showingDashboard) renderDashboard();
   }
   const savedTheme = localStorage.getItem('theme') || 'light';
   applyTheme(savedTheme);
@@ -3935,12 +4693,19 @@
     applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
   });
 
+  // ---- SHORTCUTS HINT ----
+  document.getElementById('shortcutsHint').addEventListener('click', function() {
+    this.style.display = 'none';
+  });
+
   // ---- INICIALIZAÇÃO ----
   loadData();
   atualizarAbasSemanas();
   renderTasks();
+  solicitarPermissaoNotificacao();
+  // Backup automático a cada 5 minutos
+  setInterval(fazerBackupAutomatico, 300000);
   showToast('🚀 FlowTasks carregado com sucesso!', 'success');
 </script>
 </body>
 </html>
-[file content end]
